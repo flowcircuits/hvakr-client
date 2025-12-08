@@ -1,0 +1,43 @@
+{
+    "name": "@hvakr/client",
+    "version": "0.1.0",
+    "private": true,
+    "license": "MIT",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.mts",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.cjs",
+                "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
+        }
+    },
+    "author": "FLOW CIRCUITS INC",
+    "engines": {
+        "node": "22"
+    },
+    "scripts": {
+        "build": "tsdown",
+        "clean": "rm -rf dist tsconfig.tsbuildinfo",
+        "clean:windows": "powershell.exe -Command \"Remove-Item dist -Recurse -Force -ErrorAction SilentlyContinue\" & del tsconfig.tsbuildinfo",
+        "format": "prettier  --ignore-path ../../.prettierignore --write .",
+        "test": "vitest run"
+    },
+    "devDependencies": {
+        "@types/node": "24.10.1",
+        "tsdown": "0.17.1",
+        "typescript": "5.9.3",
+        "vitest": "4.0.15"
+    },
+    "packageManager": "pnpm@10.18.3+sha512.bbd16e6d7286fd7e01f6b3c0b3c932cda2965c06a908328f74663f10a9aea51f1129eea615134bf992831b009eabe167ecb7008b597f40ff9bc75946aadfb08d",
+    "dependencies": {
+        "zod": "4.1.13"
+    }
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it, assert } from 'vitest'
 import { ExpandedProjectPatch_v0, RevitData_v0 } from './schemas'
-import { ExpandedProjectPostDataExample_v0 } from './examples'
+import { ExpandedProjectPostDataExample_v0 } from './fixtures'
 import { HVAKRClient } from './HVAKRClient'
 
 describe('HVAKR Client', () => {

@@ -10,6 +10,7 @@ export const RectSchema = z.object({
     ...PointSchema.shape,
     ...SizeSchema.shape,
 })
+
 export type Rect = z.infer<typeof RectSchema>
 
 export const PolygonSchema = z.array(PointSchema)
@@ -21,4 +22,5 @@ export const BoxSchema = z.object({
     y1: z.number(),
     y2: z.number(),
 })
+
 export type Box = z.infer<typeof BoxSchema>

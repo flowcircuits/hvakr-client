@@ -1,7 +1,4 @@
-import * as Graphs from './graphs'
-
 export * from './geometry'
 export * from './units'
-export * from './richText'
-
+import * as Graphs from './graphs'
 export { Graphs }

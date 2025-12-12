@@ -12,6 +12,10 @@ export const APIProjectOutputLoadsSchema_v0 = z.object({
     zoneHeatingLoads: z.record(z.string(), HeatingLoadsSchema_v0),
 })
 
+export const APIProjectOutputLoadsSchemaJSON_v0 = z.toJSONSchema(
+    APIProjectOutputLoadsSchema_v0
+)
+
 export type APIProjectOutputLoads_v0 = z.infer<
     typeof APIProjectOutputLoadsSchema_v0
 >

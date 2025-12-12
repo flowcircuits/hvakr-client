@@ -7,6 +7,10 @@ export const APIProjectOutputDrySideGraphSchema_v0 = z.object({
     errors: z.array(ErrorSchema_v0),
 })
 
+export const APIProjectOutputDrySideGraphSchemaJSON_v0 = z.toJSONSchema(
+    APIProjectOutputDrySideGraphSchema_v0
+)
+
 export interface APIProjectOutputDrySideGraph {
     drySideGraph: MetaDrySideGraph_v0
     errors: Error[]

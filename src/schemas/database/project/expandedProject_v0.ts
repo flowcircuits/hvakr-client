@@ -72,6 +72,9 @@ export const ExpandedProjectPostSchema_v0 = z.object({
     ...ProjectPostSchema_v0.shape,
     ...ProjectSubcollectionsPostSchema_v0.shape,
 })
+export const ExpandedProjectPostSchemaJSON_v0 = z.toJSONSchema(
+    ExpandedProjectPostSchema_v0
+)
 export type ExpandedProjectPost_v0 = z.infer<
     typeof ExpandedProjectPostSchema_v0
 >

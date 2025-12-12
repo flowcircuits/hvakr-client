@@ -7,6 +7,10 @@ export const APIProjectOutputRegisterScheduleSchema_v0 = z.object({
     registerSchedule: z.array(SpaceRegisterScheduleRowSchema_v0),
 })
 
+export const APIProjectOutputRegisterScheduleSchemaJSON_v0 = z.toJSONSchema(
+    APIProjectOutputRegisterScheduleSchema_v0
+)
+
 export type APIProjectOutputRegisterSchedule_v0 = z.infer<
     typeof APIProjectOutputRegisterScheduleSchema_v0
 >

@@ -44,9 +44,8 @@ describe('HVAKR Client', () => {
         const fetchedProjectData = await hvakrClient.getProject(id!, true)
         const weatherStationId =
             fetchedProjectData.weatherSpec!.selectedStationId!
-        const weatherStation = await hvakrClient.getWeatherStation(
-            weatherStationId
-        )
+        const weatherStation =
+            await hvakrClient.getWeatherStation(weatherStationId)
         expect(weatherStation.station).toBeTruthy()
     }, 5000)
 

@@ -33,7 +33,7 @@ export type GraphNode<NodeData, AdjacencyData> = Node<AdjacencyData> &
 
 export type Graph<
     NodeData extends Record<string, any> = Record<never, never>,
-    AdjacencyData extends Record<string, any> = Record<never, never>
+    AdjacencyData extends Record<string, any> = Record<never, never>,
 > = Record<string, GraphNode<NodeData, AdjacencyData>>
 
 export type Edge<AdjacencyData = unknown> = Omit<

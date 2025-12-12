@@ -175,9 +175,7 @@ export class HVAKRClient {
         } catch (error) {
             throw new HVAKRClientError(
                 `Error ${res.status} - failed to parse json`,
-                {
-                    error,
-                }
+                { error }
             )
         }
 

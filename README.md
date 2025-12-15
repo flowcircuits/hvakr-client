@@ -90,68 +90,6 @@ The `HVAKRClient` supports the following options on initialization. These option
 | `baseUrl`     | `"https://api.hvakr.com"` | `string` | The root URL for sending API requests. This can be changed to test with a mock server. |
 | `version`     | `"v0"`                    | `string` | The API version to use.                                                                |
 
-### TypeScript
-
-This package contains type definitions for all request parameters and responses.
-
-```ts
-import {
-    HVAKRClient,
-    HVAKRClientError,
-    // Project types
-    Project_v0,
-    ExpandedProject_v0,
-    ExpandedProjectPost_v0,
-    ExpandedProjectPatch_v0,
-    // Output types
-    APIProjectOutputLoads_v0,
-    APIProjectOutputDrySideGraph,
-    APIProjectOutputRegisterSchedule_v0,
-    // Weather station types
-    WeatherStationData_v0,
-    // Revit integration types
-    RevitData_v0,
-} from '@hvakr/client'
-```
-
-The client methods are fully typed with overloads for different return types:
-
-```ts
-// Returns Project_v0
-const project = await hvakr.getProject(projectId)
-
-// Returns ExpandedProject_v0
-const expandedProject = await hvakr.getProject(projectId, true)
-
-// Returns APIProjectOutputLoads_v0
-const loads = await hvakr.getProjectOutputs(projectId, 'loads')
-
-// Returns APIProjectOutputDrySideGraph
-const graph = await hvakr.getProjectOutputs(projectId, 'dryside_graph')
-
-// Returns APIProjectOutputRegisterSchedule_v0
-const schedule = await hvakr.getProjectOutputs(projectId, 'register_schedule')
-```
-
-### Revit integration
-
-The client supports direct Revit data payloads for project creation and updates:
-
-```ts
-// Create project from Revit data
-const { id } = await hvakr.createProject(revitData, true)
-
-// Update project with Revit data
-await hvakr.updateProject(projectId, revitData, true)
-```
-
-## Requirements
-
-This package supports the following minimum versions:
-
-- Runtime: `node >= 22`
-- Type definitions (optional): `typescript >= 5.9`
-
 ## Getting help
 
 If you want to submit a feature request or are experiencing any issues with the API platform, please contact HVAKR support at [support@hvakr.com](mailto://support@hvakr.com)

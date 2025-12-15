@@ -40,8 +40,7 @@
         "clean": "rm -rf dist tsconfig.tsbuildinfo",
         "clean:windows": "powershell.exe -Command \"Remove-Item dist -Recurse -Force -ErrorAction SilentlyContinue\" & del tsconfig.tsbuildinfo",
         "format": "prettier  --ignore-path ../../.prettierignore --write .",
-        "test": "vitest run",
-        "prepublishOnly": "pnpm run build"
+        "test": "vitest run"
     },
     "devDependencies": {
         "@types/node": "24.10.1",

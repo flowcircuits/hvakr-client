@@ -4,7 +4,6 @@ on:
         branches:
             - master
     workflow_dispatch:
-    workflow_call:
 jobs:
     build:
         runs-on: ubuntu-latest

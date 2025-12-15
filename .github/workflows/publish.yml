@@ -28,13 +28,5 @@ jobs:
                   HVAKR_ACCESS_TOKEN: ${{ secrets.HVAKR_ACCESS_TOKEN }}
             - name: Build
               run: pnpm build
-            - name: Configure pnpm authentication
-              run: |
-                  if [ -f "$NPM_CONFIG_USERCONFIG" ]; then
-                      AUTH_TOKEN=$(awk -F'=' '/_authToken/ {print $2; exit}' "$NPM_CONFIG_USERCONFIG")
-                      if [ -n "$AUTH_TOKEN" ]; then
-                          pnpm config set //registry.npmjs.org/:_authToken "$AUTH_TOKEN"
-                      fi
-                  fi
-            - name: Publish
-              run: pnpm publish --no-git-checks --access public --ignore-scripts
+            - name: Publish to npm
+              run: npm publish --access public

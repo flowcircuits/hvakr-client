@@ -3,6 +3,11 @@
     "version": "0.1.2",
     "description": "HVAKR Client Library",
     "private": false,
+    "homepage": "https://api.hvakr.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/flowcircuits/hvakr-client"
+    },
     "license": "MIT",
     "type": "module",
     "main": "./dist/index.cjs",

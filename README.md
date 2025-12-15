@@ -92,4 +92,4 @@ The `HVAKRClient` supports the following options on initialization. These option
 
 ## Getting help
 
-If you want to submit a feature request or are experiencing any issues with the API platform, please contact HVAKR support at [support@hvakr.com](mailto://support@hvakr.com)
+If you want to submit a feature request or are experiencing any issues with the API, please contact HVAKR support at [support@hvakr.com](mailto://support@hvakr.com)

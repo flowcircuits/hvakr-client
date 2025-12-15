@@ -1,4 +1,4 @@
-# HVAKR Javascript/Typescript Client
+# HVAKR SDK for TypeScript/JavaScript
 
 <img alt="HVAKR Icon" src="https://www.hvakr.com/HVAKRIcon.png" width="64" />
 

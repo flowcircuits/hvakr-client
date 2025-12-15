@@ -4,14 +4,11 @@ import { ExpandedProjectPostDataExample_v0 } from './fixtures'
 import { HVAKRClient } from './HVAKRClient'
 
 describe('HVAKR Client', () => {
-    const { HVAKR_ACCESS_TOKEN, HVAKR_CLIENT_API_URL } = process.env
+    const { HVAKR_ACCESS_TOKEN } = process.env
 
     assert(HVAKR_ACCESS_TOKEN !== undefined, 'HVAKR_ACCESS_TOKEN should exist')
 
-    const hvakrClient = new HVAKRClient({
-        baseUrl: HVAKR_CLIENT_API_URL,
-        accessToken: HVAKR_ACCESS_TOKEN,
-    })
+    const hvakrClient = new HVAKRClient({ accessToken: HVAKR_ACCESS_TOKEN })
 
     let id: string | undefined = undefined
 
@@ -103,7 +100,6 @@ describe('HVAKR Client', () => {
         await hvakrClient.deleteProject(projectId)
     }, 40000)
 
-    // TODO: Figure out why the lat/long are not updating. See the todo in the api projects controller.
     it.skip('should update HVAKR Project with valid side-effecting project data', async () => {
         const res = await hvakrClient.createProject({
             name: 'Project to Update',

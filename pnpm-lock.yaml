@@ -16,7 +16,7 @@ importers:
         specifier: 24.10.1
         version: 24.10.1
       prettier:
-        specifier: ^3.7.4
+        specifier: 3.7.4
         version: 3.7.4
       tsdown:
         specifier: 0.17.1

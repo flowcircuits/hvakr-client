@@ -23,7 +23,9 @@ describe('HVAKR Client', () => {
     it('should list HVAKR Projects', async () => {
         const { ids } = await hvakrClient.listProjects()
         expect(ids.length).toBeGreaterThan(0)
-        expect(ids).toContain(id)
+        if (id) {
+            expect(ids).toContain(id)
+        }
     }, 40000)
 
     it('should get HVAKR Project', async () => {

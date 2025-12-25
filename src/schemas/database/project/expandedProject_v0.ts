@@ -4,7 +4,7 @@ import { BranchTypeDataSchema_v0 } from './branchType_v0'
 import { DeadlineDataSchema_v0 } from './deadline_v0'
 import { DoorTypeDataSchema_v0 } from './doorType_v0'
 import { DuctTypeDataSchema_v0 } from './ductType_v0'
-import * as DrySide_v0 from './graph_v0'
+import { GraphSchema_v0 } from './graph_v0'
 import { PipeTypeDataSchema_v0 } from './pipeType_v0'
 import { ProjectDataSchema_v0, ProjectPostSchema_v0 } from './project_v0'
 import { RegisterTypeDataSchema_v0 } from './registerType_v0'
@@ -26,7 +26,7 @@ export const ProjectSubcollectionsSchema_v0 = z.object({
     deadlines: z.record(z.string(), DeadlineDataSchema_v0).optional(),
     doorTypes: z.record(z.string(), DoorTypeDataSchema_v0).optional(),
     ductTypes: z.record(z.string(), DuctTypeDataSchema_v0).optional(),
-    graph: z.custom<DrySide_v0.Graph_v0>().optional(),
+    graph: GraphSchema_v0.optional(),
     pipeTypes: z.record(z.string(), PipeTypeDataSchema_v0).optional(),
     registerTypes: z.record(z.string(), RegisterTypeDataSchema_v0).optional(),
     reports: z.record(z.string(), ReportDataSchema_v0).optional(),

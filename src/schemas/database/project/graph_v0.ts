@@ -1,7 +1,13 @@
 import { z } from 'zod'
-import type { Graphs } from '../../misc'
 import { PointSchema, SizeSchema } from '../../misc'
-import { FlowTypeSchema_v0 } from '../../outputs/misc_v0'
+
+export const FlowTypes_v0 = {
+    SUPPLY: 'SUPPLY',
+    RETURN: 'RETURN',
+    EXHAUST: 'EXHAUST',
+} as const
+
+export const FlowTypeSchema_v0 = z.enum(Object.values(FlowTypes_v0))
 
 export const NodeTypes_v0 = {
     REGISTER: 'REGISTER',
@@ -114,8 +120,6 @@ export const CoordinateNodeDataSchema_v0 = z.object({
 })
 export type CoordinateNodeData_v0 = z.infer<typeof CoordinateNodeDataSchema_v0>
 
-export type NodeData_v0 = AssociatedNodeData_v0 & CoordinateNodeData_v0
-
 export const AdjacencyTypes_v0 = { DUCT: 'DUCT', LINK: 'LINK' } as const
 
 export const DuctAdjacencyDataSchema_v0 = z.object({
@@ -137,6 +141,20 @@ export const AssociatedAdjacencyDataSchema_v0 = z.union([
 export type AssociatedAdjacencyData_v0 = z.infer<
     typeof AssociatedAdjacencyDataSchema_v0
 >
-export type AdjacencyData_v0 = AssociatedAdjacencyData_v0
 
-export type Graph_v0 = Graphs.Graph<NodeData_v0, AdjacencyData_v0>
+export const GraphAdjacencySchema_v0 = z
+    .object({ id: z.string() })
+    .and(AssociatedAdjacencyDataSchema_v0)
+export type GraphAdjacency_v0 = z.infer<typeof GraphAdjacencySchema_v0>
+
+export const NodeDataSchema_v0 = AssociatedNodeDataSchema_v0.and(
+    CoordinateNodeDataSchema_v0
+)
+
+export const GraphNodeSchema_v0 = z
+    .object({ adjacencies: z.array(GraphAdjacencySchema_v0), id: z.string() })
+    .and(NodeDataSchema_v0)
+export type GraphNode_v0 = z.infer<typeof GraphNodeSchema_v0>
+
+export const GraphSchema_v0 = z.record(z.string(), GraphNodeSchema_v0)
+export type Graph_v0 = z.infer<typeof GraphSchema_v0>

@@ -2,7 +2,10 @@ import { z } from 'zod'
 import { BoxSchema, PolygonSchema } from '../../misc'
 import { VersionSetIdSchema_v0 } from './versionSet_v0'
 
-type LengthUnit = 'IN' | 'FT' | 'MM' | 'M'
+export const LengthUnits_v0 = { IN: 'IN', FT: 'FT', MM: 'MM', M: 'M' } as const
+
+export const LengthUnitSchema_v0 = z.enum(Object.values(LengthUnits_v0))
+export type LengthUnit_v0 = z.infer<typeof LengthUnitSchema_v0>
 
 export const SheetAnnotationSchema_v0 = z.object({
     confidence: z.number().optional(),
@@ -13,9 +16,9 @@ export const SheetAnnotationSchema_v0 = z.object({
 
 export const CustomScaleInfoSchema_v0 = z.object({
     leftScale: z.number().optional(),
-    leftUnit: z.custom<LengthUnit>().optional(),
+    leftUnit: LengthUnitSchema_v0.optional(),
     rightScale: z.number().optional(),
-    rightUnit: z.custom<LengthUnit>().optional(),
+    rightUnit: LengthUnitSchema_v0.optional(),
 })
 
 export const SheetVersionDataSchema_v0 = z.object({

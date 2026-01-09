@@ -23,6 +23,21 @@ export const TerminalUnitDimensionDataSchema_v0 = z.object({
     inletSize: TerminalUnitInletSizeSchema_v0.optional(),
 })
 
+export const TerminalUnitOutsideAirMethods_v0 = {
+    SUM_OF_SPACES: 0,
+    PERCENT: 1,
+    CUSTOM: 2,
+} as const
+export const TerminalUnitOutsideAirMethodSchema_v0 = z.union(
+    Object.values(TerminalUnitOutsideAirMethods_v0).map((value) =>
+        z.literal(value)
+    )
+)
+export const TerminalUnitOutsideAirDataSchema_v0 = z.object({
+    ...OutsideAirDataSchema_v0.shape,
+    method: TerminalUnitOutsideAirMethodSchema_v0.optional(),
+})
+
 export const TerminalUnitSupplyAirDataSchema_v0 = SupplyAirDataSchema_v0.pick({
     coolingTemperature: true,
     customSupplyIn: true,
@@ -36,7 +51,7 @@ export const TerminalUnitConfigurationSchema_v0 = z.object({
     dimensionData: TerminalUnitDimensionDataSchema_v0.optional(),
     heatingCoil: z.boolean().optional(),
     heatingCoilData: HeatingCoilDataSchema_v0.optional(),
-    outsideAirData: OutsideAirDataSchema_v0.optional(),
+    outsideAirData: TerminalUnitOutsideAirDataSchema_v0.optional(),
     pressureLoss: z.number().optional(),
     returnAir: z.boolean().optional(),
     supplyAirData: TerminalUnitSupplyAirDataSchema_v0.optional(),

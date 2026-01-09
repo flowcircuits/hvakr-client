@@ -4,6 +4,7 @@ export const OutsideAirMethods_v0 = {
     SUM_OF_SPACES: 0,
     PERCENT: 1,
     CUSTOM: 2,
+    MULTI_ZONE: 3,
 } as const
 
 export const OutsideAirMethodSchema_v0 = z.union(

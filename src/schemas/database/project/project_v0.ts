@@ -135,6 +135,14 @@ export const RevisionSchema_v0 = z.object({
     timestamp: z.number(),
 })
 
+const VentilationStandards_v0 = {
+    ASHRAE_2022: 'ASHRAE 62.1 / 170 (2022)',
+    ASHRAE_2025: 'ASHRAE 62.1 / 170 (2025)',
+} as const
+export const VentilationStandardSchema_v0 = z.enum(
+    Object.values(VentilationStandards_v0)
+)
+
 export const ProjectUserRoles_v0 = {
     NONE: 0,
     VIEWER: 1,
@@ -202,6 +210,7 @@ export const ProjectDataSchema_v0 = z.object({
     timestamp: z.number().optional(),
     unitSystem: DisplayUnitSystemIdSchema.optional(),
     users: z.record(z.string(), ProjectUserDataSchema_v0),
+    ventilationStandard: VentilationStandardSchema_v0.optional(),
     weatherSpec: WeatherSpecSchema_v0.optional(),
     yearBuilt: z.string().optional(),
 })

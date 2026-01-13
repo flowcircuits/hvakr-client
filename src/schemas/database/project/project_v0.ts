@@ -160,7 +160,7 @@ export const ProjectUserDataSchema_v0 = z.object({
     lastActive: z.number().optional(),
     lastName: z.string().optional(),
     pendingSignUp: z.boolean().optional(),
-    profilePicture: z.string().optional(),
+    profilePicture: z.string().nullish(),
     role: ProjectUserRoleSchema_v0,
 })
 

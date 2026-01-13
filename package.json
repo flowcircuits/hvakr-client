@@ -1,6 +1,6 @@
 {
     "name": "@hvakr/client",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "description": "HVAKR Client Library",
     "private": false,
     "homepage": "https://api.hvakr.com",

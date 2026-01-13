@@ -37,18 +37,25 @@ export class HVAKRClient {
         this.version = version ?? 'v0'
     }
 
+    private getAuthHeaders = (): HeadersInit => {
+        return { Authorization: `Bearer ${this.accessToken}` }
+    }
+
     createURL = (
         path: string,
         queryParams?: Record<string, string | boolean>
     ) => {
-        let url = `${this.baseUrl}/${this.version}${path}?accessToken=${this.accessToken}`
+        let url = `${this.baseUrl}/${this.version}${path}`
         if (queryParams) {
-            url += `&${Object.entries(queryParams)
+            const params = Object.entries(queryParams)
                 .map(([k, v]) =>
                     typeof v === 'string' ? `${k}=${v}` : v ? k : null
                 )
                 .filter((a) => a)
-                .join('&')}`
+                .join('&')
+            if (params) {
+                url += `?${params}`
+            }
         }
         return url
     }
@@ -62,6 +69,7 @@ export class HVAKRClient {
             {
                 method: 'POST',
                 headers: {
+                    ...this.getAuthHeaders(),
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
                 },
@@ -76,7 +84,10 @@ export class HVAKRClient {
     }
 
     listProjects = async () => {
-        const res = await fetch(this.createURL(`/projects`), { method: 'GET' })
+        const res = await fetch(this.createURL(`/projects`), {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        })
         const data = await res.json()
         return data as { ids: string[] }
     }
@@ -96,7 +107,10 @@ export class HVAKRClient {
         const url = this.createURL(`/projects/${projectId}`, {
             expand: !!expand,
         })
-        const res = await fetch(url, { method: 'GET' })
+        const res = await fetch(url, {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        })
         const data = await res.json()
         if (!res.ok) {
             throw new HVAKRClientError(`Error ${res.status}`, data)
@@ -116,6 +130,7 @@ export class HVAKRClient {
             {
                 method: 'PATCH',
                 headers: {
+                    ...this.getAuthHeaders(),
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
                 },
@@ -132,6 +147,7 @@ export class HVAKRClient {
     deleteProject = async (projectId: string) => {
         const res = await fetch(this.createURL(`/projects/${projectId}`), {
             method: 'DELETE',
+            headers: this.getAuthHeaders(),
         })
         const data = await res.json()
         if (!res.ok) {
@@ -167,7 +183,7 @@ export class HVAKRClient {
     async getProjectOutputs(projectId: string, outputType: APIOutputType_v0) {
         const res = await fetch(
             this.createURL(`/projects/${projectId}/outputs/${outputType}`),
-            { method: 'GET' }
+            { method: 'GET', headers: this.getAuthHeaders() }
         )
         let data: unknown
         try {
@@ -199,7 +215,7 @@ export class HVAKRClient {
                 latitude: latitude.toString(),
                 longitude: longitude.toString(),
             }),
-            { method: 'GET' }
+            { method: 'GET', headers: this.getAuthHeaders() }
         )
         const data = await res.json()
         if (!res.ok) {
@@ -211,7 +227,7 @@ export class HVAKRClient {
     getWeatherStation = async (weatherStationId: string) => {
         const res = await fetch(
             this.createURL(`/weather-stations/${weatherStationId}`),
-            { method: 'GET' }
+            { method: 'GET', headers: this.getAuthHeaders() }
         )
         const data = await res.json()
         if (!res.ok) {

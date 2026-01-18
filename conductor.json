@@ -1,5 +1,1 @@
-{
-    "scripts": {
-        "setup": "pnpm install && pnpm build"
-    }
-}
+{ "scripts": { "setup": "pnpm install && pnpm build" } }

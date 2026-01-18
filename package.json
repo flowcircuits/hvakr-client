@@ -1,9 +1,22 @@
 {
     "name": "@hvakr/client",
     "version": "0.1.9",
-    "description": "HVAKR Client Library",
+    "description": "Official TypeScript/JavaScript SDK for the HVAKR API - HVAC load calculation and analysis",
     "private": false,
+    "keywords": [
+        "hvakr",
+        "hvac",
+        "load-calculation",
+        "api-client",
+        "sdk",
+        "typescript",
+        "building-analysis",
+        "energy-modeling"
+    ],
     "homepage": "https://api.hvakr.com",
+    "bugs": {
+        "url": "https://github.com/flowcircuits/hvakr-client/issues"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/flowcircuits/hvakr-client.git"

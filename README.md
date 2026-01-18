@@ -90,6 +90,43 @@ The `HVAKRClient` supports the following options on initialization. These option
 | `baseUrl`     | `"https://api.hvakr.com"` | `string` | The root URL for sending API requests. This can be changed to test with a mock server. |
 | `version`     | `"v0"`                    | `string` | The API version to use.                                                                |
 
+## API Reference
+
+### Projects
+
+| Method                                   | Description                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------- |
+| `listProjects()`                         | List all project IDs accessible to the authenticated user                 |
+| `getProject(id, expand?)`                | Get a project by ID. Set `expand: true` for full project data             |
+| `createProject(data, revitPayload?)`     | Create a new project                                                      |
+| `updateProject(id, data, revitPayload?)` | Update an existing project                                                |
+| `deleteProject(id)`                      | Delete a project                                                          |
+| `getProjectOutputs(id, type)`            | Get calculated outputs (`loads`, `dryside_graph`, or `register_schedule`) |
+
+### Weather Stations
+
+| Method                            | Description                           |
+| --------------------------------- | ------------------------------------- |
+| `searchWeatherStations(lat, lng)` | Find weather stations near a location |
+| `getWeatherStation(id)`           | Get detailed weather station data     |
+
+## TypeScript
+
+This SDK is written in TypeScript and includes full type definitions. All API responses are typed using [Zod](https://zod.dev) schemas.
+
+```ts
+import { HVAKRClient, ExpandedProject_v0 } from '@hvakr/client'
+
+const hvakr = new HVAKRClient({ accessToken: process.env.HVAKR_ACCESS_TOKEN })
+
+// TypeScript knows this is ExpandedProject_v0
+const project = await hvakr.getProject('project-id', true)
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and contribution guidelines.
+
 ## Getting help
 
 If you want to submit a feature request or are experiencing any issues with the API, please contact HVAKR support at [support@hvakr.com](mailto://support@hvakr.com)

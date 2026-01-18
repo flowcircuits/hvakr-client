@@ -136,29 +136,39 @@ export type APIOutputType_v0 = z.infer<typeof APIOutputTypeSchema_v0>
 export const MetaDrySideNodeDataSchema_v0 = AssociatedNodeDataSchema_v0.and(
     CoordinateNodeDataSchema_v0
 ).and(z.object({ pressure: z.number().optional() }))
-export type MetaDrySideNodeData_v0 = z.infer<typeof MetaDrySideNodeDataSchema_v0>
+export type MetaDrySideNodeData_v0 = z.infer<
+    typeof MetaDrySideNodeDataSchema_v0
+>
 
-export const MetaDrySideDuctAdjacencySchema_v0 = z.object({
-    id: z.string(),
-}).and(DuctAdjacencyDataSchema_v0).and(z.object({
-    flowRate: z.number().optional(),
-}))
+export const MetaDrySideDuctAdjacencySchema_v0 = z
+    .object({ id: z.string() })
+    .and(DuctAdjacencyDataSchema_v0)
+    .and(z.object({ flowRate: z.number().optional() }))
 
-export const MetaDrySideLinkAdjacencySchema_v0 = z.object({
-    id: z.string(),
-}).and(LinkAdjacencyDataSchema_v0)
+export const MetaDrySideLinkAdjacencySchema_v0 = z
+    .object({ id: z.string() })
+    .and(LinkAdjacencyDataSchema_v0)
 
 export const MetaDrySideAdjacencyDataSchema_v0 = z.union([
     MetaDrySideDuctAdjacencySchema_v0,
     MetaDrySideLinkAdjacencySchema_v0,
 ])
-export type MetaDrySideAdjacencyData_v0 = z.infer<typeof MetaDrySideAdjacencyDataSchema_v0>
+export type MetaDrySideAdjacencyData_v0 = z.infer<
+    typeof MetaDrySideAdjacencyDataSchema_v0
+>
 
-export const MetaDrySideGraphNodeSchema_v0 = z.object({
-    adjacencies: z.array(MetaDrySideAdjacencyDataSchema_v0),
-    id: z.string(),
-}).and(MetaDrySideNodeDataSchema_v0)
-export type MetaDrySideGraphNode_v0 = z.infer<typeof MetaDrySideGraphNodeSchema_v0>
+export const MetaDrySideGraphNodeSchema_v0 = z
+    .object({
+        adjacencies: z.array(MetaDrySideAdjacencyDataSchema_v0),
+        id: z.string(),
+    })
+    .and(MetaDrySideNodeDataSchema_v0)
+export type MetaDrySideGraphNode_v0 = z.infer<
+    typeof MetaDrySideGraphNodeSchema_v0
+>
 
-export const MetaDrySideGraphSchema_v0 = z.record(z.string(), MetaDrySideGraphNodeSchema_v0)
+export const MetaDrySideGraphSchema_v0 = z.record(
+    z.string(),
+    MetaDrySideGraphNodeSchema_v0
+)
 export type MetaDrySideGraph_v0 = z.infer<typeof MetaDrySideGraphSchema_v0>

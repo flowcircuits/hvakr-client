@@ -127,8 +127,6 @@ describe('HVAKR Client', () => {
         await hvakrClient.updateProject(projectId, projectUpdate)
 
         const newProjectData = await hvakrClient.getProject(projectId, false)
-        console.log('oldProjectData', oldProjectData)
-        console.log('newProjectData', newProjectData)
         expect(newProjectData.address).toBe(updatedAddress)
         expect(newProjectData.latitude).toBeTruthy()
         expect(newProjectData.longitude).toBeTruthy()

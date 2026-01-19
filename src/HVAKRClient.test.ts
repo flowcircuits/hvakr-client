@@ -102,7 +102,7 @@ describe('HVAKR Client', () => {
         await hvakrClient.deleteProject(projectId)
     }, 40000)
 
-    it.skip('should update HVAKR Project with valid side-effecting project data', async () => {
+    it('should update HVAKR Project with valid side-effecting project data', async () => {
         const res = await hvakrClient.createProject({
             name: 'Project to Update',
             address: 'Mansfield, TX, USA',

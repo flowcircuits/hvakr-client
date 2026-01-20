@@ -123,6 +123,10 @@ const hvakr = new HVAKRClient({ accessToken: process.env.HVAKR_ACCESS_TOKEN })
 const project = await hvakr.getProject('project-id', true)
 ```
 
+## See Also
+
+- [hvakr-python](https://github.com/flowcircuits/hvakr-python) - HVAKR SDK for Python
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and contribution guidelines.

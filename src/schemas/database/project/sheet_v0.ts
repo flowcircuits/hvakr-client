@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { BoxSchema, PolygonSchema } from '../../misc'
-import { VersionSetIdSchema_v0 } from './versionSet_v0'
 
 export const LengthUnits_v0 = { IN: 'IN', FT: 'FT', MM: 'MM', M: 'M' } as const
 
@@ -39,20 +38,19 @@ export const SheetPlacementDataSchema_v0 = z.object({
     y: z.number(),
 })
 
+const sheetTypes: string[] = [
+    'Enlarged Floor Plan',
+    'Overall Floor Plan',
+    'Reflected Ceiling Plan',
+    'Furniture Plan',
+    'Exterior Elevation',
+    'Interior Elevation',
+]
+const SheetTypeSchema_v0 = z.enum(sheetTypes)
+
 export const SheetDataSchema_v0 = z.object({
-    annotations: z.record(z.string(), SheetAnnotationSchema_v0).optional(),
-    customScaleInfo: CustomScaleInfoSchema_v0.optional(),
-    defaultCeilingHeight: z.number().optional(),
-    defaultSlabHeight: z.number().optional(),
-    height: z.number(),
+    activeSheetFilePageId: z.string().optional(),
     placements: z.record(z.string(), SheetPlacementDataSchema_v0).optional(),
-    resolution: z.number(),
-    scale: z.number().optional(),
-    sheetType: z.string().optional(),
-    theta: z.number().optional(),
-    title: z.string().optional(),
-    versionSetId: VersionSetIdSchema_v0,
-    versions: z.record(VersionSetIdSchema_v0, SheetVersionDataSchema_v0),
-    width: z.number(),
+    sheetType: SheetTypeSchema_v0.optional(),
 })
 export type SheetData_v0 = z.infer<typeof SheetDataSchema_v0>

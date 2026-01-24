@@ -16,7 +16,6 @@ import { SlabTypeDataSchema_v0 } from './slabType_v0'
 import { SpaceTypeDataSchema_v0 } from './spaceType_v0'
 import { SpaceDataSchema_v0 } from './space_v0'
 import { SystemDataSchema_v0 } from './system_v0'
-import { VersionSetDataSchema_v0 } from './versionSet_v0'
 import { WallTypeDataSchema_v0 } from './wallType_v0'
 import { WindowTypeDataSchema_v0 } from './windowType_v0'
 import { ZoneDataSchema_v0 } from './zone_v0'
@@ -37,7 +36,6 @@ export const ProjectSubcollectionsSchema_v0 = z.object({
     spaceTypes: z.record(z.string(), SpaceTypeDataSchema_v0).optional(),
     spaces: z.record(z.string(), SpaceDataSchema_v0).optional(),
     systems: z.record(z.string(), SystemDataSchema_v0).optional(),
-    versionSets: z.record(z.string(), VersionSetDataSchema_v0).optional(),
     wallTypes: z.record(z.string(), WallTypeDataSchema_v0).optional(),
     windowTypes: z.record(z.string(), WindowTypeDataSchema_v0).optional(),
     zones: z.record(z.string(), ZoneDataSchema_v0).optional(),

@@ -1,6 +1,6 @@
 {
     "name": "@hvakr/client",
-    "version": "0.1.12",
+    "version": "0.1.13",
     "description": "Official TypeScript/JavaScript SDK for the HVAKR API - HVAC load calculation and analysis",
     "private": false,
     "keywords": [
@@ -56,14 +56,14 @@
         "test": "vitest run"
     },
     "devDependencies": {
-        "@types/node": "24.10.1",
-        "prettier": "3.7.4",
-        "tsdown": "0.18.0",
+        "@types/node": "25.0.10",
+        "prettier": "3.8.1",
+        "tsdown": "0.20.1",
         "typescript": "5.9.3",
-        "vitest": "4.0.15"
+        "vitest": "4.0.18"
     },
     "packageManager": "pnpm@10.18.3+sha512.bbd16e6d7286fd7e01f6b3c0b3c932cda2965c06a908328f74663f10a9aea51f1129eea615134bf992831b009eabe167ecb7008b597f40ff9bc75946aadfb08d",
     "dependencies": {
-        "zod": "4.3.5"
+        "zod": "4.3.6"
     }
 }

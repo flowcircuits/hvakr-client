@@ -3,7 +3,7 @@ import { ExpandedProjectPatch_v0, RevitData_v0 } from './schemas'
 import { ExpandedProjectPostDataExample_v0 } from './fixtures'
 import { HVAKRClient } from './HVAKRClient'
 
-describe.skip('HVAKR Client', () => {
+describe('HVAKR Client', () => {
     const { HVAKR_ACCESS_TOKEN } = process.env
 
     assert(HVAKR_ACCESS_TOKEN !== undefined, 'HVAKR_ACCESS_TOKEN should exist')
@@ -245,7 +245,7 @@ describe.skip('HVAKR Client', () => {
     }, 40000)
 })
 
-describe.skip('HVAKR Client Weather API', () => {
+describe('HVAKR Client Weather API', () => {
     const { HVAKR_ACCESS_TOKEN, HVAKR_CLIENT_API_URL } = process.env
 
     assert(HVAKR_ACCESS_TOKEN, 'HVAKR_ACCESS_TOKEN exists')
@@ -323,7 +323,7 @@ const revitData: RevitData_v0 = {
     ],
 }
 
-describe.skip('HVAKR Client Revit API', () => {
+describe('HVAKR Client Revit API', () => {
     const { HVAKR_ACCESS_TOKEN, HVAKR_CLIENT_API_URL } = process.env
 
     assert(HVAKR_ACCESS_TOKEN, 'HVAKR_ACCESS_TOKEN exists')

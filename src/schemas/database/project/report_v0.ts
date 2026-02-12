@@ -8,8 +8,9 @@ export const ReportFileTypeSchema_v0 = z.enum(Object.values(REPORT_FILE_TYPES))
 export const ReportTemplateOptionSchema_v0 = z.object({
     id: z.string(),
     label: z.string(),
-    type: z.literal('checkbox'),
-    value: z.boolean(),
+    type: z.union([z.literal('checkbox'), z.literal('select')]),
+    value: z.union([z.boolean(), z.string()]),
+    options: z.record(z.string(), z.string()).optional(),
 })
 
 export const ReportTemplateSchema_v0 = z.object({

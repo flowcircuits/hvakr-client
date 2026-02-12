@@ -1,6 +1,6 @@
 {
     "name": "@hvakr/client",
-    "version": "0.1.13",
+    "version": "0.1.14",
     "description": "Official TypeScript/JavaScript SDK for the HVAKR API - HVAC load calculation and analysis",
     "private": false,
     "keywords": [

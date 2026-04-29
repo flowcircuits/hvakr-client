@@ -3,12 +3,11 @@ import { ExpandedProjectPatch_v0, RevitData_v0 } from './schemas'
 import { ExpandedProjectPostDataExample_v0 } from './fixtures'
 import { HVAKRClient } from './HVAKRClient'
 
-describe('HVAKR Client', () => {
-    const { HVAKR_ACCESS_TOKEN } = process.env
+const { HVAKR_ACCESS_TOKEN, HVAKR_CLIENT_API_URL } = process.env
+const integrationDescribe = describe.skipIf(!HVAKR_ACCESS_TOKEN)
 
-    assert(HVAKR_ACCESS_TOKEN !== undefined, 'HVAKR_ACCESS_TOKEN should exist')
-
-    const hvakrClient = new HVAKRClient({ accessToken: HVAKR_ACCESS_TOKEN })
+integrationDescribe('HVAKR Client', () => {
+    const hvakrClient = new HVAKRClient({ accessToken: HVAKR_ACCESS_TOKEN! })
 
     let id: string | undefined = undefined
 
@@ -245,14 +244,10 @@ describe('HVAKR Client', () => {
     }, 40000)
 })
 
-describe('HVAKR Client Weather API', () => {
-    const { HVAKR_ACCESS_TOKEN, HVAKR_CLIENT_API_URL } = process.env
-
-    assert(HVAKR_ACCESS_TOKEN, 'HVAKR_ACCESS_TOKEN exists')
-
+integrationDescribe('HVAKR Client Weather API', () => {
     const hvakrClient = new HVAKRClient({
         baseUrl: HVAKR_CLIENT_API_URL,
-        accessToken: HVAKR_ACCESS_TOKEN,
+        accessToken: HVAKR_ACCESS_TOKEN!,
     })
 
     it('should find weather stations by me', async () => {
@@ -323,14 +318,10 @@ const revitData: RevitData_v0 = {
     ],
 }
 
-describe('HVAKR Client Revit API', () => {
-    const { HVAKR_ACCESS_TOKEN, HVAKR_CLIENT_API_URL } = process.env
-
-    assert(HVAKR_ACCESS_TOKEN, 'HVAKR_ACCESS_TOKEN exists')
-
+integrationDescribe('HVAKR Client Revit API', () => {
     const hvakrClient = new HVAKRClient({
         baseUrl: HVAKR_CLIENT_API_URL,
-        accessToken: HVAKR_ACCESS_TOKEN,
+        accessToken: HVAKR_ACCESS_TOKEN!,
     })
 
     it('should create a project from Revit data', async () => {

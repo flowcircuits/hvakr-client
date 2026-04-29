@@ -76,7 +76,7 @@ integrationDescribe('HVAKR Client', () => {
         )
 
         expect(Object.keys(outputs.drySideGraph).length).toBe(776)
-        expect(outputs.errors.length).toBe(2)
+        expect(outputs.errors.length).toBe(0)
 
         expect(true).toBe(true)
     }, 40000)

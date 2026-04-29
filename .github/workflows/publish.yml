@@ -27,4 +27,4 @@ jobs:
             - name: Build
               run: pnpm build
             - name: Publish to npm
-              run: pnpm publish --no-git-checks --provenance
+              run: npm publish --access public

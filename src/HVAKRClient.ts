@@ -21,6 +21,7 @@ export class HVAKRClientError extends Error {
 
     constructor(message?: string, metadata?: unknown) {
         super(message)
+        this.name = 'HVAKRClientError'
         this.metadata = metadata
     }
 }
@@ -66,6 +67,10 @@ export class HVAKRClient {
         return { Authorization: `Bearer ${this.accessToken}` }
     }
 
+    private encodePathSegment = (segment: string) => {
+        return encodeURIComponent(segment)
+    }
+
     /**
      * Constructs a full API URL with optional query parameters.
      * @param path - API endpoint path (e.g., "/projects")
@@ -76,11 +81,15 @@ export class HVAKRClient {
         path: string,
         queryParams?: Record<string, string | boolean>
     ) => {
-        let url = `${this.baseUrl}/${this.version}${path}`
+        let url = `${this.baseUrl.replace(/\/$/, '')}/${this.version}${path}`
         if (queryParams) {
             const params = Object.entries(queryParams)
                 .map(([k, v]) =>
-                    typeof v === 'string' ? `${k}=${v}` : v ? k : null
+                    typeof v === 'string'
+                        ? `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
+                        : v
+                          ? encodeURIComponent(k)
+                          : null
                 )
                 .filter((a) => a)
                 .join('&')
@@ -157,9 +166,10 @@ export class HVAKRClient {
     ): Promise<Project_v0 | ExpandedProject_v0>
 
     async getProject(projectId: string, expand?: boolean) {
-        const url = this.createURL(`/projects/${projectId}`, {
-            expand: !!expand,
-        })
+        const url = this.createURL(
+            `/projects/${this.encodePathSegment(projectId)}`,
+            { expand: !!expand }
+        )
         const res = await fetch(url, {
             method: 'GET',
             headers: this.getAuthHeaders(),
@@ -176,16 +186,16 @@ export class HVAKRClient {
      * @param projectId - The ID of the project to update
      * @param projectData - The updated project data
      * @param revitPayload - Set to true if the data is in Revit format
-     * @returns The updated project data
+     * @returns The ID of the updated project
      * @throws {HVAKRClientError} If the API returns an error response
      */
     updateProject = async (
         projectId: string,
         projectData: ExpandedProjectPatch_v0 | RevitData_v0,
         revitPayload?: boolean
-    ) => {
+    ): Promise<{ id: string }> => {
         const res = await fetch(
-            this.createURL(`/projects/${projectId}`, {
+            this.createURL(`/projects/${this.encodePathSegment(projectId)}`, {
                 revitPayload: !!revitPayload,
             }),
             {
@@ -211,11 +221,13 @@ export class HVAKRClient {
      * @returns The deletion confirmation response
      * @throws {HVAKRClientError} If the API returns an error response
      */
-    deleteProject = async (projectId: string) => {
-        const res = await fetch(this.createURL(`/projects/${projectId}`), {
-            method: 'DELETE',
-            headers: this.getAuthHeaders(),
-        })
+    deleteProject = async (
+        projectId: string
+    ): Promise<{ id: string; deleted: true }> => {
+        const res = await fetch(
+            this.createURL(`/projects/${this.encodePathSegment(projectId)}`),
+            { method: 'DELETE', headers: this.getAuthHeaders() }
+        )
         const data = await res.json()
         if (!res.ok) {
             throw new HVAKRClientError(`Error ${res.status}`, data)
@@ -256,7 +268,9 @@ export class HVAKRClient {
 
     async getProjectOutputs(projectId: string, outputType: APIOutputType_v0) {
         const res = await fetch(
-            this.createURL(`/projects/${projectId}/outputs/${outputType}`),
+            this.createURL(
+                `/projects/${this.encodePathSegment(projectId)}/outputs/${this.encodePathSegment(outputType)}`
+            ),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
         let data: unknown
@@ -313,7 +327,9 @@ export class HVAKRClient {
      */
     getWeatherStation = async (weatherStationId: string) => {
         const res = await fetch(
-            this.createURL(`/weather-stations/${weatherStationId}`),
+            this.createURL(
+                `/weather-stations/${this.encodePathSegment(weatherStationId)}`
+            ),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
         const data = await res.json()

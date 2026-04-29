@@ -110,6 +110,52 @@ The `HVAKRClient` supports the following options on initialization. These option
 | `searchWeatherStations(lat, lng)` | Find weather stations near a location |
 | `getWeatherStation(id)`           | Get detailed weather station data     |
 
+## Receiving webhooks
+
+HVAKR can deliver real-time event notifications to an HTTPS endpoint you control. Each request includes an `X-HVAKR-Event` header and is signed with HMAC-SHA256 in the `X-HVAKR-Signature` header using a secret you receive when the webhook is created. Use `constructWebhookEvent` to verify the signature and parse the event in one step.
+
+```ts
+import { constructWebhookEvent, HVAKRWebhookError } from '@hvakr/client'
+
+// Express example. Use a raw-body parser so the signature still matches —
+// re-stringifying a parsed object will change the bytes.
+app.post(
+    '/webhooks/hvakr',
+    express.raw({ type: 'application/json' }),
+    (req, res) => {
+        try {
+            const event = constructWebhookEvent({
+                payload: req.body, // Buffer of the raw bytes
+                signature: req.header('X-HVAKR-Signature')!,
+                secret: process.env.HVAKR_WEBHOOK_SECRET!,
+            })
+
+            switch (event.event) {
+                case 'project.created':
+                    console.log('New project:', event.data.id)
+                    break
+                case 'opportunity.created':
+                    console.log('New opportunity:', event.data.email)
+                    break
+            }
+
+            res.status(204).end()
+        } catch (err) {
+            if (err instanceof HVAKRWebhookError) {
+                return res.status(400).send(err.message)
+            }
+            throw err
+        }
+    }
+)
+```
+
+By default, `constructWebhookEvent` only accepts event types and payload shapes that this SDK version knows about, so TypeScript can narrow `event.data` safely inside each `case`. If you need forward compatibility with newer event types, pass `allowUnknownEvents: true` and validate `event.data` yourself for unknown events.
+
+`constructWebhookEvent` throws `HVAKRWebhookError` when the signature is invalid, the payload is malformed, the event payload does not match the expected schema, or the timestamp is outside a 300-second tolerance window (configurable via the `tolerance` option).
+
+See the [API reference](https://api.hvakr.com/v0/docs/) for the current API documentation.
+
 ## TypeScript
 
 This SDK is written in TypeScript and includes full type definitions. All API responses are typed using [Zod](https://zod.dev) schemas.

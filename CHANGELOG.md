@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `constructWebhookEvent` for verifying and parsing incoming HVAKR webhooks
+- `HVAKRWebhookError` thrown on signature, payload, or timestamp failures
+- Webhook event types and payload schemas: `WebhookEvents`, `WebhookEvent_v0`, `OpportunityCreatedPayload_v0`, `ProjectCreatedPayload_v0`
+
+### Changed
+
+- Normalize trailing slashes in `baseUrl` and URL-encode request path/query values
+
 ## [0.1.9] - 2025-01-17
 
 ### Changed

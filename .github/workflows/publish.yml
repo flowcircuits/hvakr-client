@@ -18,6 +18,8 @@ jobs:
               with:
                   node-version: 22
                   registry-url: 'https://registry.npmjs.org'
+            - name: Upgrade npm (required for trusted publishing / OIDC)
+              run: npm install -g npm@11
             - name: Install Dependencies
               run: pnpm install --frozen-lockfile
             - name: Test

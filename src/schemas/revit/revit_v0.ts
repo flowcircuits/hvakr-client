@@ -1,34 +1,41 @@
-export interface RevitBoundarySegment_v0 {
-    /** Stored in feet (lengthUnit) */
-    x1: number
-    /** Stored in feet (lengthUnit) */
-    x2: number
-    /** Stored in feet (lengthUnit) */
-    y1: number
-    /** Stored in feet (lengthUnit) */
-    y2: number
-}
+import { z } from 'zod'
 
-export interface RevitSpaceData_v0 {
+export const RevitBoundarySegmentSchema_v0 = z.object({
+    /** Stored in feet (lengthUnit) */
+    x1: z.number(),
+    /** Stored in feet (lengthUnit) */
+    x2: z.number(),
+    /** Stored in feet (lengthUnit) */
+    y1: z.number(),
+    /** Stored in feet (lengthUnit) */
+    y2: z.number(),
+})
+export type RevitBoundarySegment_v0 = z.infer<
+    typeof RevitBoundarySegmentSchema_v0
+>
+
+export const RevitSpaceDataSchema_v0 = z.object({
     /** Stored in square feet (areaUnit) */
-    area: number
+    area: z.number(),
     /** Nested array b/c revit spaces support holes */
-    boundaries: RevitBoundarySegment_v0[][]
+    boundaries: z.array(z.array(RevitBoundarySegmentSchema_v0)),
     /** Stored in feet (lengthUnit) */
-    levelElevation: number
-    name: string | null
-    number: string | null
+    levelElevation: z.number(),
+    name: z.string().nullable(),
+    number: z.string().nullable(),
     /** Stored in feet (lengthUnit) */
-    unboundedHeight: number
-    uniqueId: string
+    unboundedHeight: z.number(),
+    uniqueId: z.string(),
     /** Stored in cubic feet (volumeUnit) */
-    volume: number
-}
+    volume: z.number(),
+})
+export type RevitSpaceData_v0 = z.infer<typeof RevitSpaceDataSchema_v0>
 
-export interface RevitData_v0 {
-    projectAddress: string | null
-    projectName: string | null
+export const RevitDataSchema_v0 = z.object({
+    projectAddress: z.string().nullable(),
+    projectName: z.string().nullable(),
     /** Stored in degrees (angleUnit) */
-    projectRotationDegrees: number
-    revitSpaces: RevitSpaceData_v0[]
-}
+    projectRotationDegrees: z.number(),
+    revitSpaces: z.array(RevitSpaceDataSchema_v0),
+})
+export type RevitData_v0 = z.infer<typeof RevitDataSchema_v0>

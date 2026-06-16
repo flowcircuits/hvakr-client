@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+> **Pre-1.0 / unstable.** While this project is on `0.x`, breaking changes ship in
+> **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
+> bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
+
+## [Unreleased]
+
+### Breaking Changes
+
+-
+
 ## [0.1.15] - 2026-04-29
 
 ### Added

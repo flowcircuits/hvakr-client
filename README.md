@@ -7,6 +7,15 @@
 ![Build status](https://github.com/flowcircuits/hvakr-client/actions/workflows/build.yml/badge.svg)
 [![npm version](https://badge.fury.io/js/%40hvakr%2Fclient.svg)](https://www.npmjs.com/package/@hvakr/client)
 
+> [!WARNING]
+> **Unstable API.** HVAKR is pre-1.0 (`v0`). Response shapes, method arguments, and
+> exported types may change in **any** release while we iterate. We do not maintain
+> older versions in parallel — when we ship a breaking change, everyone upgrades.
+>
+> Breaking changes ship in **minor** version bumps (`0.x.0`); patches (`0.x.y`) are
+> backwards-compatible fixes. Pin an exact version (e.g. `@hvakr/client@0.1.16`) if you
+> need stability, and read the [CHANGELOG](./CHANGELOG.md) before upgrading.
+
 ## Installation
 
 ```bash
@@ -172,6 +181,29 @@ const project = await hvakr.getProject('project-id', true)
 ## See Also
 
 - [hvakr-python](https://github.com/flowcircuits/hvakr-python) - HVAKR SDK for Python
+
+## Versioning & stability
+
+This SDK is **pre-1.0** and the API it wraps is still evolving. We deliberately stay on
+`0.x` so we can move quickly, and we follow the [SemVer](https://semver.org/) `0.x`
+convention:
+
+| Bump            | Example           | Meaning                                                                    |
+| --------------- | ----------------- | -------------------------------------------------------------------------- |
+| **Minor** `0.x.0` | `0.1.16` → `0.2.0` | **Breaking change** — response shapes, arguments, or exported types changed |
+| **Patch** `0.x.y` | `0.1.16` → `0.1.17` | Backwards-compatible fix or addition                                       |
+
+We do **not** version the API path beyond `v0` or run multiple API versions in parallel.
+There is one current version; breaking changes apply to everyone. When the API surface
+stabilizes, we will cut a `1.0.0` release and adopt standard SemVer guarantees.
+
+**What this means for you:**
+
+- Every breaking change is documented under its version in the [CHANGELOG](./CHANGELOG.md).
+- If you depend on stability, pin an exact version (`@hvakr/client@0.1.16`) rather than a
+  range, and upgrade deliberately after reading the changelog.
+- A default caret range (`^0.1.0`) will **not** auto-upgrade you across a breaking minor
+  bump, so you stay on a compatible line until you opt in.
 
 ## Contributing
 

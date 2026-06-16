@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+- Replaced the space `roofDirection` field (legacy cardinal `EdgeExposure_v0`:
+  `'N' | 'E' | 'S' | 'W'`) with a continuous `roofAzimuth` (`number`) on
+  `SpaceData_v0`. The `EdgeExposureSchema_v0` export has been removed. There is no
+  compatibility shim — convert cardinal directions to degrees (e.g. `N` → `0`,
+  `E` → `90`, `S` → `180`, `W` → `270`) when upgrading.
 - `listProjects()` is now paginated. It accepts optional `{ limit?, cursor? }` and
   returns `{ projects, hasMore, nextCursor }` instead of `{ ids }`. Each entry in
   `projects` is a summary (`id`, and optional `name`, `number`, `address`, `status`,

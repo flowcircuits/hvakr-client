@@ -10,8 +10,6 @@ export const InfiltrationRequirementMethodSchema_v0 = z.enum(
     Object.values(InfiltrationRequirementMethods)
 )
 
-export const EdgeExposureSchema_v0 = z.enum(['N', 'E', 'S', 'W'])
-
 export const SkylightDataSchema_v0 = z.object({
     height: z.number(),
     rotation: z.number().optional(),
@@ -103,7 +101,7 @@ export const SpaceDataSchema_v0 = z.object({
     number: z.string().optional(),
     occupancy: z.number().optional(),
     revitId: z.string().optional(),
-    roofDirection: EdgeExposureSchema_v0.optional(),
+    roofAzimuth: z.number().optional(),
     roofPitch: z.number().optional(),
     roofTypeId: z.string().optional(),
     skylights: z.record(z.string(), SkylightDataSchema_v0).optional(),

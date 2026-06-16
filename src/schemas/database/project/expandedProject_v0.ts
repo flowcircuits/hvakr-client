@@ -6,7 +6,11 @@ import { DoorTypeDataSchema_v0 } from './doorType_v0'
 import { DuctTypeDataSchema_v0 } from './ductType_v0'
 import { GraphSchema_v0 } from './graph_v0'
 import { PipeTypeDataSchema_v0 } from './pipeType_v0'
-import { ProjectDataSchema_v0, ProjectPostSchema_v0 } from './project_v0'
+import {
+    ProjectDataSchema_v0,
+    ProjectPostSchema_v0,
+    WritableProjectDataSchema_v0,
+} from './project_v0'
 import { RegisterTypeDataSchema_v0 } from './registerType_v0'
 import { ReportDataSchema_v0 } from './report_v0'
 import { RoofTypeDataSchema_v0 } from './roofType_v0'
@@ -74,8 +78,16 @@ export type ExpandedProjectPost_v0 = z.infer<
     typeof ExpandedProjectPostSchema_v0
 >
 
+/**
+ * Patch schema for updates. Built from the writable project fields (server-owned
+ * fields are omitted) plus subcollections, so callers cannot patch fields the
+ * server owns.
+ */
 export const ExpandedProjectPatchSchema_v0 = getPatchSchema(
-    ExpandedProjectSchema_v0
+    z.object({
+        ...WritableProjectDataSchema_v0.shape,
+        ...ProjectSubcollectionsSchema_v0.shape,
+    })
 )
 export type ExpandedProjectPatch_v0 = z.infer<
     typeof ExpandedProjectPatchSchema_v0

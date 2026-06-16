@@ -42,7 +42,7 @@ const hvakr = new HVAKRClient({
 Make a request to any HVAKR API endpoint.
 
 ```ts
-const projects = await hvakr.listProjects()
+const { projects } = await hvakr.listProjects()
 ```
 
 > [!NOTE]
@@ -55,12 +55,33 @@ console.log(projects)
 ```
 
 ```ts
-{
-    ids: [
-        '5c6a2821-6bb1-4a7e-b6e1-c50111515c3d',
-        '897e5a76-ae52-4b48-9fdf-e71f5945d1af',
-        // ...
-    ]
+;[
+    {
+        id: '5c6a2821-6bb1-4a7e-b6e1-c50111515c3d',
+        name: 'Office Retrofit',
+        number: '2024-014',
+        address: 'Mansfield, TX, USA',
+        status: 'inProgress',
+        projectType: 'commercial',
+        timestamp: 1714405200000,
+        lastOpenTime: 1717084800000,
+    },
+    // ...
+]
+```
+
+`listProjects()` is paginated. Pass `limit` to control the page size, and follow
+`nextCursor` while `hasMore` is `true` to page through every project.
+
+```ts
+const allProjects = []
+let cursor: string | undefined
+
+while (true) {
+    const page = await hvakr.listProjects({ limit: 50, cursor })
+    allProjects.push(...page.projects)
+    if (!page.hasMore || !page.nextCursor) break
+    cursor = page.nextCursor
 }
 ```
 
@@ -105,7 +126,7 @@ The `HVAKRClient` supports the following options on initialization. These option
 
 | Method                                   | Description                                                               |
 | ---------------------------------------- | ------------------------------------------------------------------------- |
-| `listProjects()`                         | List all project IDs accessible to the authenticated user                 |
+| `listProjects({ limit?, cursor? })`      | List a page of projects accessible to the authenticated user. Page with `nextCursor` while `hasMore` |
 | `getProject(id, expand?)`                | Get a project by ID. Set `expand: true` for full project data             |
 | `createProject(data, revitPayload?)`     | Create a new project                                                      |
 | `updateProject(id, data, revitPayload?)` | Update an existing project                                                |

@@ -13,7 +13,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
--
+- `listProjects()` is now paginated. It accepts optional `{ limit?, cursor? }` and
+  returns `{ projects, hasMore, nextCursor }` instead of `{ ids }`. Each entry in
+  `projects` is a summary (`id`, and optional `name`, `number`, `address`, `status`,
+  `projectType`, `timestamp`, `lastOpenTime`). Page through results by passing
+  `nextCursor` back as `cursor` while `hasMore` is `true`.
+- Removed server-owned fields from the create/update request types
+  (`ProjectPost_v0`, `ExpandedProjectPost_v0`, `ExpandedProjectPatch_v0`):
+  `revision`, `revisions`, `timestamp`, `lastOpenTime`, `isHVAKRTemplate`,
+  `isExample`, `fromExample`, `duplicatedFrom`. `isTemplate` and `status` remain
+  writable.
+- Project response types no longer expose the internal backend fields `isDeleted`
+  and `_userEmails`.
+
+### Added
+
+- `status` field on projects (`ProjectStatus_v0`: `new`, `inProgress`, `inReview`,
+  `done`, `archived`), writable on create and update.
+- Exported list-response types `ProjectListItem_v0` and `ProjectListResponse_v0`.
+- `WeatherStationData_v0` now models fields the API already returns: `id`,
+  `localeClimateZone`, `tmyDataUrl`, and `tmyPeriod`.
+- `OpportunityCreatedPayload_v0` now includes `organizationId` (always sent) and the
+  optional `status` (`OpportunityStatus_v0`: `new`, `inProgress`, `done`, `archived`)
+  that the `opportunity.created` webhook already delivers.
+- `ReportFileTypeSchema_v0` now includes `DOCX` and `ZIP` (was `PDF`/`CSV` only), and
+  `ReportData_v0` now models the `error`, `notifyOnComplete`, `notifyOnCompleteEmail`,
+  and `outputFileType` fields (plus `outputFileType` on the report template) that
+  reports already carry.
 
 ## [0.1.15] - 2026-04-29
 

@@ -170,9 +170,18 @@ export const ProjectTypes_v0 = {
 } as const
 export const ProjectTypeSchema_v0 = z.enum(Object.values(ProjectTypes_v0))
 
+export const ProjectStatuses_v0 = {
+    new: 'new',
+    inProgress: 'inProgress',
+    inReview: 'inReview',
+    done: 'done',
+    archived: 'archived',
+} as const
+export const ProjectStatusSchema_v0 = z.enum(Object.values(ProjectStatuses_v0))
+export type ProjectStatus_v0 = z.infer<typeof ProjectStatusSchema_v0>
+
 export const ComputedProjectDataSchema_v0 = z.object({
     _owner: z.string().optional(),
-    _userEmails: z.array(z.string()).optional(),
 })
 
 export const ProjectDataSchema_v0 = z.object({
@@ -189,7 +198,6 @@ export const ProjectDataSchema_v0 = z.object({
     elevation: z.number().optional(),
     fromExample: z.string().optional(),
     isArchived: z.boolean().optional(),
-    isDeleted: z.boolean().optional(),
     isExample: z.boolean().optional(),
     isHVAKRTemplate: z.boolean().optional(),
     isTemplate: z.boolean().optional(),
@@ -207,6 +215,7 @@ export const ProjectDataSchema_v0 = z.object({
     revisions: z.record(z.string(), RevisionSchema_v0).optional(),
     sheetMarkers: z.record(z.string(), PointSchema).optional(),
     standards: z.record(z.string(), StandardSchema_v0).optional(),
+    status: ProjectStatusSchema_v0.optional(),
     timestamp: z.number().optional(),
     unitSystem: DisplayUnitSystemIdSchema.optional(),
     users: z.record(z.string(), ProjectUserDataSchema_v0),
@@ -222,11 +231,55 @@ export interface Project_v0 extends ProjectData_v0 {
 
 /* BEGIN API ENDPOINT SCHEMAS */
 
+/**
+ * Fields the server owns and assigns. They appear on project responses but are
+ * not writable through create or update requests, so they are omitted from the
+ * request schemas below.
+ */
+export const SERVER_OWNED_PROJECT_FIELDS_V0 = {
+    duplicatedFrom: true,
+    fromExample: true,
+    isExample: true,
+    isHVAKRTemplate: true,
+    lastOpenTime: true,
+    revision: true,
+    revisions: true,
+    timestamp: true,
+} as const
+
+/** Project fields writable through create/update requests. */
+export const WritableProjectDataSchema_v0 = ProjectDataSchema_v0.omit(
+    SERVER_OWNED_PROJECT_FIELDS_V0
+)
+
 export const ProjectPostSchema_v0 = z.object({
-    ...ProjectDataSchema_v0.shape,
+    ...WritableProjectDataSchema_v0.shape,
     /** Optional because the project can be created with a default name */
     name: z.string().optional(),
     /** Optional because the project can be created with default users */
     users: z.record(z.string(), ProjectUserDataSchema_v0).optional(),
 })
 export type ProjectPost_v0 = z.infer<typeof ProjectPostSchema_v0>
+
+/** Summary fields returned for each project by the list endpoint. */
+export const ProjectListItemSchema_v0 = z.object({
+    id: z.string(),
+    name: z.string().optional(),
+    number: z.string().optional(),
+    address: z.string().optional(),
+    status: ProjectStatusSchema_v0.optional(),
+    projectType: ProjectTypeSchema_v0.optional(),
+    timestamp: z.number().optional(),
+    lastOpenTime: z.number().optional(),
+})
+export type ProjectListItem_v0 = z.infer<typeof ProjectListItemSchema_v0>
+
+/** Paginated response shape returned by the list-projects endpoint. */
+export const ProjectListResponseSchema_v0 = z.object({
+    projects: z.array(ProjectListItemSchema_v0),
+    hasMore: z.boolean(),
+    nextCursor: z.string().nullable(),
+})
+export type ProjectListResponse_v0 = z.infer<
+    typeof ProjectListResponseSchema_v0
+>

@@ -20,7 +20,15 @@ export const WeatherStationDataSchema_v0 = z.object({
     elevation: z.number(),
     hdd50: z.array(z.number()),
     hdd65: z.array(z.number()),
+    id: z.string(),
     latitude: z.number(),
+    localeClimateZone: z
+        .object({
+            climateZone: z.string(),
+            locale: z.string(),
+            source: z.string(),
+        })
+        .optional(),
     longitude: z.number(),
     monthlyBulbTempsByCoolingPercent: z.record(
         CoolingPercentSchema_v0,
@@ -31,6 +39,10 @@ export const WeatherStationDataSchema_v0 = z.object({
     taub: z.array(z.number()),
     taud: z.array(z.number()),
     timezoneOffset: z.number(),
+    /** Cloud Storage download URL for TMY (Typical Meteorological Year) hourly data */
+    tmyDataUrl: z.string().optional(),
+    /** TMY data period, e.g. "2009-2023" */
+    tmyPeriod: z.string().optional(),
     wbRange: z.array(z.number()),
 })
 export type WeatherStationData_v0 = z.infer<typeof WeatherStationDataSchema_v0>

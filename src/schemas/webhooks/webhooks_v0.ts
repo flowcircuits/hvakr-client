@@ -10,13 +10,26 @@ export const WebhookEvents = {
 export const WebhookEventTypeSchema_v0 = z.enum(Object.values(WebhookEvents))
 export type WebhookEventType_v0 = z.infer<typeof WebhookEventTypeSchema_v0>
 
+export const OpportunityStatuses_v0 = {
+    new: 'new',
+    inProgress: 'inProgress',
+    done: 'done',
+    archived: 'archived',
+} as const
+export const OpportunityStatusSchema_v0 = z.enum(
+    Object.values(OpportunityStatuses_v0)
+)
+export type OpportunityStatus_v0 = z.infer<typeof OpportunityStatusSchema_v0>
+
 export const OpportunityCreatedPayloadSchema_v0 = z.object({
     id: z.string(),
+    organizationId: z.string(),
     organizationDomain: z.string().optional(),
     email: z.string().optional(),
     firstName: z.string().optional(),
     lastName: z.string().optional(),
     company: z.string().optional(),
+    status: OpportunityStatusSchema_v0.optional(),
     createdAt: z.number(),
     updatedAt: z.number(),
     customFields: z.unknown().optional(),

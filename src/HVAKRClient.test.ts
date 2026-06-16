@@ -20,10 +20,34 @@ integrationDescribe('HVAKR Client', () => {
     }, 40000)
 
     it('should list HVAKR Projects', async () => {
-        const { ids } = await hvakrClient.listProjects()
-        expect(ids.length).toBeGreaterThan(0)
+        const { projects, hasMore, nextCursor } =
+            await hvakrClient.listProjects()
+        expect(projects.length).toBeGreaterThan(0)
+        expect(typeof hasMore).toBe('boolean')
+        expect(nextCursor === null || typeof nextCursor === 'string').toBe(true)
         if (id) {
-            expect(ids).toContain(id)
+            expect(projects.map((p) => p.id)).toContain(id)
+        }
+    }, 40000)
+
+    it('should paginate HVAKR Projects', async () => {
+        const firstPage = await hvakrClient.listProjects({ limit: 1 })
+        expect(firstPage.projects.length).toBeLessThanOrEqual(1)
+        expect(typeof firstPage.hasMore).toBe('boolean')
+
+        if (firstPage.hasMore) {
+            expect(firstPage.nextCursor).toBeTruthy()
+            const secondPage = await hvakrClient.listProjects({
+                limit: 1,
+                cursor: firstPage.nextCursor!,
+            })
+            expect(secondPage.projects.length).toBeLessThanOrEqual(1)
+            const firstIds = firstPage.projects.map((p) => p.id)
+            for (const project of secondPage.projects) {
+                expect(firstIds).not.toContain(project.id)
+            }
+        } else {
+            expect(firstPage.nextCursor).toBeNull()
         }
     }, 40000)
 
@@ -239,8 +263,8 @@ integrationDescribe('HVAKR Client', () => {
 
     it('should delete HVAKR Project', async () => {
         await hvakrClient.deleteProject(id!)
-        const { ids } = await hvakrClient.listProjects()
-        expect(ids.includes(id!)).toBeFalsy()
+        const { projects } = await hvakrClient.listProjects()
+        expect(projects.map((p) => p.id)).not.toContain(id!)
     }, 40000)
 })
 

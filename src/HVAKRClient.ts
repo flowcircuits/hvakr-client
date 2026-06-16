@@ -6,6 +6,7 @@ import {
     ExpandedProjectPatch_v0,
     ExpandedProjectPost_v0,
     ExpandedProject_v0,
+    ProjectListResponse_v0,
     Project_v0,
     RevitData_v0,
     WeatherStationData_v0,
@@ -131,12 +132,28 @@ export class HVAKRClient {
     }
 
     /**
-     * Lists all projects accessible to the authenticated user.
-     * @returns An object containing an array of project IDs
+     * Lists projects accessible to the authenticated user.
+     *
+     * Results are paginated. When `hasMore` is true, pass the returned
+     * `nextCursor` back as `cursor` to fetch the next page.
+     *
+     * @param params - Optional pagination parameters
+     * @param params.limit - Maximum number of projects to return per page
+     * @param params.cursor - Cursor from a previous response's `nextCursor`
+     * @returns A page of project summaries with pagination metadata
      * @throws {HVAKRClientError} If the API returns an error response
      */
-    listProjects = async () => {
-        const res = await fetch(this.createURL(`/projects`), {
+    listProjects = async (
+        params: { limit?: number; cursor?: string } = {}
+    ): Promise<ProjectListResponse_v0> => {
+        const queryParams: Record<string, string> = {}
+        if (params.limit !== undefined) {
+            queryParams.limit = params.limit.toString()
+        }
+        if (params.cursor !== undefined) {
+            queryParams.cursor = params.cursor
+        }
+        const res = await fetch(this.createURL(`/projects`, queryParams), {
             method: 'GET',
             headers: this.getAuthHeaders(),
         })
@@ -144,7 +161,7 @@ export class HVAKRClient {
         if (!res.ok) {
             throw new HVAKRClientError(`Error ${res.status}`, data)
         }
-        return data as { ids: string[] }
+        return data as ProjectListResponse_v0
     }
 
     /**

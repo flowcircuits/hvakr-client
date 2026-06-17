@@ -7,7 +7,7 @@ export default defineConfig({
         projects: [
             {
                 test: {
-                    name: 'unit',
+                    name: 'offline',
                     globals: true,
                     env: { HVAKR_TEST_TARGET: 'mock-prod' },
                     setupFiles: ['./vitest.setup.ts'],

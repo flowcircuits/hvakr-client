@@ -36,7 +36,7 @@ Thank you for your interest in contributing to the HVAKR Client SDK! This docume
 
 There are two test suites:
 
-- **Unit tests** run fully offline (no API, no token). Client requests are routed
+- **Offline tests** run fully offline (no API, no token). Client requests are routed
   to an internal mock prod implementation. These are what CI runs on every push
   and pull request:
 

@@ -20,7 +20,7 @@ jobs:
                   cache: 'pnpm'
             - name: Install
               run: pnpm install --frozen-lockfile
-            # Unit tests only — no network, no token, no deployed API required.
+            # Offline tests only — no network, no token, no deployed API required.
             # The production API suite runs separately in test-with-prod.yml
             # so SDK changes are never gated on an API deploy.
             - name: Test

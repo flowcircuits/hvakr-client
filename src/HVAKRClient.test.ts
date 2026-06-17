@@ -1,273 +1,56 @@
-import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+    fetch as undiciFetch,
+    getGlobalDispatcher,
+    MockAgent,
+    setGlobalDispatcher,
+} from 'undici'
+import type Dispatcher from 'undici/types/dispatcher'
+import type { MockInterceptor } from 'undici/types/mock-interceptor'
+import { afterEach, assert, beforeEach, describe, expect, it } from 'vitest'
 import { ExpandedProjectPatch_v0, RevitData_v0 } from './schemas'
 import { ExpandedProjectPostDataExample_v0 } from './fixtures'
-import { HVAKRClient, HVAKRClientError } from './HVAKRClient'
+import { HVAKRClient } from './HVAKRClient'
+import { createClientTestTarget } from './test/clientTestTarget'
 
-const {
-    HVAKR_ACCESS_TOKEN,
-    HVAKR_CLIENT_API_URL,
-    HVAKR_TEST_TARGET = 'mock-prod',
-} = process.env
+const { createClient, describeApi } = createClientTestTarget()
 
-const isProdTarget = HVAKR_TEST_TARGET === 'prod'
-const describeProdAvailable = describe.skipIf(
-    isProdTarget && !HVAKR_ACCESS_TOKEN
-)
-const baseUrl = isProdTarget
-    ? HVAKR_CLIENT_API_URL || undefined
-    : 'https://api.mock-prod.test'
-const accessToken = isProdTarget ? HVAKR_ACCESS_TOKEN! : 'mock-prod-token'
+const exampleApiBaseUrl = 'https://api.example.test'
 
-const createClient = () => new HVAKRClient({ baseUrl, accessToken })
-
-type MockProject = Record<string, any> & {
-    id: string
-    name?: string
-    description?: string
-    latitude?: number
-    longitude?: number
-    weatherSpec?: {
-        nearestWeatherStationIds: string[]
-        selectedStationId: string
-    }
-    spaces?: Record<string, any>
-}
-
-const stationIds = ['CA001', 'CA002', 'CA003', 'CA004', 'CA005']
-const mockProjects = new Map<string, MockProject>()
-let mockProjectCounter = 0
-
-const jsonResponse = (
-    body: unknown,
-    init: { ok?: boolean; status?: number } = {}
+const mockResponse = (
+    statusCode: number,
+    data: Record<string, any> | string
 ) => ({
-    ok: init.ok ?? true,
-    status: init.status ?? 200,
-    json: async () => JSON.parse(JSON.stringify(body)),
+    statusCode,
+    data,
+    responseOptions: { headers: { 'content-type': 'application/json' } },
 })
 
-const withWeatherDefaults = <T extends Record<string, any>>(project: T): T => ({
-    ...project,
-    latitude: project.latitude ?? 33.2353947,
-    longitude: project.longitude ?? -117.2149959,
-    weatherSpec: {
-        ...project.weatherSpec,
-        nearestWeatherStationIds:
-            project.weatherSpec?.nearestWeatherStationIds ?? stationIds,
-        selectedStationId:
-            project.weatherSpec?.selectedStationId ?? stationIds[0],
-    },
-})
+const bodyAsString = (
+    body: MockInterceptor.MockResponseCallbackOptions['body']
+) => (typeof body === 'string' ? body : String(body ?? ''))
 
-const spacesFromRevit = (data: RevitData_v0) =>
-    Object.fromEntries(
-        data.revitSpaces.map((space, index) => [
-            `revit-space-${space.uniqueId}`,
-            {
-                name: space.name,
-                level: index === 2 ? 1 : 0,
-                revitId: space.uniqueId,
-                creationSource: 'API_REVIT',
-            },
-        ])
-    )
-
-const readBody = (init?: RequestInit) =>
-    init?.body ? JSON.parse(init.body as string) : {}
-
-const createMockProject = (
-    data: Record<string, any>,
-    revitPayload: boolean
+const headerValue = (
+    headers: MockInterceptor.MockResponseCallbackOptions['headers'],
+    name: string
 ) => {
-    const id = `mock-project-${++mockProjectCounter}`
-    const project = withWeatherDefaults({
-        ...data,
-        id,
-        name: data.name ?? data.projectName ?? 'Mock Project',
-        spaces: revitPayload
-            ? spacesFromRevit(data as RevitData_v0)
-            : data.spaces,
-    })
-    mockProjects.set(id, project)
-    return project
-}
-
-const mergeProject = (
-    project: MockProject,
-    data: Record<string, any>,
-    revitPayload: boolean
-) => {
-    if (revitPayload) {
-        project.spaces = spacesFromRevit(data as RevitData_v0)
-        return
+    const getHeader = (headers as { get?: unknown } | undefined)?.get
+    if (typeof getHeader === 'function') {
+        return getHeader.call(headers, name) as string | null
     }
-
-    if (data.address) {
-        project.address = data.address
-        project.latitude = 34.3794
-        project.longitude = -118.523
-        project.weatherSpec = {
-            nearestWeatherStationIds: stationIds,
-            selectedStationId: stationIds[1],
-        }
+    if (Array.isArray(headers)) {
+        const headerIndex = headers.findIndex(
+            (header, index) =>
+                index % 2 === 0 &&
+                String(header).toLowerCase() === name.toLowerCase()
+        )
+        return headerIndex >= 0 ? String(headers[headerIndex + 1]) : undefined
     }
-
-    for (const [key, value] of Object.entries(data)) {
-        if (key === 'spaces') {
-            project.spaces ??= {}
-            for (const [spaceId, spacePatch] of Object.entries(
-                value as Record<string, any>
-            )) {
-                project.spaces[spaceId] = {
-                    ...(project.spaces[spaceId] ?? {}),
-                    ...spacePatch,
-                }
-            }
-        } else {
-            project[key] = value
-        }
-    }
-}
-
-const hasInvalidPatch = (data: Record<string, any>) =>
-    data.name === null ||
-    Object.values((data.spaces ?? {}) as Record<string, any>).some(
-        (space) => space.level === undefined || space.level === null
+    const headerMap = headers as Record<string, string> | undefined
+    const headerKey = Object.keys(headerMap ?? {}).find(
+        (key) => key.toLowerCase() === name.toLowerCase()
     )
-
-const installMockProd = () => {
-    vi.stubGlobal(
-        'fetch',
-        vi.fn(async (input: string | URL, init?: RequestInit) => {
-            const url = new URL(input.toString())
-            const path = url.pathname.replace(/^\/v0/, '')
-            const method = init?.method ?? 'GET'
-            const revitPayload = url.searchParams.has('revitPayload')
-
-            if (method === 'POST' && path === '/projects') {
-                const project = createMockProject(readBody(init), revitPayload)
-                return jsonResponse({ id: project.id })
-            }
-
-            if (method === 'GET' && path === '/projects') {
-                const projects = [...mockProjects.values()]
-                const limit = Number(
-                    url.searchParams.get('limit') ?? projects.length
-                )
-                const cursor = Number(url.searchParams.get('cursor') ?? 0)
-                const page = projects.slice(cursor, cursor + limit)
-                const nextCursor =
-                    cursor + limit < projects.length
-                        ? String(cursor + limit)
-                        : null
-                return jsonResponse({
-                    projects: page.map(({ id, name }) => ({ id, name })),
-                    hasMore: nextCursor !== null,
-                    nextCursor,
-                })
-            }
-
-            const projectOutputMatch = path.match(
-                /^\/projects\/([^/]+)\/outputs\/([^/]+)$/
-            )
-            if (method === 'GET' && projectOutputMatch) {
-                const outputType = decodeURIComponent(projectOutputMatch[2]!)
-                if (outputType === 'register_schedule') {
-                    return jsonResponse({
-                        registerSchedule: Array.from({ length: 246 }),
-                    })
-                }
-                if (outputType === 'loads') {
-                    const entries = (count: number) =>
-                        Object.fromEntries(
-                            Array.from({ length: count }, (_, index) => [
-                                `item-${index}`,
-                                {},
-                            ])
-                        )
-                    return jsonResponse({
-                        spaceCoolingLoads: entries(123),
-                        spaceHeatingLoads: entries(123),
-                        zoneCoolingLoads: entries(115),
-                        zoneHeatingLoads: entries(115),
-                        systemCoolingLoads: entries(6),
-                        systemHeatingLoads: entries(6),
-                        errors: [],
-                    })
-                }
-                if (outputType === 'dryside_graph') {
-                    return jsonResponse({
-                        drySideGraph: Object.fromEntries(
-                            Array.from({ length: 776 }, (_, index) => [
-                                `node-${index}`,
-                                {},
-                            ])
-                        ),
-                        errors: [],
-                    })
-                }
-            }
-
-            const projectMatch = path.match(/^\/projects\/([^/]+)$/)
-            if (projectMatch) {
-                const projectId = decodeURIComponent(projectMatch[1]!)
-                const project = mockProjects.get(projectId)
-                if (!project) {
-                    return jsonResponse(
-                        { error: 'Not found' },
-                        { ok: false, status: 404 }
-                    )
-                }
-                if (method === 'GET') {
-                    return jsonResponse(project)
-                }
-                if (method === 'PATCH') {
-                    const data = readBody(init)
-                    if (hasInvalidPatch(data)) {
-                        return jsonResponse(
-                            { error: 'Invalid space patch' },
-                            { ok: false, status: 422 }
-                        )
-                    }
-                    mergeProject(project, data, revitPayload)
-                    return jsonResponse({ id: projectId })
-                }
-                if (method === 'DELETE') {
-                    mockProjects.delete(projectId)
-                    return jsonResponse({ id: projectId, deleted: true })
-                }
-            }
-
-            if (method === 'GET' && path === '/weather-stations') {
-                return jsonResponse({ weatherStationIds: stationIds })
-            }
-
-            const weatherStationMatch = path.match(/^\/weather-stations\/(.+)$/)
-            if (method === 'GET' && weatherStationMatch) {
-                return jsonResponse({
-                    station: {
-                        id: decodeURIComponent(weatherStationMatch[1]!),
-                    },
-                })
-            }
-
-            return jsonResponse(
-                { error: 'Unhandled mock-prod request' },
-                { ok: false, status: 500 }
-            )
-        })
-    )
+    return headerKey ? headerMap?.[headerKey] : undefined
 }
-
-beforeEach(() => {
-    if (!isProdTarget) {
-        installMockProd()
-    }
-})
-
-afterEach(() => {
-    vi.unstubAllGlobals()
-})
 
 describe('HVAKRClient URL construction', () => {
     const client = new HVAKRClient({
@@ -299,71 +82,93 @@ describe('HVAKRClient URL construction', () => {
 describe('HVAKRClient request building', () => {
     const requestClient = new HVAKRClient({
         accessToken: 'test-token',
-        baseUrl: 'https://api.example.test',
+        baseUrl: exampleApiBaseUrl,
     })
 
-    let fetchMock: ReturnType<typeof vi.fn>
+    let agent: MockAgent
+    let previousDispatcher: Dispatcher
+    let previousFetch: typeof globalThis.fetch
+    let replies: Array<{
+        statusCode: number
+        data: Record<string, any> | string
+    }>
+    let requests: MockInterceptor.MockResponseCallbackOptions[]
 
     beforeEach(() => {
-        fetchMock = vi.fn().mockResolvedValue(jsonResponse({}))
-        vi.stubGlobal('fetch', fetchMock)
+        previousDispatcher = getGlobalDispatcher()
+        previousFetch = globalThis.fetch
+        agent = new MockAgent()
+        agent.disableNetConnect()
+        replies = []
+        requests = []
+        agent
+            .get(exampleApiBaseUrl)
+            .intercept({ path: /.*/, method: /.*/ })
+            .reply((request) => {
+                requests.push(request)
+                const reply = replies.shift() ?? { statusCode: 200, data: {} }
+                return mockResponse(reply.statusCode, reply.data)
+            })
+            .persist()
+        setGlobalDispatcher(agent)
+        globalThis.fetch = undiciFetch as typeof globalThis.fetch
     })
 
-    const lastCall = () => {
-        const [url, init] = fetchMock.mock.lastCall as [string, RequestInit]
-        return { url, init }
+    afterEach(async () => {
+        globalThis.fetch = previousFetch
+        setGlobalDispatcher(previousDispatcher)
+        await agent.close()
+    })
+
+    const enqueue = (
+        statusCode: number,
+        data: Record<string, any> | string
+    ) => {
+        replies.push({ statusCode, data })
     }
 
     it('createProject POSTs JSON with auth headers and the revitPayload flag', async () => {
-        fetchMock.mockResolvedValueOnce(jsonResponse({ id: 'proj_1' }))
+        enqueue(200, { id: 'proj_1' })
 
         const payload = { name: 'My Project' }
         const res = await requestClient.createProject(payload)
 
         expect(res).toEqual({ id: 'proj_1' })
-        const { url, init } = lastCall()
-        expect(url).toBe('https://api.example.test/v0/projects')
-        expect(init.method).toBe('POST')
-        expect(init.headers).toMatchObject({
-            Authorization: 'Bearer test-token',
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        })
-        expect(JSON.parse(init.body as string)).toEqual(payload)
+        const request = requests.at(-1)!
+        expect(request.path).toBe('/v0/projects')
+        expect(request.method).toBe('POST')
+        expect(headerValue(request.headers, 'authorization')).toBe(
+            'Bearer test-token'
+        )
+        expect(headerValue(request.headers, 'accept')).toBe('application/json')
+        expect(headerValue(request.headers, 'content-type')).toBe(
+            'application/json'
+        )
+        expect(JSON.parse(bodyAsString(request.body))).toEqual(payload)
     })
 
     it('createProject sets the revitPayload query flag when requested', async () => {
-        fetchMock.mockResolvedValueOnce(jsonResponse({ id: 'proj_1' }))
+        enqueue(200, { id: 'proj_1' })
         await requestClient.createProject({ name: 'r' }, true)
-        expect(lastCall().url).toBe(
-            'https://api.example.test/v0/projects?revitPayload'
-        )
+        expect(requests.at(-1)?.path).toBe('/v0/projects?revitPayload')
     })
 
     it('listProjects sends limit and cursor as query params', async () => {
-        fetchMock.mockResolvedValueOnce(
-            jsonResponse({ projects: [], hasMore: false, nextCursor: null })
-        )
+        enqueue(200, { projects: [], hasMore: false, nextCursor: null })
         await requestClient.listProjects({ limit: 25, cursor: 'abc def' })
-        const { url, init } = lastCall()
-        expect(url).toBe(
-            'https://api.example.test/v0/projects?limit=25&cursor=abc%20def'
-        )
-        expect(init.method).toBe('GET')
+        const request = requests.at(-1)!
+        expect(request.path).toBe('/v0/projects?limit=25&cursor=abc%20def')
+        expect(request.method).toBe('GET')
     })
 
     it('getProject encodes the id and sets the expand flag', async () => {
-        fetchMock.mockResolvedValueOnce(jsonResponse({ id: 'a/b' }))
+        enqueue(200, { id: 'a/b' })
         await requestClient.getProject('a/b', true)
-        expect(lastCall().url).toBe(
-            'https://api.example.test/v0/projects/a%2Fb?expand'
-        )
+        expect(requests.at(-1)?.path).toBe('/v0/projects/a%2Fb?expand')
     })
 
     it('throws HVAKRClientError carrying the status and response metadata', async () => {
-        fetchMock.mockResolvedValueOnce(
-            jsonResponse({ message: 'nope' }, { ok: false, status: 403 })
-        )
+        enqueue(403, { message: 'nope' })
         await expect(requestClient.getProject('p1')).rejects.toMatchObject({
             name: 'HVAKRClientError',
             message: 'Error 403',
@@ -372,20 +177,14 @@ describe('HVAKRClient request building', () => {
     })
 
     it('getProjectOutputs throws a parse error when the body is not JSON', async () => {
-        fetchMock.mockResolvedValueOnce({
-            ok: true,
-            status: 200,
-            json: async () => {
-                throw new SyntaxError('Unexpected token')
-            },
-        })
+        enqueue(200, 'not json')
         await expect(
             requestClient.getProjectOutputs('p1', 'loads')
         ).rejects.toThrow(/failed to parse json/)
     })
 })
 
-describeProdAvailable('HVAKR Client', () => {
+describeApi('HVAKR Client', () => {
     const hvakrClient = createClient()
 
     let id: string | undefined = undefined
@@ -644,7 +443,7 @@ describeProdAvailable('HVAKR Client', () => {
     }, 40000)
 })
 
-describeProdAvailable('HVAKR Client Weather API', () => {
+describeApi('HVAKR Client Weather API', () => {
     const hvakrClient = createClient()
 
     it('should find weather stations by me', async () => {
@@ -715,7 +514,7 @@ const revitData: RevitData_v0 = {
     ],
 }
 
-describeProdAvailable('HVAKR Client Revit API', () => {
+describeApi('HVAKR Client Revit API', () => {
     const hvakrClient = createClient()
 
     it('should create a project from Revit data', async () => {

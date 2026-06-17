@@ -20,7 +20,7 @@ jobs:
                   registry-url: 'https://registry.npmjs.org'
             - name: Install Dependencies
               run: pnpm install --frozen-lockfile
-            # Unit tests only. Publishing must not depend on the live API, or a
+            # Offline tests only. Publishing must not depend on the live API, or a
             # release that legitimately runs ahead of the API deploy would be
             # blocked. Run `test:prod` against a deployed API separately.
             - name: Test

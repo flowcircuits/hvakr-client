@@ -244,12 +244,7 @@ export const ProjectStatuses_v0 = {
 export const ProjectStatusSchema_v0 = z.enum(Object.values(ProjectStatuses_v0))
 export type ProjectStatus_v0 = z.infer<typeof ProjectStatusSchema_v0>
 
-export const ComputedProjectDataSchema_v0 = z.object({
-    _owner: z.string().optional(),
-})
-
 export const ProjectDataSchema_v0 = z.object({
-    ...ComputedProjectDataSchema_v0.shape,
     address: z.string().optional(),
     airflowIncrement: z.number().int().min(1).optional(),
     annotations: z.record(z.string(), AnnotationDataSchema_v0).optional(),
@@ -317,11 +312,30 @@ export interface Project_v0 extends ProjectData_v0 {
 /* BEGIN API ENDPOINT SCHEMAS */
 
 /**
- * Fields the server owns and assigns. They appear on project responses but are
- * not writable through create or update requests, so they are omitted from the
- * request schemas below.
+ * Private, internal, and stale project fields that are not part of the public
+ * v0 project response shape.
  */
-export const SERVER_OWNED_PROJECT_FIELDS_V0 = {
+export const PROJECT_PRIVATE_READ_FIELDS_V0 = {
+    _nameLowercase: true,
+    _userIds: true,
+    _owner: true,
+    _userEmails: true,
+    analytics: true,
+    automations: true,
+    isArchived: true,
+    isDeleted: true,
+    mapSpec: true,
+    openAIThreadId: true,
+    organizationId: true,
+    pendingPayment: true,
+    wetSide: true,
+} as const
+
+/**
+ * Public fields the server owns and returns, but clients cannot write through
+ * project create/update requests.
+ */
+export const PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0 = {
     duplicatedFrom: true,
     fromExample: true,
     isExample: true,
@@ -334,17 +348,27 @@ export const SERVER_OWNED_PROJECT_FIELDS_V0 = {
     timestamp: true,
 } as const
 
+export const PROJECT_RESTRICTED_WRITE_FIELDS_V0 = {
+    ...PROJECT_PRIVATE_READ_FIELDS_V0,
+    ...PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0,
+    users: true,
+} as const
+
+const projectWriteFieldMask = Object.fromEntries(
+    Object.keys(PROJECT_RESTRICTED_WRITE_FIELDS_V0)
+        .filter((field) => field in ProjectDataSchema_v0.shape)
+        .map((field) => [field, true])
+) as Partial<Record<keyof typeof ProjectDataSchema_v0.shape, true>>
+
 /** Project fields writable through create/update requests. */
 export const WritableProjectDataSchema_v0 = ProjectDataSchema_v0.omit(
-    SERVER_OWNED_PROJECT_FIELDS_V0
+    projectWriteFieldMask
 )
 
 export const ProjectPostSchema_v0 = z.object({
     ...WritableProjectDataSchema_v0.shape,
     /** Optional because the project can be created with a default name */
     name: z.string().optional(),
-    /** Optional because the project can be created with default users */
-    users: z.record(z.string(), ProjectUserDataSchema_v0).optional(),
 })
 export type ProjectPost_v0 = z.infer<typeof ProjectPostSchema_v0>
 

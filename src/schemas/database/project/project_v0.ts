@@ -354,15 +354,23 @@ export const PROJECT_RESTRICTED_WRITE_FIELDS_V0 = {
     users: true,
 } as const
 
-const projectWriteFieldMask = Object.fromEntries(
-    Object.keys(PROJECT_RESTRICTED_WRITE_FIELDS_V0)
-        .filter((field) => field in ProjectDataSchema_v0.shape)
-        .map((field) => [field, true])
-) as Partial<Record<keyof typeof ProjectDataSchema_v0.shape, true>>
+const PROJECT_DATA_RESTRICTED_WRITE_FIELDS_V0 = {
+    duplicatedFrom: true,
+    fromExample: true,
+    isExample: true,
+    isHVAKRTemplate: true,
+    isOpen: true,
+    lastOpenTime: true,
+    revision: true,
+    revisions: true,
+    suggestedSpaces: true,
+    timestamp: true,
+    users: true,
+} as const
 
 /** Project fields writable through create/update requests. */
 export const WritableProjectDataSchema_v0 = ProjectDataSchema_v0.omit(
-    projectWriteFieldMask
+    PROJECT_DATA_RESTRICTED_WRITE_FIELDS_V0
 )
 
 export const ProjectPostSchema_v0 = z.object({

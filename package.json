@@ -53,7 +53,8 @@
         "clean": "rm -rf dist tsconfig.tsbuildinfo",
         "clean:windows": "powershell.exe -Command \"Remove-Item dist -Recurse -Force -ErrorAction SilentlyContinue\" & del tsconfig.tsbuildinfo",
         "format": "prettier --write .",
-        "test": "vitest run"
+        "test": "vitest run --project unit",
+        "test:prod": "vitest run --project prod"
     },
     "devDependencies": {
         "@types/node": "24.10.1",

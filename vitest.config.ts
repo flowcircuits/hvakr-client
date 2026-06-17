@@ -1,9 +1,29 @@
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
+
+const CLIENT_TEST_GLOB = 'src/HVAKRClient.test.ts'
 
 export default defineConfig({
     test: {
-        globals: true,
-        include: ['src/**/*.test.ts'],
-        setupFiles: ['./vitest.setup.ts'],
+        projects: [
+            {
+                test: {
+                    name: 'unit',
+                    globals: true,
+                    env: { HVAKR_TEST_TARGET: 'fake-prod' },
+                    setupFiles: ['./vitest.setup.ts'],
+                    include: ['src/**/*.test.ts'],
+                    exclude: [...configDefaults.exclude],
+                },
+            },
+            {
+                test: {
+                    name: 'prod',
+                    globals: true,
+                    env: { HVAKR_TEST_TARGET: 'prod' },
+                    setupFiles: ['./vitest.setup.ts'],
+                    include: [CLIENT_TEST_GLOB],
+                },
+            },
+        ],
     },
 })

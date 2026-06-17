@@ -34,12 +34,35 @@ Thank you for your interest in contributing to the HVAKR Client SDK! This docume
 
 ### Running Tests
 
-Tests require a valid HVAKR access token. Set the environment variable before running:
+There are two test suites:
 
-```bash
-export HVAKR_ACCESS_TOKEN=your_token_here
-pnpm test
-```
+- **Unit tests** run fully offline (no API, no token). Client requests are routed
+  to an internal fake prod implementation. These are what CI runs on every push
+  and pull request:
+
+    ```bash
+    pnpm test
+    ```
+
+- **Production API tests** run the same client test file against a live HVAKR API
+  and require a valid access token. They are intentionally kept off the
+  build/publish path so SDK changes are never blocked by an API deploy:
+
+    ```bash
+    export HVAKR_ACCESS_TOKEN=your_token_here
+    pnpm test:prod
+    ```
+
+    To run them against a local or staging API (for example, when validating SDK
+    changes against not-yet-deployed server code), also set the base URL:
+
+    ```bash
+    export HVAKR_CLIENT_API_URL=http://localhost:8080
+    pnpm test:prod
+    ```
+
+In CI, the production API suite is triggered manually via the "Test with Prod"
+workflow.
 
 ### Code Formatting
 

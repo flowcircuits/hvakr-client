@@ -244,6 +244,7 @@ integrationDescribe('HVAKR Client', () => {
                 [spaceId]: {
                     name: 'Test Space',
                     level: 1,
+                    creationSource: 'API',
                     edges: {
                         edge1: { index: 0, x1: 0, y1: 0, x2: 100, y2: 0 },
                     },

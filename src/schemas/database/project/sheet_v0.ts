@@ -38,14 +38,19 @@ export const SheetPlacementDataSchema_v0 = z.object({
     y: z.number(),
 })
 
-const sheetTypes: string[] = [
+const sheetTypes = [
     'Enlarged Floor Plan',
     'Overall Floor Plan',
     'Reflected Ceiling Plan',
-    'Furniture Plan',
-    'Exterior Elevation',
-    'Interior Elevation',
-]
+    'Mechanical Plan',
+    'Electrical Plan',
+    'Plumbing Plan',
+    'Section',
+    'Detail',
+    'Schedule',
+    'Cover',
+    'Other',
+] as const
 const SheetTypeSchema_v0 = z.enum(sheetTypes)
 
 export const SheetDataSchema_v0 = z.object({

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { UsageScheduleSchema_v0 } from './spaceType_v0'
 
 export const OutsideAirMethods_v0 = {
     SUM_OF_SPACES: 0,
@@ -61,7 +62,7 @@ export const OutsideAirDataSchema_v0 = z.object({
 export const DiversityDataSchema_v0 = z.object({
     equipment: z.number().optional(),
     lighting: z.number().optional(),
-    occupacy: z.number().optional(),
+    occupancy: z.number().optional(),
 })
 
 export const CentralUnitDimensionDataSchema_v0 = z.object({
@@ -69,12 +70,29 @@ export const CentralUnitDimensionDataSchema_v0 = z.object({
     width: z.number().optional(),
 })
 
+export const EnergyScheduleSchema_v0 = z.object({
+    occupiedHours: UsageScheduleSchema_v0.optional(),
+    warmupHours: z.number().optional(),
+    warmupMultiplier: z.number().optional(),
+})
+
+export const EquipmentEfficiencySchema_v0 = z.object({
+    coolingSeer: z.number().optional(),
+    heatingAfue: z.number().optional(),
+    heatingCop: z.number().optional(),
+    heatingType: z.enum(['heatPump', 'gasFurnace']).optional(),
+})
+
+export const EnergyConfigurationSchema_v0 = z.object({
+    efficiency: EquipmentEfficiencySchema_v0.optional(),
+    schedule: EnergyScheduleSchema_v0.optional(),
+})
+
 export const CentralUnitConfigurationSchema_v0 = z.object({
     coolingCoil: z.boolean().optional(),
     coolingCoilData: CoolingCoilDataSchema_v0.optional(),
-    customReliefAir: z.number().optional(),
     dimensionData: CentralUnitDimensionDataSchema_v0.optional(),
-    diversityData: DiversityDataSchema_v0.optional(),
+    energyConfiguration: EnergyConfigurationSchema_v0.optional(),
     ervWheel: z.boolean().optional(),
     ervWheelEffectiveness: z.number().optional(),
     fanMotorHeatGain: z.number().optional(),
@@ -89,20 +107,11 @@ export const CentralUnitConfigurationSchema_v0 = z.object({
     supplyAirData: SupplyAirDataSchema_v0.optional(),
 })
 
-export const EnergyConfigurationSchema_v0 = z.object({
-    efficiency: z.number().optional(),
-    energyType: z.enum(['electric', 'gas']).optional(),
-    name: z.string().optional(),
-    useFactor: z.number().optional(),
-})
-
 export const SystemDataSchema_v0 = z.object({
     centralUnitConfiguration: CentralUnitConfigurationSchema_v0.optional(),
     color: z.string().optional(),
     configured: z.boolean().optional(),
-    energyConfigurations: z
-        .record(z.string(), EnergyConfigurationSchema_v0)
-        .optional(),
+    diversityData: DiversityDataSchema_v0.optional(),
     name: z.string().optional(),
 })
 export type SystemData_v0 = z.infer<typeof SystemDataSchema_v0>

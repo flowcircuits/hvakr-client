@@ -100,6 +100,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             color: '#0a9396',
             name: 'AHU-201',
             configured: true,
+            diversityData: { occupancy: 0.8 },
             centralUnitConfiguration: {
                 outsideAir: true,
                 returnAir: true,
@@ -109,7 +110,6 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
                 coolingCoilData: { type: 1 },
                 heatingCoilData: { type: 0, heatingWaterDeltaT: 18 },
                 fanMotorHeatGain: 4500,
-                diversityData: { occupacy: 0.8 },
                 returnAirData: { ductHeatGain: 2 },
                 supplyAirData: {
                     coolingTemperature: 55,
@@ -122,6 +122,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             color: '#ee9b00',
             name: 'AHU-202',
             configured: true,
+            diversityData: { occupancy: 0.8 },
             centralUnitConfiguration: {
                 outsideAir: true,
                 returnAir: true,
@@ -131,7 +132,6 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
                 coolingCoilData: { type: 1 },
                 heatingCoilData: { type: 0, heatingWaterDeltaT: 18 },
                 fanMotorHeatGain: 4500,
-                diversityData: { occupacy: 0.8 },
                 returnAirData: { ductHeatGain: 2 },
                 supplyAirData: {
                     coolingTemperature: 55,
@@ -144,6 +144,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             name: 'AHU-102',
             color: '#2a9134',
             configured: true,
+            diversityData: { occupancy: 0.8 },
             centralUnitConfiguration: {
                 outsideAir: true,
                 returnAir: true,
@@ -153,7 +154,6 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
                 coolingCoilData: { type: 1 },
                 heatingCoilData: { type: 0, heatingWaterDeltaT: 18 },
                 fanMotorHeatGain: 4500,
-                diversityData: { occupacy: 0.8 },
                 returnAirData: { ductHeatGain: 2 },
                 supplyAirData: {
                     coolingTemperature: 55,
@@ -178,6 +178,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             name: 'AHU-101',
             color: '#bb3e03',
             configured: true,
+            diversityData: { occupancy: 0.8 },
             centralUnitConfiguration: {
                 outsideAir: true,
                 outsideAirData: { method: 0 },
@@ -186,7 +187,6 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
                 coolingCoilData: { type: 1 },
                 heatingCoilData: { type: 0, heatingWaterDeltaT: 18 },
                 fanMotorHeatGain: 4500,
-                diversityData: { occupacy: 0.8 },
                 supplyAirData: {
                     coolingTemperature: 55,
                     heatingTemperature: 55,
@@ -2186,6 +2186,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
     },
     spaces: {
         '0P4KaZGvg1mbgXoYeJyV': {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '2e9aaa23-4e62-40de-bad7-d39c08b8d46d': {
@@ -2234,6 +2235,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'QochS904ZJRMKvBJFlwN',
         },
         '0WtQu7XUWJJu6Fq1Xxxr': {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'f6932183-34b2-4abc-9753-d0c6465836dd': {
@@ -2281,6 +2283,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'SZwOOcJ0F0fMW8YbvgEJ',
         },
         '0mP3yLVvOLdRt78HKtg2': {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'b5ce0921-f4a1-4f42-bfa1-43b1381a5b26': {
@@ -2328,6 +2331,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'caKehv5ozcEkNM4jhkCC',
         },
         '0zYEvazoRZym7v0onl1Q': {
+            creationSource: 'API',
             level: 1,
             slabHeight: 180,
             ceilingHeight: 120,
@@ -2375,6 +2379,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'c25GvVm8FXgfdAOROg8A',
         },
         '1ivPkaZ1zA0tAKyjR8mR': {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '1a05b86c-0148-485e-abd1-b6a1ecfc1957': {
@@ -2422,6 +2427,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'yg1ZhFinlDpcHAjwftbj',
         },
         '1qVa0jxrOoL3cJMX0WaE': {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '301a2c6e-71fd-4582-b45f-b4dd4d19d0ce': {
@@ -2469,6 +2475,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'fCSt99KHCOhP1HSVUMx8',
         },
         '2IRbpJztQoEt2JGf15GT': {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '7af5c6a6-afa1-4853-b37a-9903abc99dca': {
@@ -2516,6 +2523,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'm3RVNlnzHQgaMD6h1Acd',
         },
         '2Svhu6de6hJFhXckHxrX': {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '9ccc027c-ebfe-4ea5-b075-b0989e8190de': {
@@ -2566,6 +2574,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             airTransferIn: 40,
         },
         '3GfhClxeiYDfzLaQlm61': {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'adef7491-c2b8-4cab-ad68-2471da1f007e': {
@@ -2616,6 +2625,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             airTransferIn: 40,
         },
         '41CndEIR8I6z4d4avGe1': {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -2663,6 +2673,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'djDSWErbmFlSssIALKA4',
         },
         '4d7N8LaTbdSU7PJ2Gf2d': {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'cd2811e9-e9fb-4034-9d16-747f4a20f4ae': {
@@ -2731,6 +2742,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '91I294BWRSxfEHjhmVrp',
         },
         '5BXFCgGJfIRz2JuhaFW9': {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '481101e9-dc76-4b57-b26b-80ffc17fece0': {
@@ -2787,6 +2799,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             customSupply: 450,
         },
         '5SQW3CkMeVGqvCiguASE': {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'a3613ecf-417f-48cd-94c3-da5403b9a7a4': {
@@ -2834,6 +2847,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'OPFd2f6YJZGp5aQpl8MO',
         },
         '5wzw9c5Y5v3l3GV3kjSQ': {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -2951,6 +2965,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'Vd5o8zOXzARDtSqDdxRG',
         },
         '6GVbiHGJ82WSBQCQH5eW': {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'ef1f2758-a971-4f10-a36e-f7eea8a95e2c': {
@@ -3007,6 +3022,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             customSupply: 450,
         },
         '6iVwsj7ngwoq6n5EI777': {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -3104,6 +3120,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'wnGNigWxHGvI673PD63n',
         },
         '6zV3KQHUXlkDwEb7APf9': {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -3215,6 +3232,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'F4X9aCAjU7u9E2of4dUf',
         },
         '7Ho9GtaOkDrAtejJVsUn': {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '598d3039-79ea-43f1-80f7-634b8af67df0': {
@@ -3262,6 +3280,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '7L5LDasDlqIBAklGuDoG',
         },
         '9aJd9vxiTwWnxC9TOlFf': {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -3352,6 +3371,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'smDtfUcIlFBi4GudjTQ0',
         },
         '9exH2tQgYzF5faaBD2Jn': {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -3466,6 +3486,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'iWeIHePwWD6ImGHzZJn6',
         },
         '9nVV1hdmE24JfSTv0em2': {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '51d0efab-be57-4489-8107-e1385535f403': {
@@ -3513,6 +3534,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'Qq3nxffnMb9P93IJXeRH',
         },
         '9xmZME3yjka9MMm4u01V': {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'f7c26e18-8d54-4910-9f33-d54a5840b7c4': {
@@ -3561,6 +3583,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'nAU4ubzKE34QRN1YA9nl',
         },
         A4viS5AerbY2EBPs8A7X: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'caae827d-c9f6-4b93-a497-b75a13a3621d': {
@@ -3617,6 +3640,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             customSupply: 450,
         },
         AXLKMUD6stJg5xJQ4Zys: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'c6f1f021-9271-4b96-8922-1729da9ec183': {
@@ -3664,6 +3688,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'HnwVTHpXw7fCSOiiKg4B',
         },
         AsshIxbsvE2sdngF1KYz: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -3778,6 +3803,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'MwfF0M2T3HPaKvoz8tTn',
         },
         Av27RfCCuqkowTIHxuGv: {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -3892,6 +3918,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '7VgB5CckqDKfU0Rub2pY',
         },
         B4vwUTcRNrlyEd9edEeC: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '8eff5066-5f58-461d-9951-d245143cc08c': {
@@ -3962,6 +3989,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             customReturn: 1810,
         },
         BYNtGwi4ZXnyO7LuViA5: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '3136f7ee-7184-43b4-8753-998866d211b5': {
@@ -4009,6 +4037,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'ZIafA97PGpFLR2VscBC5',
         },
         CpraeKKVV5FGqu9lC5Z8: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'b5bef425-66f7-425c-a91a-f30b9bec25ff': {
@@ -4056,6 +4085,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'UqioG64VhwyXu4RpNoxH',
         },
         Du0fiTIXzMSx6hq8Id3m: {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -4178,6 +4208,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'YCSyrehxFJjZX9aQ6Kyp',
         },
         EadsXkM3QvBrZt2U79cV: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '73523455-e26e-48fa-9be7-1482e330595a': {
@@ -4246,6 +4277,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'ahzvJ7RyOc9Rrjz1ojEM',
         },
         El4CP0zPJWwZh1Tg6LoI: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'd7ac9ff4-a445-4a72-a2af-655af856b1f4': {
@@ -4293,6 +4325,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '1D0xXfXaAZGPOEELviZ3',
         },
         FXedikeSdZ6l96xkIUp5: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '47caf7d4-293d-497d-8244-8c4e738b76bc': {
@@ -4340,6 +4373,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'g7gdUe3QAGFSMhVgPqGp',
         },
         FmSVxZkZv4xVTYQikQcW: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '7f0d7bf1-9448-4249-b369-37f8cddaf8a4': {
@@ -4388,6 +4422,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'nDPSlbQSNdz6zEZASoNw',
         },
         FzBNm7kXZhv04ya5ePQA: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '43c65363-baf9-42d2-9c72-31106f77cb13': {
@@ -4444,6 +4479,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             customSupply: 450,
         },
         HQ8k6PPDwwmgHGLhVony: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'cc6712d7-8cbc-4c26-9f4e-449ac9821c5a': {
@@ -4491,6 +4527,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '8z6VRptzthhb8gZDaHIG',
         },
         HScCuGAYjBxuFomdeCjl: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'b962e9b7-a0c5-451f-b4eb-c07011b8b6ab': {
@@ -4538,6 +4575,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'ufgO2QS5USuFuu10eCes',
         },
         Hh3A9sF7w531TXTd8bep: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '33752e0e-c852-433d-b243-59c9e793524b': {
@@ -4585,6 +4623,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'G3vNPCGhaFBM5gA1B7ZT',
         },
         HnNUgTI20D6pzFoXQivJ: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '3d13ddac-76a6-4f1d-bd5c-4943bc4c8ad0': {
@@ -4653,6 +4692,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'JP2ChAKzB6i7og5a19iW',
         },
         HxPIZYSEYh29gedRCnto: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'a4f6b1ad-3a53-427e-a99f-116b8be9e4aa': {
@@ -4700,6 +4740,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'JscsMPzvVOg6bnTBIpfF',
         },
         I1XD0b29MrfDqhsKxIoY: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'f8e7b390-8db5-4544-b2d1-8be2b5c19977': {
@@ -4754,6 +4795,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'b3SOppQbn5YMpTpcy9k2',
         },
         I3lhKTqUFeArFBVfGV3J: {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -4868,6 +4910,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'Yx2GX9DKZ7KFLpxlccqM',
         },
         I6or4HEU9XiZqcP3Wy9u: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '3b72e392-e6a3-46e3-8fcd-0dfdcd500bc7': {
@@ -4915,6 +4958,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'MsFSUI43dCTMB2GS2tbP',
         },
         IorT2IleKwNBuGrPQXud: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '72ed4406-b5f8-4d85-ada1-9a1912160970': {
@@ -4962,6 +5006,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'txUuwDcwBcBkW1MnAVGo',
         },
         Iygr6CETbqbJrwPz8orG: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '2df06908-3ecb-4dc3-9814-f82d379c2ccc': {
@@ -5009,6 +5054,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'F2tGkQyl9wYHsboGhjC9',
         },
         Jp9p9boAbtyLAcYGQryK: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '7ad87f5e-7867-4993-a80e-31b68d78c6a1': {
@@ -5079,6 +5125,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             airTransferOut: 40,
         },
         K1KaBa76DA63nPfeMvT6: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'c7567f17-8f67-4b5d-9543-0250ef150a20': {
@@ -5126,6 +5173,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'rmp6NbPkyZlNv490TqMf',
         },
         KRlmuCmeswM3bEz5noCg: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '24e6068a-c298-4fc2-a1ab-f904c86968ca': {
@@ -5194,6 +5242,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'dsT1sJp6C4o3WRlcwN0B',
         },
         L4fzuv9OZ8wUM6ilwDMm: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '2eccb153-5f1e-4ad6-a75f-f4a607697640': {
@@ -5263,6 +5312,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'zxdw6Wt4EHNZKW3pWaqq',
         },
         L5zSG5W49eIgUTyXN9WZ: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'ceaf0a13-5665-4140-a07f-002f4e0be2bb': {
@@ -5331,6 +5381,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'cKfsET5vb5G5DJeJNMNM',
         },
         LclhRaJDSUykSAcKdq2N: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '2cbbdff2-76dc-45fb-a6d3-9314a8db1619': {
@@ -5400,6 +5451,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'a6AoEsPWsMgOWCEfCbTb',
         },
         LyorCJrW5lCn9D4xThGI: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '0fb312e4-45eb-4b9b-9625-31aa671c93bf': {
@@ -5447,6 +5499,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'DDh5pypQF1pTklQQvPjT',
         },
         M6zETSrXXtIN7dwbICeF: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'd03f8a2a-bd08-4f04-ace8-6ea4513126ab': {
@@ -5494,6 +5547,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'N8taUFrwJf4yDw7CjXKB',
         },
         MiT1NohVSNM4U2JPB6OE: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '0e7f01b0-6cf9-4fc6-b277-44c8a87a13bf': {
@@ -5541,6 +5595,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'H9HOsOpgFaLhNG4b0lWZ',
         },
         N7Ahd15Efyj87ExswtOs: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'b4a9848f-45fe-4516-9219-9327a73173d4': {
@@ -5609,6 +5664,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'fYuHENMFF6UqUpp0o3gV',
         },
         NocAwDGec6QNV5xM45xs: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -5720,6 +5776,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'mnHUZ2iq5DgyZL6wXAEq',
         },
         OH3KFrPrFEI5mPxefYHd: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'a6013f99-8aa8-4431-a70f-e6ea86edc3fc': {
@@ -5767,6 +5824,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'aywGltJ6LuTnfJUwKQZx',
         },
         OT1nyaZWhYhtqPshMpmy: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '2a3037cc-0317-4a60-94e8-0b883a06259f': {
@@ -5814,6 +5872,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'NoyNCEN6C2OrEJAa3786',
         },
         PRDdOiiZ8DJLJJN75N3X: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '8df812ed-8904-49a4-b0fa-3bacf3135ce3': {
@@ -5883,6 +5942,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'uKIoQKVe6ak2QakrSzv0',
         },
         QJTAggSE3MagvuBtBaLn: {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -5966,6 +6026,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             },
         },
         RqvjGU4k0gmJD6v5630x: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'eeea7c1b-b6a8-4c2a-9017-20a96f7c9f4b': {
@@ -6013,6 +6074,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'HT4z7cElDbM0Q8yP83XG',
         },
         S8MENCWXr6VIBZ1fDtAM: {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -6127,6 +6189,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'ReZqy9R8CoPHBFsrtf6L',
         },
         SIvHLoN616rL6b7b18rA: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '2ddfd9c5-ab2d-49de-872f-c86e3bb2958d': {
@@ -6174,6 +6237,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'O60iZEa2vL6fqgt2XzTC',
         },
         SSbaA58qJu0aOHh9Lnrl: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '2e88bb27-add0-4638-b6f1-5f4ed9772680': {
@@ -6221,6 +6285,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'W2wJspp8AlYgYqP6TDxJ',
         },
         THerjSQiJ8ij0UHDd8M8: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -6332,6 +6397,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             },
         },
         U6sbO9X198C3usmf7bxz: {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -6432,6 +6498,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '3hjHufFcch4jtBHkeWrg',
         },
         UsVUJAHUbZLtqCR47IP1: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '417c3bb4-ac9e-4cfb-87f7-89822c017e5b': {
@@ -6488,6 +6555,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             customSupply: 450,
         },
         Uvz9tPkFhGMLaEJZIrNk: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -6626,6 +6694,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'E9bs1BHllerrOKmNZTBc',
         },
         V7a14sLXjYOPPZwiTmof: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -6673,6 +6742,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'erdDT31k63q3Co6tXR1j',
         },
         Wdmfp123L7L8LBGAo4SX: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '00aaae5d-78da-4a94-838f-c415a9e627f2': {
@@ -6741,6 +6811,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'kKjrBXOcEe2i8Cidm8cK',
         },
         XGwjtpD1I02EQCmN6PmR: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'e95c4eb1-a333-4ff5-b627-f5afbc75a9bc': {
@@ -6809,6 +6880,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'GR8Ne4BrxrdQE1kP4Hmy',
         },
         XyYv1NDFnNtKvbAnk207: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '2e738a11-02ff-4cbc-91dc-8a3b4f74529a': {
@@ -6856,6 +6928,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'rCmKexLpDi8yZ3eIzIJS',
         },
         YBsYZ8ghL3oLZTXEmfdA: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -6924,6 +6997,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'rkDsRtk1cpSvdafNugIi',
         },
         ZbbJvcD2mwbAEJMyEIF2: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'd0552dc7-fe7d-4289-b7bf-3007c221cf5e': {
@@ -6971,6 +7045,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'tVnHVtbtuAP8wEj7WVFL',
         },
         ZdVzn0fNJGzcF4ewShxA: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -7109,6 +7184,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'nqd1Qs7HMoYlCvXNqUMT',
         },
         ahJf8E6S7Tv5fcpPNwzp: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '5b0c3170-51eb-4f07-9b04-f48d4e651764': {
@@ -7156,6 +7232,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'WjJpi2DfFgHrDkbcspOT',
         },
         bEWRRpc3zEM423IEOXTJ: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -7265,6 +7342,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'Atu6jQD9tf0sgg9mNrmC',
         },
         d4TqSxq0SRY7aHMZKUdu: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -7333,6 +7411,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'l1jVFj5MNNjzRP9dUj1n',
         },
         dlBCRAvPejiMjmq99Oo8: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'f275e0d3-cfe2-416b-af92-0e53130f0c30': {
@@ -7380,6 +7459,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'PirQpAN972HB4Wc4hFfF',
         },
         drXJkMZEWr5E12NRiSSu: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '6aed5b20-d893-4a9c-871b-305067539de4': {
@@ -7427,6 +7507,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'p6LstuoUs6x0XUK1Iquu',
         },
         dww9ZcdBr9diOJyuAOZ4: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -7509,6 +7590,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'eYgfeJEkCs7ZalGperj3',
         },
         eDhnJWOXjtwFrxc4GfAd: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '73f63bfb-0093-411a-8f84-6fc13d41803c': {
@@ -7565,6 +7647,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             customSupply: 450,
         },
         gPpTOaZrOiPOprbxSOcT: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -7635,6 +7718,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             customReturn: 1200,
         },
         hjvlxJWlkaiLofM9SHRS: {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -7709,6 +7793,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '8AvcMNLh1bk7vQ4cfkGZ',
         },
         i3vj9BOWp43UQquTrQlS: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'a4519ac0-ffa5-465f-88c6-8a264ae7dd5d': {
@@ -7756,6 +7841,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'A2QKjGAi63z5zvLcQIL9',
         },
         j6NFx9N3gAKmC4AgvElH: {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -7870,6 +7956,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'MYuRuxB5oDvHIXuV7DaX',
         },
         jI4ObnUgTHOBgmcAwZRy: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'f252bf52-0474-4879-9c49-0790aafdd854': {
@@ -7917,6 +8004,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '53nzUM3oUdnrkZJ40xFb',
         },
         jfiki9OlujwaH8HauYBj: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '2175f666-9d12-470f-8df6-472499893bf1': {
@@ -7964,6 +8052,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '1WkxxNawnAVRbZ2PV1TX',
         },
         k4gNc8V2Ciutq7xoyOnU: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '73440f7a-042e-41a0-8cdf-ca2c03dd33fc': {
@@ -8011,6 +8100,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'aIoDQV6Gdz6mByVjHMCk',
         },
         ktuaPfkTMWW0DoeEfHng: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '1e36a2ca-5ce1-48e3-9ffe-018eb7e27f20': {
@@ -8058,6 +8148,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '1wfFh7C9lJKNz1Y3VDp5',
         },
         lViKMs4DuSIMExWwEBOO: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '95047203-d8fe-452e-8930-60efe2747f71': {
@@ -8127,6 +8218,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'VwkloMjL0n7oW7KeDMe3',
         },
         ly3JQpJaXZRJ5R6rGDhg: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '37f68c6d-2494-4b0c-84ce-2228c3fbdb78': {
@@ -8174,6 +8266,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'Z5P7Np7jL0YRdxvgaQ2Y',
         },
         m9eH7FVVycZ3teNGfYNR: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'ee78d405-1653-4d0d-bbe8-b0698bb052fa': {
@@ -8242,6 +8335,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'XDxMk8GIah0aH0UFqnaD',
         },
         nAgBGvxSTP0MG7kHrgnH: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '06aabe63-0495-49a1-9902-6f793cf4b3fb': {
@@ -8289,6 +8383,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '2f4h5E4TXzeSKjFOKz2q',
         },
         nUsGqRVPnZqFR8lxlu0M: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'ad9e08ba-4c8a-404b-ba6a-f67e8c6acedd': {
@@ -8357,6 +8452,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'D4TWc2R1VQLeKdzMy8kQ',
         },
         noFv6G8TmHVazzuCtv4D: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '9b842ead-a285-4a83-ac4e-29d7307d06c8': {
@@ -8425,6 +8521,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'Nf7RoXRDT009LghOlZ44',
         },
         obP3pLl8ffONFhgkzqZg: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'b34d7bdc-8dac-456c-85eb-6e7492cc1bb8': {
@@ -8493,6 +8590,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '0ZqsOK7MvzTBZb7T8pZx',
         },
         owX91UPwvqWC7riywxaw: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '68f60faa-95c8-409f-bca2-ef60573f51b4': {
@@ -8561,6 +8659,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '9wlNF70XlXQiuaqrLV2F',
         },
         pikPF5S7Rg6AQXkuVS5o: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'bc2a9f7f-ffe0-4ad0-b5e1-d4b6d96ceba5': {
@@ -8608,6 +8707,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'TbdMtmKr3Uqb4OMXE5hQ',
         },
         q2tEwemA0fbTZATRGJmc: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -8722,6 +8822,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'XVcMBWZkWk71TMykdsGc',
         },
         qMKt81qZMPpDZUMya2Jh: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '5fde07d9-dc61-4cd3-8bb9-19ccda1812fc': {
@@ -8769,6 +8870,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'PKbNRImpaSj9dAwC9hdq',
         },
         rKE5X65nde6ycoqQL0ra: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'c8aa3699-549f-4fec-ad02-8644ad6380f1': {
@@ -8839,6 +8941,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             customReturn: 1620,
         },
         rdxEwhym3k0QJ6OZGXVk: {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -8961,6 +9064,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'IrzzGYQBZ8NtRAG4hc58',
         },
         sCbF5XoAWCzIci8yx7SE: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'fbb43e38-75f5-466b-91ab-7f3321805b54': {
@@ -9008,6 +9112,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'zYMq9NtcYrxM3iYhf1tG',
         },
         sNWdV0Mo2rR1hJa3DHp9: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '8bf05cbb-694f-4329-a692-dd522337c27d': {
@@ -9055,6 +9160,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'Rsmj9iuoYaxHpKnlgPxX',
         },
         tDZKp2CiXcXp0PsDBBOS: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '6093b0c5-32ab-40b8-95b7-5db30ca04959': {
@@ -9102,6 +9208,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '5C9d0h37rHSZThfViSL5',
         },
         tRmGgfzkKpbY5Sjc2a64: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -9224,6 +9331,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'uKKr1DamS2O452AoGK2n',
         },
         tX0iIRxHNpE4fBbqI1tx: {
+            creationSource: 'API',
             level: 2,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -9324,6 +9432,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '94sl0I14CZkozjPfIiJf',
         },
         u9ZPvrF63Sl0YnjoSHP3: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'fd253816-3e50-41ab-b535-84fdbded10cf': {
@@ -9371,6 +9480,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'ktHtOju1xuBDT7PzQEp4',
         },
         v1aRNpHB85HVwMnt8rEd: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '6ea2f0d2-ec9e-41a8-9025-34c36196d89f': {
@@ -9439,6 +9549,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'B05DQplbMpijSF7Jr3iR',
         },
         vDqJvf7BrgN1OAQasNbA: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'c3b0029e-8afa-483b-b729-96481b048fd3': {
@@ -9495,6 +9606,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             customSupply: 450,
         },
         vE4Nv5VC3gwhEIDy84P3: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '60c52a78-cd17-4f27-98d3-431138d2b0ae': {
@@ -9633,6 +9745,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'NOaB7mrXZE9DGjaqqnQK',
         },
         w1ALowtSsxSevEKa6gkB: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '46ba154e-49e6-49a6-a865-121964f21b4c': {
@@ -9680,6 +9793,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'SW7pIpOzbOukjpGsid9U',
         },
         wncDBE1HDP6oBRlTAz6t: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'eae92cb1-029d-41b7-8880-81270b1ee132': {
@@ -9727,6 +9841,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '3zcMvh545m4ZfbygbPwB',
         },
         wnrdRCrzmUZeOrH5sVnU: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 '396ef8b2-a1d8-4487-8828-fcc90a7d5cfe': {
@@ -9777,6 +9892,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             airTransferIn: 40,
         },
         xIX613cZMpU1DFw5iK42: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -9892,6 +10008,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: '3Wk3QUF0PqdHfTPDjT0A',
         },
         xLdFzJWpXPxVX7mCt1IS: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'd299df3f-fad5-44ec-893f-5ed5e823ec42': {
@@ -9939,6 +10056,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 's6smHwWAo31CAhNcM4LH',
         },
         xTkimKFxKPkLSxzTOT6P: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '2abafc6d-fd9b-4afa-90c7-180db528c1d3': {
@@ -9989,6 +10107,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             airTransferIn: 40,
         },
         xstjlspRCqOK4oLYaPqm: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '50bbf2e5-2241-4b85-aa90-32a72c7cd6a8': {
@@ -10127,6 +10246,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'JF3gxr2yyBDkcICIWKIy',
         },
         z538ZuqfebUlDtuLX3Yx: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 'a607ef53-cbc3-4fe2-a9ec-57c068924008': {
@@ -10175,6 +10295,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'MLHdYTDgLmxzwtzyvoeg',
         },
         zMQ6SIrY8XRUfoCEP7sM: {
+            creationSource: 'API',
             level: 2,
             edges: {
                 '7fa7fd67-77a4-42d9-bc79-9314e156bb55': {
@@ -10222,6 +10343,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'cwugldODRUysrMg8FumQ',
         },
         zeP5Mp10oQgxdjx5b2pi: {
+            creationSource: 'API',
             level: 1,
             ceilingHeight: 120,
             slabHeight: 180,
@@ -10336,6 +10458,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'jBlOH2TYp3VXWYTihqwU',
         },
         zl6g2V1Zr2ubjaQ5d4cp: {
+            creationSource: 'API',
             level: 1,
             edges: {
                 'b15bc82d-2a08-4020-b991-ced6ce02f365': {

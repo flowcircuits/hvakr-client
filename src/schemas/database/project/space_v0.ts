@@ -10,6 +10,33 @@ export const InfiltrationRequirementMethodSchema_v0 = z.enum(
     Object.values(InfiltrationRequirementMethods)
 )
 
+export const SPACE_CREATION_SOURCES_V0 = {
+    /** Created via the API */
+    API: 'API',
+    /** Created via the API from Revit */
+    API_REVIT: 'API_REVIT',
+    /** Created automatically by our system */
+    AUTO: 'AUTO',
+    /** Legacy spaces created before we had creation sources */
+    LEGACY: 'LEGACY',
+    /** Merged spaces */
+    MERGE: 'MERGE',
+    /** Copied spaces */
+    PASTE: 'PASTE',
+    /** Created via the polygon tool */
+    POLYGON: 'POLYGON',
+    /** Created via the rectangle tool */
+    RECTANGLE: 'RECTANGLE',
+    /** Split spaces */
+    SPLIT: 'SPLIT',
+} as const
+export const SpaceCreationSourceSchema_v0 = z.enum(
+    Object.values(SPACE_CREATION_SOURCES_V0)
+)
+export type SpaceCreationSource_v0 = z.infer<
+    typeof SpaceCreationSourceSchema_v0
+>
+
 export const SkylightDataSchema_v0 = z.object({
     height: z.number(),
     rotation: z.number().optional(),
@@ -74,11 +101,11 @@ export const SpaceDataSchema_v0 = z.object({
     airTransferOut: z.number().optional(),
     applyRoofLoadToCeiling: z.boolean().optional(),
     ceilingHeight: z.number().optional(),
+    creationSource: SpaceCreationSourceSchema_v0,
     customExhaust: z.number().optional(),
     customOutsideAirflow: z.number().optional(),
     customReturn: z.number().optional(),
     customSupply: z.number().optional(),
-    description: z.string().optional(),
     edges: z.record(z.string(), EdgeSchema_v0),
     exhaustUnits: z.number().optional(),
     infiltrationAchReq: z.number().optional(),
@@ -100,6 +127,7 @@ export const SpaceDataSchema_v0 = z.object({
     name: z.string().optional(),
     number: z.string().optional(),
     occupancy: z.number().optional(),
+    processed: z.boolean().optional(),
     revitId: z.string().optional(),
     roofAzimuth: z.number().optional(),
     roofPitch: z.number().optional(),
@@ -107,7 +135,9 @@ export const SpaceDataSchema_v0 = z.object({
     skylights: z.record(z.string(), SkylightDataSchema_v0).optional(),
     slabHeight: z.number().optional(),
     slabTypeId: z.string().optional(),
+    spaceNameAndNumberInputHash: z.string().optional(),
     spaceTypeId: z.string().optional(),
+    suggested: z.boolean().optional(),
     suggestedSpaceName: z.string().optional(),
     suggestedSpaceNumber: z.string().optional(),
     zoneId: z.string().optional(),

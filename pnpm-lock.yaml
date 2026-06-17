@@ -24,6 +24,9 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+      undici:
+        specifier: ^8.5.0
+        version: 8.5.0
       vitest:
         specifier: 4.0.15
         version: 4.0.15(@types/node@24.10.1)(tsx@4.20.5)
@@ -865,6 +868,10 @@ packages:
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
+  undici@8.5.0:
+    resolution: {integrity: sha512-xamtWoB1EshgjpmlXd7GGm2VfdDtw1+rD8uhry8pSNW3If6S8E0m2T2+orSKeZXEn/aPJMviCpDBA65WJt8zhg==}
+    engines: {node: '>=22.19.0'}
+
   unrun@0.2.19:
     resolution: {integrity: sha512-DbwbJ9BvPEb3BeZnIpP9S5tGLO/JIgPQ3JrpMRFIfZMZfMG19f26OlLbC2ml8RRdrI2ZA7z2t+at5tsIHbh6Qw==}
     engines: {node: '>=20.19.0'}
@@ -1610,6 +1617,8 @@ snapshots:
       quansync: 1.0.0
 
   undici-types@7.16.0: {}
+
+  undici@8.5.0: {}
 
   unrun@0.2.19:
     dependencies:

@@ -9,7 +9,7 @@ export default defineConfig({
                 test: {
                     name: 'unit',
                     globals: true,
-                    env: { HVAKR_TEST_TARGET: 'fake-prod' },
+                    env: { HVAKR_TEST_TARGET: 'mock-prod' },
                     setupFiles: ['./vitest.setup.ts'],
                     include: ['src/**/*.test.ts'],
                     exclude: [...configDefaults.exclude],

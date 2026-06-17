@@ -6,7 +6,7 @@ import { HVAKRClient, HVAKRClientError } from './HVAKRClient'
 const {
     HVAKR_ACCESS_TOKEN,
     HVAKR_CLIENT_API_URL,
-    HVAKR_TEST_TARGET = 'fake-prod',
+    HVAKR_TEST_TARGET = 'mock-prod',
 } = process.env
 
 const isProdTarget = HVAKR_TEST_TARGET === 'prod'
@@ -15,12 +15,12 @@ const describeProdAvailable = describe.skipIf(
 )
 const baseUrl = isProdTarget
     ? HVAKR_CLIENT_API_URL || undefined
-    : 'https://api.fake-prod.test'
-const accessToken = isProdTarget ? HVAKR_ACCESS_TOKEN! : 'fake-prod-token'
+    : 'https://api.mock-prod.test'
+const accessToken = isProdTarget ? HVAKR_ACCESS_TOKEN! : 'mock-prod-token'
 
 const createClient = () => new HVAKRClient({ baseUrl, accessToken })
 
-type FakeProject = Record<string, any> & {
+type MockProject = Record<string, any> & {
     id: string
     name?: string
     description?: string
@@ -34,8 +34,8 @@ type FakeProject = Record<string, any> & {
 }
 
 const stationIds = ['CA001', 'CA002', 'CA003', 'CA004', 'CA005']
-const fakeProjects = new Map<string, FakeProject>()
-let fakeProjectCounter = 0
+const mockProjects = new Map<string, MockProject>()
+let mockProjectCounter = 0
 
 const jsonResponse = (
     body: unknown,
@@ -75,25 +75,25 @@ const spacesFromRevit = (data: RevitData_v0) =>
 const readBody = (init?: RequestInit) =>
     init?.body ? JSON.parse(init.body as string) : {}
 
-const createFakeProject = (
+const createMockProject = (
     data: Record<string, any>,
     revitPayload: boolean
 ) => {
-    const id = `fake-project-${++fakeProjectCounter}`
+    const id = `mock-project-${++mockProjectCounter}`
     const project = withWeatherDefaults({
         ...data,
         id,
-        name: data.name ?? data.projectName ?? 'Fake Project',
+        name: data.name ?? data.projectName ?? 'Mock Project',
         spaces: revitPayload
             ? spacesFromRevit(data as RevitData_v0)
             : data.spaces,
     })
-    fakeProjects.set(id, project)
+    mockProjects.set(id, project)
     return project
 }
 
 const mergeProject = (
-    project: FakeProject,
+    project: MockProject,
     data: Record<string, any>,
     revitPayload: boolean
 ) => {
@@ -135,7 +135,7 @@ const hasInvalidPatch = (data: Record<string, any>) =>
         (space) => space.level === undefined || space.level === null
     )
 
-const installFakeProd = () => {
+const installMockProd = () => {
     vi.stubGlobal(
         'fetch',
         vi.fn(async (input: string | URL, init?: RequestInit) => {
@@ -145,12 +145,12 @@ const installFakeProd = () => {
             const revitPayload = url.searchParams.has('revitPayload')
 
             if (method === 'POST' && path === '/projects') {
-                const project = createFakeProject(readBody(init), revitPayload)
+                const project = createMockProject(readBody(init), revitPayload)
                 return jsonResponse({ id: project.id })
             }
 
             if (method === 'GET' && path === '/projects') {
-                const projects = [...fakeProjects.values()]
+                const projects = [...mockProjects.values()]
                 const limit = Number(
                     url.searchParams.get('limit') ?? projects.length
                 )
@@ -211,7 +211,7 @@ const installFakeProd = () => {
             const projectMatch = path.match(/^\/projects\/([^/]+)$/)
             if (projectMatch) {
                 const projectId = decodeURIComponent(projectMatch[1]!)
-                const project = fakeProjects.get(projectId)
+                const project = mockProjects.get(projectId)
                 if (!project) {
                     return jsonResponse(
                         { error: 'Not found' },
@@ -233,7 +233,7 @@ const installFakeProd = () => {
                     return jsonResponse({ id: projectId })
                 }
                 if (method === 'DELETE') {
-                    fakeProjects.delete(projectId)
+                    mockProjects.delete(projectId)
                     return jsonResponse({ id: projectId, deleted: true })
                 }
             }
@@ -252,7 +252,7 @@ const installFakeProd = () => {
             }
 
             return jsonResponse(
-                { error: 'Unhandled fake-prod request' },
+                { error: 'Unhandled mock-prod request' },
                 { ok: false, status: 500 }
             )
         })
@@ -261,7 +261,7 @@ const installFakeProd = () => {
 
 beforeEach(() => {
     if (!isProdTarget) {
-        installFakeProd()
+        installMockProd()
     }
 })
 

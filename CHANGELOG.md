@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.3.0] - 2026-06-23
+
+### Breaking Changes
+
+- Renamed the space `customOutsideAirflow` field to `ventilationReq` on
+  `SpaceData_v0`. There is no compatibility shim — rename the field when
+  upgrading; the value semantics are unchanged.
+- Renamed the space type `outsideAch` field to `ventilationAchReq` on
+  `SpaceTypeData_v0`. There is no compatibility shim — rename the field when
+  upgrading; the value semantics are unchanged.
+
 ## [0.2.0] - 2026-06-16
 
 ### Breaking Changes

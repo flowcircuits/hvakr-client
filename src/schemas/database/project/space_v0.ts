@@ -103,7 +103,6 @@ export const SpaceDataSchema_v0 = z.object({
     ceilingHeight: z.number().optional(),
     creationSource: SpaceCreationSourceSchema_v0,
     customExhaust: z.number().optional(),
-    customOutsideAirflow: z.number().optional(),
     customReturn: z.number().optional(),
     customSupply: z.number().optional(),
     edges: z.record(z.string(), EdgeSchema_v0),
@@ -140,6 +139,7 @@ export const SpaceDataSchema_v0 = z.object({
     suggested: z.boolean().optional(),
     suggestedSpaceName: z.string().optional(),
     suggestedSpaceNumber: z.string().optional(),
+    ventilationReq: z.number().optional(),
     zoneId: z.string().optional(),
 })
 export type SpaceData_v0 = z.infer<typeof SpaceDataSchema_v0>

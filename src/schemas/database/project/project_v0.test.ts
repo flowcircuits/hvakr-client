@@ -15,11 +15,27 @@ describe('Project v0 schemas', () => {
         }
     })
 
+    it('accepts both ASHRAE and NCC template sources', () => {
+        expect(
+            ProjectDataSchema_v0.safeParse({
+                name: 'ASHRAE template',
+                users: {},
+                source: 'ASHRAE',
+            }).success
+        ).toBe(true)
+
+        expect(
+            ProjectDataSchema_v0.safeParse({
+                name: 'NCC template',
+                users: {},
+                source: 'NCC',
+            }).success
+        ).toBe(true)
+    })
+
     it('uses a restricted-field list for project writes', () => {
         for (const field of Object.keys(PROJECT_RESTRICTED_WRITE_FIELDS_V0)) {
-            expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
-                field
-            )
+            expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(field)
             expect(ProjectPostSchema_v0.shape).not.toHaveProperty(field)
             expect(ExpandedProjectPatchSchema_v0.shape).not.toHaveProperty(
                 field

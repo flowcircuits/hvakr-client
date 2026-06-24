@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.3.1] - 2026-06-24
+
+### Added
+
+- Added `NCC` as a project template source on `TemplateSourceSchema_v0`. The
+  `source` field on `ProjectData_v0` now accepts both `'ASHRAE'` and `'NCC'`.
+
 ## [0.3.0] - 2026-06-23
 
 ### Breaking Changes

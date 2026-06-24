@@ -63,7 +63,7 @@ export const SpaceTypeAutoAssignmentSourcesSchema_v0 = z.object({
     myTemplates: z.boolean().optional(),
 })
 
-export const TemplateSourceSchema_v0 = z.enum(['ASHRAE'])
+export const TemplateSourceSchema_v0 = z.enum(['ASHRAE', 'NCC'])
 
 export const TakeoffModelSchema_v0 = z.enum(['V1', 'V2'])
 

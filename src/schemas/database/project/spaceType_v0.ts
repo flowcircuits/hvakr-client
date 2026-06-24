@@ -36,7 +36,6 @@ export const SpaceTypeDataSchema_v0 = z.object({
     name: z.string().optional(),
     nameSynonyms: z.array(z.string()).optional(),
     nc: z.number().optional(),
-    outsideAch: z.number().optional(),
     peopleDensity: z.number().optional(),
     peopleLatentLoad: z.number().optional(),
     peopleSensibleLoad: z.number().optional(),
@@ -48,6 +47,7 @@ export const SpaceTypeDataSchema_v0 = z.object({
     timestamp: z.number().optional(),
     unitExhaustRate: z.number().optional(),
     usageSchedule: UsageScheduleSchema_v0.optional(),
+    ventilationAchReq: z.number().optional(),
     ventilationAreaReq: z.number().optional(),
     ventilationPeopleReq: z.number().optional(),
 })

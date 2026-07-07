@@ -126,6 +126,10 @@ export const APIOutputTypes_v0 = {
     dryside_graph: 'dryside_graph',
     register_schedule: 'register_schedule',
     loads: 'loads',
+    ventilation: 'ventilation',
+    equipment: 'equipment',
+    checksums: 'checksums',
+    airflows: 'airflows',
 } as const
 
 export const APIOutputTypeSchema_v0 = z.enum(Object.values(APIOutputTypes_v0))

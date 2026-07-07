@@ -172,6 +172,7 @@ describe('HVAKRClient request building', () => {
         await expect(requestClient.getProject('p1')).rejects.toMatchObject({
             name: 'HVAKRClientError',
             message: 'Error 403',
+            status: 403,
             metadata: { message: 'nope' },
         })
     })
@@ -181,6 +182,106 @@ describe('HVAKRClient request building', () => {
         await expect(
             requestClient.getProjectOutputs('p1', 'loads')
         ).rejects.toThrow(/failed to parse json/)
+    })
+
+    it('getProject expands specific subcollections when given an array', async () => {
+        enqueue(200, { id: 'p1' })
+        await requestClient.getProject('p1', ['spaces', 'zones'])
+        expect(requests.at(-1)?.path).toBe(
+            '/v0/projects/p1?expand=spaces%2Czones'
+        )
+    })
+
+    it('getProject omits expand when not requested', async () => {
+        enqueue(200, { id: 'p1' })
+        await requestClient.getProject('p1')
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1')
+    })
+
+    it('getProjectOutputs routes new output types to the right path', async () => {
+        enqueue(200, { errors: [], flags: {} })
+        await requestClient.getProjectOutputs('p1', 'ventilation')
+        expect(requests.at(-1)?.path).toBe(
+            '/v0/projects/p1/outputs/ventilation'
+        )
+    })
+
+    it('createReport POSTs to the reports route and sends the idempotency key', async () => {
+        enqueue(201, { id: 'rep_1', status: 'pending' })
+        const res = await requestClient.createReport(
+            'p1',
+            { template: 'load-calculation' },
+            { idempotencyKey: 'idem-123' }
+        )
+        expect(res).toEqual({ id: 'rep_1', status: 'pending' })
+        const request = requests.at(-1)!
+        expect(request.path).toBe('/v0/projects/p1/reports')
+        expect(request.method).toBe('POST')
+        expect(headerValue(request.headers, 'idempotency-key')).toBe('idem-123')
+        expect(JSON.parse(bodyAsString(request.body))).toEqual({
+            template: 'load-calculation',
+        })
+    })
+
+    it('listReports and getReport hit the reports routes', async () => {
+        enqueue(200, [])
+        await requestClient.listReports('p1')
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/reports')
+
+        enqueue(200, { id: 'rep_1', name: 'r', status: 'completed', date: 1 })
+        await requestClient.getReport('p1', 'rep_1')
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/reports/rep_1')
+    })
+
+    it('autoGroup POSTs the scope to the actions route', async () => {
+        enqueue(200, { created: 2, assigned: 10 })
+        const res = await requestClient.autoGroup('p1', { scope: 'spaces' })
+        expect(res).toEqual({ created: 2, assigned: 10 })
+        const request = requests.at(-1)!
+        expect(request.path).toBe('/v0/projects/p1/actions/auto-group')
+        expect(request.method).toBe('POST')
+        expect(JSON.parse(bodyAsString(request.body))).toEqual({
+            scope: 'spaces',
+        })
+    })
+
+    it('checkProject POSTs to the check action route', async () => {
+        enqueue(200, {
+            passed: true,
+            summary: { errors: 0, warnings: 0, info: 0 },
+            tiers: [],
+        })
+        const res = await requestClient.checkProject('p1')
+        expect(res.passed).toBe(true)
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/actions/check')
+        expect(requests.at(-1)?.method).toBe('POST')
+    })
+
+    it('createAutoTakeoffJob and getAutoTakeoffJob hit the auto-takeoff routes', async () => {
+        enqueue(202, { jobId: 'job_1', status: 'queued' })
+        const created = await requestClient.createAutoTakeoffJob('p1', {
+            levels: [1, 2],
+        })
+        expect(created).toEqual({ jobId: 'job_1', status: 'queued' })
+        expect(requests.at(-1)?.path).toBe(
+            '/v0/projects/p1/actions/auto-takeoff'
+        )
+        expect(requests.at(-1)?.method).toBe('POST')
+
+        enqueue(200, { jobId: 'job_1', status: 'completed', result: {} })
+        const job = await requestClient.getAutoTakeoffJob('p1', 'job_1')
+        expect(job.status).toBe('completed')
+        expect(requests.at(-1)?.path).toBe(
+            '/v0/projects/p1/actions/auto-takeoff/job_1'
+        )
+        expect(requests.at(-1)?.method).toBe('GET')
+    })
+
+    it('exportGbXML returns the raw XML body', async () => {
+        enqueue(200, '<?xml version="1.0"?><gbXML></gbXML>')
+        const xml = await requestClient.exportGbXML('p1')
+        expect(xml.startsWith('<?xml')).toBe(true)
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/exports/gbxml')
     })
 })
 

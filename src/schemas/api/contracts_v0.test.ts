@@ -1,20 +1,17 @@
-import { describe, expect, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 import { getJSONSchema } from '../getJSONSchema'
 import {
-    APIProjectOutputAirflowsSchema_v0,
-    APIProjectOutputChecksumsSchema_v0,
-    APIProjectOutputEquipmentSchema_v0,
-    APIProjectOutputLoadsSchema_v0,
-    APIProjectOutputVentilationSchema_v0,
+    APIProjectCalculationsSchema_v0,
     CalculatorFlagsSchema_v0,
 } from '../outputs'
 import { APIErrorSchema_v0 } from './error_v0'
-import { APIReportCreateSchema_v0, APIReportSchema_v0 } from './reports_v0'
 import {
     APIAutoGroupResultSchema_v0,
-    APIAutoTakeoffJobSchema_v0,
     APICheckReportSchema_v0,
-} from './actions_v0'
+    APIJobCreateSchema_v0,
+    APIJobSchema_v0,
+} from './jobs_v0'
+import { APIReportSchema_v0 } from './reports_v0'
 
 describe('APIErrorSchema_v0', () => {
     it('accepts a valid error envelope', () => {
@@ -48,41 +45,44 @@ describe('calculator flags', () => {
     })
 })
 
-describe('ventilation output IAQP sentinel', () => {
-    it('accepts the "not achievable" minimum outside airflow literal', () => {
-        const parsed = APIProjectOutputVentilationSchema_v0.parse({
+describe('calculations contract', () => {
+    it('accepts a response with only the requested sections', () => {
+        const parsed = APIProjectCalculationsSchema_v0.parse({
             errors: [],
             flags: {},
-            spaces: {
-                sp_1: {
-                    iaqp: {
-                        airCleanerCount: 0,
-                        cleaningAirflow: 0,
-                        minimumOutsideAirflow: 'not achievable',
+            registerSchedule: [],
+        })
+        expect(parsed.registerSchedule).toEqual([])
+        expect(parsed.loads).toBeUndefined()
+        expect(parsed.ventilation).toBeUndefined()
+    })
+
+    it('accepts the IAQP "not achievable" minimum outside airflow literal', () => {
+        const parsed = APIProjectCalculationsSchema_v0.parse({
+            errors: [],
+            flags: {},
+            ventilation: {
+                spaces: {
+                    sp_1: {
+                        iaqp: {
+                            airCleanerCount: 0,
+                            cleaningAirflow: 0,
+                            minimumOutsideAirflow: 'not achievable',
+                        },
                     },
                 },
+                systems: {},
+                zones: {},
+                equipment: {},
             },
-            systems: {},
-            zones: {},
-            equipment: {},
         })
-        expect(parsed.spaces.sp_1.iaqp?.minimumOutsideAirflow).toBe(
-            'not achievable'
-        )
+        expect(
+            parsed.ventilation?.spaces.sp_1?.iaqp?.minimumOutsideAirflow
+        ).toBe('not achievable')
     })
 })
 
-describe('report schemas', () => {
-    it('requires a known template on create', () => {
-        expect(
-            APIReportCreateSchema_v0.safeParse({ template: 'nope' }).success
-        ).toBe(false)
-        expect(
-            APIReportCreateSchema_v0.safeParse({ template: 'load-calculation' })
-                .success
-        ).toBe(true)
-    })
-
+describe('report schema', () => {
     it('parses a completed report with a download URL', () => {
         const parsed = APIReportSchema_v0.parse({
             id: 'rep_1',
@@ -96,7 +96,29 @@ describe('report schemas', () => {
     })
 })
 
-describe('action schemas', () => {
+describe('job schemas', () => {
+    it('requires a job type on create and a known report template', () => {
+        expect(APIJobCreateSchema_v0.safeParse({}).success).toBe(false)
+        expect(
+            APIJobCreateSchema_v0.safeParse({
+                type: 'report',
+                template: 'nope',
+            }).success
+        ).toBe(false)
+        expect(
+            APIJobCreateSchema_v0.safeParse({
+                type: 'report',
+                template: 'load-calculation',
+            }).success
+        ).toBe(true)
+        expect(
+            APIJobCreateSchema_v0.safeParse({
+                type: 'auto-group',
+                scope: 'spaces',
+            }).success
+        ).toBe(true)
+    })
+
     it('parses an auto-group result', () => {
         expect(
             APIAutoGroupResultSchema_v0.parse({ created: 1, assigned: 2 })
@@ -121,24 +143,58 @@ describe('action schemas', () => {
         expect(parsed.tiers[0].findings[0].severity).toBe('error')
     })
 
-    it('parses an auto-takeoff job', () => {
-        const parsed = APIAutoTakeoffJobSchema_v0.parse({
+    it('parses a completed sync job with a result', () => {
+        const parsed = APIJobSchema_v0.parse({
             jobId: 'job_1',
+            type: 'auto-group',
+            status: 'completed',
+            result: { created: 2, assigned: 5 },
+        })
+        expect(parsed.status).toBe('completed')
+    })
+
+    it('parses a failed async job', () => {
+        const parsed = APIJobSchema_v0.parse({
+            jobId: 'job_2',
+            type: 'auto-takeoff',
             status: 'failed',
             error: 'boom',
         })
-        expect(parsed.status).toBe('failed')
+        expect(parsed.error).toBe('boom')
+    })
+
+    it('parses a report job bridged to its report doc', () => {
+        const parsed = APIJobSchema_v0.parse({
+            jobId: 'job_3',
+            type: 'report',
+            status: 'completed',
+            result: {
+                reportId: 'rep_1',
+                report: {
+                    id: 'rep_1',
+                    name: 'Loads Report',
+                    status: 'completed',
+                    downloadUrl: 'https://example.test/report.pdf',
+                    date: 1,
+                    outputFileType: 'PDF',
+                },
+            },
+        })
+        const { result } = parsed
+        assert(result && 'reportId' in result)
+        expect(result.reportId).toBe('rep_1')
+        expect(result.report?.downloadUrl).toBe(
+            'https://example.test/report.pdf'
+        )
     })
 })
 
 describe('OpenAPI JSON Schema generation', () => {
     const schemas = {
         APIErrorSchema_v0,
-        APIProjectOutputLoadsSchema_v0,
-        APIProjectOutputVentilationSchema_v0,
-        APIProjectOutputEquipmentSchema_v0,
-        APIProjectOutputChecksumsSchema_v0,
-        APIProjectOutputAirflowsSchema_v0,
+        APIProjectCalculationsSchema_v0,
+        APIJobCreateSchema_v0,
+        APIJobSchema_v0,
     }
 
     for (const [name, schema] of Object.entries(schemas)) {

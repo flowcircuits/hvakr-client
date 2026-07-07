@@ -1,21 +1,8 @@
 import {
-    APIAutoGroupRequest_v0,
-    APIAutoGroupResult_v0,
-    APIAutoTakeoffJob_v0,
-    APIAutoTakeoffJobCreateResponse_v0,
-    APIAutoTakeoffRequest_v0,
-    APICheckReport_v0,
-    APIOutputType_v0,
-    APIProjectOutputAirflows_v0,
-    APIProjectOutputChecksums_v0,
-    APIProjectOutputDrySideGraph,
-    APIProjectOutputEquipment_v0,
-    APIProjectOutputLoads_v0,
-    APIProjectOutputRegisterSchedule_v0,
-    APIProjectOutputVentilation_v0,
-    APIReport_v0,
-    APIReportCreate_v0,
-    APIReportCreateResponse_v0,
+    APICalculationSection_v0,
+    APIJob_v0,
+    APIJobCreate_v0,
+    APIProjectCalculations_v0,
     ExpandedProjectPatch_v0,
     ExpandedProjectPost_v0,
     ExpandedProject_v0,
@@ -104,7 +91,29 @@ export class HVAKRClient {
     }
 
     /**
-     * Constructs a full API URL with optional query parameters.
+     * Serializes query params: `string` values become `k=v`, a truthy boolean
+     * becomes a bare flag (`k`), and a falsy boolean is omitted. Returns the
+     * `?...` suffix, or `''` when there is nothing to append.
+     */
+    private buildQuery = (
+        queryParams?: Record<string, string | boolean>
+    ): string => {
+        if (!queryParams) return ''
+        const params = Object.entries(queryParams)
+            .map(([k, v]) =>
+                typeof v === 'string'
+                    ? `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
+                    : v
+                      ? encodeURIComponent(k)
+                      : null
+            )
+            .filter((a) => a)
+            .join('&')
+        return params ? `?${params}` : ''
+    }
+
+    /**
+     * Constructs a full API URL under the core version prefix (e.g. `/v0`).
      * @param path - API endpoint path (e.g., "/projects")
      * @param queryParams - Optional query parameters to append
      * @returns The full URL string
@@ -113,23 +122,24 @@ export class HVAKRClient {
         path: string,
         queryParams?: Record<string, string | boolean>
     ) => {
-        let url = `${this.baseUrl.replace(/\/$/, '')}/${this.version}${path}`
-        if (queryParams) {
-            const params = Object.entries(queryParams)
-                .map(([k, v]) =>
-                    typeof v === 'string'
-                        ? `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
-                        : v
-                          ? encodeURIComponent(k)
-                          : null
-                )
-                .filter((a) => a)
-                .join('&')
-            if (params) {
-                url += `?${params}`
-            }
-        }
-        return url
+        const base = `${this.baseUrl.replace(/\/$/, '')}/${this.version}${path}`
+        return base + this.buildQuery(queryParams)
+    }
+
+    /**
+     * Constructs a full URL under the Revit ingestion namespace (`/revit/v0`),
+     * which is versioned independently of the core API so the Revit plugin's
+     * payload can evolve on its own cadence.
+     * @param path - Endpoint path under the namespace (e.g., "/projects")
+     * @param queryParams - Optional query parameters to append
+     * @returns The full URL string
+     */
+    createRevitURL = (
+        path: string,
+        queryParams?: Record<string, string | boolean>
+    ) => {
+        const base = `${this.baseUrl.replace(/\/$/, '')}/revit/v0${path}`
+        return base + this.buildQuery(queryParams)
     }
 
     /**
@@ -162,24 +172,39 @@ export class HVAKRClient {
     /**
      * Creates a new HVAKR project.
      * @param projectData - The project data to create
-     * @param revitPayload - Set to true if the data is in Revit format
      * @param opts - Optional write options (e.g. idempotencyKey)
      * @returns The ID of the newly created project
      * @throws {HVAKRClientError} If the API returns an error response
      */
     createProject = async (
-        projectData: ExpandedProjectPost_v0 | RevitData_v0,
-        revitPayload?: boolean,
+        projectData: ExpandedProjectPost_v0,
         opts?: WriteOptions
     ): Promise<{ id: string }> => {
-        return this.request<{ id: string }>(
-            this.createURL(`/projects`, { revitPayload: !!revitPayload }),
-            {
-                method: 'POST',
-                headers: this.writeHeaders(opts),
-                body: JSON.stringify(projectData),
-            }
-        )
+        return this.request<{ id: string }>(this.createURL(`/projects`), {
+            method: 'POST',
+            headers: this.writeHeaders(opts),
+            body: JSON.stringify(projectData),
+        })
+    }
+
+    /**
+     * Creates a project from a Revit plugin payload. Posts to the Revit
+     * ingestion namespace (`/revit/v0/projects`), which the server converts
+     * into a project; the payload versions independently of the core API.
+     * @param revitData - The Revit export payload
+     * @param opts - Optional write options (e.g. idempotencyKey)
+     * @returns The ID of the newly created project
+     * @throws {HVAKRClientError} If the API returns an error response
+     */
+    createProjectFromRevit = async (
+        revitData: RevitData_v0,
+        opts?: WriteOptions
+    ): Promise<{ id: string }> => {
+        return this.request<{ id: string }>(this.createRevitURL(`/projects`), {
+            method: 'POST',
+            headers: this.writeHeaders(opts),
+            body: JSON.stringify(revitData),
+        })
     }
 
     /**
@@ -256,25 +281,48 @@ export class HVAKRClient {
      * Updates an existing HVAKR project.
      * @param projectId - The ID of the project to update
      * @param projectData - The updated project data
-     * @param revitPayload - Set to true if the data is in Revit format
      * @param opts - Optional write options (e.g. idempotencyKey)
      * @returns The ID of the updated project
      * @throws {HVAKRClientError} If the API returns an error response
      */
     updateProject = async (
         projectId: string,
-        projectData: ExpandedProjectPatch_v0 | RevitData_v0,
-        revitPayload?: boolean,
+        projectData: ExpandedProjectPatch_v0,
         opts?: WriteOptions
     ): Promise<{ id: string }> => {
         return this.request<{ id: string }>(
-            this.createURL(`/projects/${this.encodePathSegment(projectId)}`, {
-                revitPayload: !!revitPayload,
-            }),
+            this.createURL(`/projects/${this.encodePathSegment(projectId)}`),
             {
                 method: 'PATCH',
                 headers: this.writeHeaders(opts),
                 body: JSON.stringify(projectData),
+            }
+        )
+    }
+
+    /**
+     * Updates a project from a Revit plugin payload. Patches the Revit
+     * ingestion namespace (`/revit/v0/projects/{id}`); the server merges the
+     * converted payload into the existing project (importing new Revit spaces).
+     * @param projectId - The ID of the project to update
+     * @param revitData - The Revit export payload
+     * @param opts - Optional write options (e.g. idempotencyKey)
+     * @returns The ID of the updated project
+     * @throws {HVAKRClientError} If the API returns an error response
+     */
+    updateProjectFromRevit = async (
+        projectId: string,
+        revitData: RevitData_v0,
+        opts?: WriteOptions
+    ): Promise<{ id: string }> => {
+        return this.request<{ id: string }>(
+            this.createRevitURL(
+                `/projects/${this.encodePathSegment(projectId)}`
+            ),
+            {
+                method: 'PATCH',
+                headers: this.writeHeaders(opts),
+                body: JSON.stringify(revitData),
             }
         )
     }
@@ -295,104 +343,53 @@ export class HVAKRClient {
     }
 
     /**
-     * Retrieves calculated outputs for a project.
+     * Runs the calculator once and returns the requested calculation sections.
      * @param projectId - The ID of the project
-     * @param outputType - The type of output to retrieve. One of `loads`,
-     *   `dryside_graph`, `register_schedule`, `ventilation`, `equipment`,
-     *   `checksums`, or `airflows`.
-     * @returns The project output data for the specified type
-     * @throws {HVAKRClientError} If the API returns an error response or JSON parsing fails
+     * @param opts.include - Sections to compute and return (`loads`,
+     *   `register_schedule`, `dryside_graph`, `ventilation`, `equipment`,
+     *   `checksums`, `airflows`). Omit to return every section (one calc run;
+     *   the response can be large).
+     * @returns `errors`, `flags`, and each requested section
+     * @throws {HVAKRClientError} If the API returns an error response
      */
-    getProjectOutputs(
+    getProjectCalculations = async (
         projectId: string,
-        outputType: 'loads'
-    ): Promise<APIProjectOutputLoads_v0>
-
-    getProjectOutputs(
-        projectId: string,
-        outputType: 'dryside_graph'
-    ): Promise<APIProjectOutputDrySideGraph>
-
-    getProjectOutputs(
-        projectId: string,
-        outputType: 'register_schedule'
-    ): Promise<APIProjectOutputRegisterSchedule_v0>
-
-    getProjectOutputs(
-        projectId: string,
-        outputType: 'ventilation'
-    ): Promise<APIProjectOutputVentilation_v0>
-
-    getProjectOutputs(
-        projectId: string,
-        outputType: 'equipment'
-    ): Promise<APIProjectOutputEquipment_v0>
-
-    getProjectOutputs(
-        projectId: string,
-        outputType: 'checksums'
-    ): Promise<APIProjectOutputChecksums_v0>
-
-    getProjectOutputs(
-        projectId: string,
-        outputType: 'airflows'
-    ): Promise<APIProjectOutputAirflows_v0>
-
-    getProjectOutputs(
-        projectId: string,
-        outputType: APIOutputType_v0
-    ): Promise<
-        | APIProjectOutputLoads_v0
-        | APIProjectOutputDrySideGraph
-        | APIProjectOutputRegisterSchedule_v0
-        | APIProjectOutputVentilation_v0
-        | APIProjectOutputEquipment_v0
-        | APIProjectOutputChecksums_v0
-        | APIProjectOutputAirflows_v0
-    >
-
-    async getProjectOutputs(projectId: string, outputType: APIOutputType_v0) {
-        const res = await fetch(
+        opts?: { include?: APICalculationSection_v0[] }
+    ): Promise<APIProjectCalculations_v0> => {
+        const include = opts?.include
+        const queryParams =
+            include && include.length > 0
+                ? { include: include.join(',') }
+                : undefined
+        return this.request<APIProjectCalculations_v0>(
             this.createURL(
-                `/projects/${this.encodePathSegment(projectId)}/outputs/${this.encodePathSegment(outputType)}`
+                `/projects/${this.encodePathSegment(projectId)}/calculations`,
+                queryParams
             ),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
-        let data: unknown
-        try {
-            data = await res.json()
-        } catch (error) {
-            throw new HVAKRClientError(
-                `Error ${res.status} - failed to parse json`,
-                { error },
-                res.status
-            )
-        }
-
-        if (!res.ok) {
-            throw new HVAKRClientError(`Error ${res.status}`, data, res.status)
-        }
-
-        return data
     }
 
     /**
-     * Creates a report for a project. Report generation runs asynchronously;
-     * poll {@link getReport} until the status leaves `pending`.
+     * Creates a job. One uniform resource covers every job kind (set `body.type`
+     * to `report`, `auto-group`, `check`, or `auto-takeoff`). Sync jobs
+     * (`auto-group`, `check`) return `status:"completed"` with `result`
+     * populated; async jobs (`report`, `auto-takeoff`) return `status:"queued"`
+     * — poll {@link getJob} with the returned `jobId` until the status settles.
      * @param projectId - The ID of the project
-     * @param body - The report request (template + optional name/unit system)
+     * @param body - The job request (`type` + the fields that kind consumes)
      * @param opts - Optional write options (e.g. idempotencyKey)
-     * @returns The created report id and initial status
+     * @returns The created job
      * @throws {HVAKRClientError} If the API returns an error response
      */
-    createReport = async (
+    createJob = async (
         projectId: string,
-        body: APIReportCreate_v0,
+        body: APIJobCreate_v0,
         opts?: WriteOptions
-    ): Promise<APIReportCreateResponse_v0> => {
-        return this.request<APIReportCreateResponse_v0>(
+    ): Promise<APIJob_v0> => {
+        return this.request<APIJob_v0>(
             this.createURL(
-                `/projects/${this.encodePathSegment(projectId)}/reports`
+                `/projects/${this.encodePathSegment(projectId)}/jobs`
             ),
             {
                 method: 'POST',
@@ -403,123 +400,18 @@ export class HVAKRClient {
     }
 
     /**
-     * Lists the reports for a project.
+     * Retrieves the current state of a job. For `report`/`auto-takeoff` jobs,
+     * poll this until `status` leaves `queued`/`running`; the settled `result`
+     * (or `error`) is then populated.
      * @param projectId - The ID of the project
-     * @returns The project's reports
+     * @param jobId - The ID of the job (from {@link createJob})
+     * @returns The job
      * @throws {HVAKRClientError} If the API returns an error response
      */
-    listReports = async (projectId: string): Promise<APIReport_v0[]> => {
-        return this.request<APIReport_v0[]>(
+    getJob = async (projectId: string, jobId: string): Promise<APIJob_v0> => {
+        return this.request<APIJob_v0>(
             this.createURL(
-                `/projects/${this.encodePathSegment(projectId)}/reports`
-            ),
-            { method: 'GET', headers: this.getAuthHeaders() }
-        )
-    }
-
-    /**
-     * Retrieves a single report, including its download URL when completed.
-     * @param projectId - The ID of the project
-     * @param reportId - The ID of the report
-     * @returns The report
-     * @throws {HVAKRClientError} If the API returns an error response
-     */
-    getReport = async (
-        projectId: string,
-        reportId: string
-    ): Promise<APIReport_v0> => {
-        return this.request<APIReport_v0>(
-            this.createURL(
-                `/projects/${this.encodePathSegment(projectId)}/reports/${this.encodePathSegment(reportId)}`
-            ),
-            { method: 'GET', headers: this.getAuthHeaders() }
-        )
-    }
-
-    /**
-     * Automatically groups spaces into zones (or zones into systems).
-     * @param projectId - The ID of the project
-     * @param body - The grouping request (scope + optional entity ids)
-     * @param opts - Optional write options (e.g. idempotencyKey)
-     * @returns Counts of created groups and assigned entities
-     * @throws {HVAKRClientError} If the API returns an error response
-     */
-    autoGroup = async (
-        projectId: string,
-        body: APIAutoGroupRequest_v0,
-        opts?: WriteOptions
-    ): Promise<APIAutoGroupResult_v0> => {
-        return this.request<APIAutoGroupResult_v0>(
-            this.createURL(
-                `/projects/${this.encodePathSegment(projectId)}/actions/auto-group`
-            ),
-            {
-                method: 'POST',
-                headers: this.writeHeaders(opts),
-                body: JSON.stringify(body),
-            }
-        )
-    }
-
-    /**
-     * Runs validation checks against a project and returns a check report.
-     * @param projectId - The ID of the project
-     * @param opts - Optional write options (e.g. idempotencyKey)
-     * @returns The check report (tiered findings + summary)
-     * @throws {HVAKRClientError} If the API returns an error response
-     */
-    checkProject = async (
-        projectId: string,
-        opts?: WriteOptions
-    ): Promise<APICheckReport_v0> => {
-        return this.request<APICheckReport_v0>(
-            this.createURL(
-                `/projects/${this.encodePathSegment(projectId)}/actions/check`
-            ),
-            { method: 'POST', headers: this.writeHeaders(opts) }
-        )
-    }
-
-    /**
-     * Starts an asynchronous auto-takeoff job. Poll {@link getAutoTakeoffJob}
-     * with the returned `jobId` until the status leaves `queued`/`running`.
-     * @param projectId - The ID of the project
-     * @param params - Auto-takeoff parameters
-     * @param opts - Optional write options (e.g. idempotencyKey)
-     * @returns The created job id and initial status
-     * @throws {HVAKRClientError} If the API returns an error response
-     */
-    createAutoTakeoffJob = async (
-        projectId: string,
-        params: APIAutoTakeoffRequest_v0 = {},
-        opts?: WriteOptions
-    ): Promise<APIAutoTakeoffJobCreateResponse_v0> => {
-        return this.request<APIAutoTakeoffJobCreateResponse_v0>(
-            this.createURL(
-                `/projects/${this.encodePathSegment(projectId)}/actions/auto-takeoff`
-            ),
-            {
-                method: 'POST',
-                headers: this.writeHeaders(opts),
-                body: JSON.stringify(params),
-            }
-        )
-    }
-
-    /**
-     * Retrieves the state of an auto-takeoff job.
-     * @param projectId - The ID of the project
-     * @param jobId - The ID of the job (from {@link createAutoTakeoffJob})
-     * @returns The job status and, when completed, its result
-     * @throws {HVAKRClientError} If the API returns an error response
-     */
-    getAutoTakeoffJob = async (
-        projectId: string,
-        jobId: string
-    ): Promise<APIAutoTakeoffJob_v0> => {
-        return this.request<APIAutoTakeoffJob_v0>(
-            this.createURL(
-                `/projects/${this.encodePathSegment(projectId)}/actions/auto-takeoff/${this.encodePathSegment(jobId)}`
+                `/projects/${this.encodePathSegment(projectId)}/jobs/${this.encodePathSegment(jobId)}`
             ),
             { method: 'GET', headers: this.getAuthHeaders() }
         )

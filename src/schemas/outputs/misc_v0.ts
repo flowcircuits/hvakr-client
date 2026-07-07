@@ -120,21 +120,6 @@ export const SpaceRegisterScheduleRowSchema_v0 = z.object({
     totalCFM: z.number(),
 })
 
-// APIOutputType definition for v0 API
-
-export const APIOutputTypes_v0 = {
-    dryside_graph: 'dryside_graph',
-    register_schedule: 'register_schedule',
-    loads: 'loads',
-    ventilation: 'ventilation',
-    equipment: 'equipment',
-    checksums: 'checksums',
-    airflows: 'airflows',
-} as const
-
-export const APIOutputTypeSchema_v0 = z.enum(Object.values(APIOutputTypes_v0))
-export type APIOutputType_v0 = z.infer<typeof APIOutputTypeSchema_v0>
-
 // DrySideGraph types for v0 API
 
 export const MetaDrySideNodeDataSchema_v0 = AssociatedNodeDataSchema_v0.and(

@@ -64,13 +64,22 @@ describe('HVAKRClient URL construction', () => {
         )
     })
 
+    it('builds Revit ingestion URLs under /revit/v0', () => {
+        expect(client.createRevitURL('/projects')).toBe(
+            'https://api.example.test/revit/v0/projects'
+        )
+        expect(client.createRevitURL('/projects/p1')).toBe(
+            'https://api.example.test/revit/v0/projects/p1'
+        )
+    })
+
     it('URL-encodes query parameters and preserves flag parameters', () => {
         expect(
             client.createURL('/weather-stations', {
                 latitude: '33.2353947',
                 longitude: '-117.2149959',
                 expand: true,
-                revitPayload: false,
+                draft: false,
                 label: 'A&B Building',
             })
         ).toBe(
@@ -127,8 +136,8 @@ describe('HVAKRClient request building', () => {
         replies.push({ statusCode, data })
     }
 
-    it('createProject POSTs JSON with auth headers and the revitPayload flag', async () => {
-        enqueue(200, { id: 'proj_1' })
+    it('createProject POSTs JSON to /projects with auth headers', async () => {
+        enqueue(201, { id: 'proj_1' })
 
         const payload = { name: 'My Project' }
         const res = await requestClient.createProject(payload)
@@ -147,10 +156,35 @@ describe('HVAKRClient request building', () => {
         expect(JSON.parse(bodyAsString(request.body))).toEqual(payload)
     })
 
-    it('createProject sets the revitPayload query flag when requested', async () => {
-        enqueue(200, { id: 'proj_1' })
-        await requestClient.createProject({ name: 'r' }, true)
-        expect(requests.at(-1)?.path).toBe('/v0/projects?revitPayload')
+    it('createProjectFromRevit POSTs to the Revit namespace with idempotency', async () => {
+        enqueue(201, { id: 'proj_1' })
+        const payload: RevitData_v0 = {
+            projectAddress: null,
+            projectName: 'R',
+            projectRotationDegrees: 0,
+            revitSpaces: [],
+        }
+        await requestClient.createProjectFromRevit(payload, {
+            idempotencyKey: 'idem-1',
+        })
+        const request = requests.at(-1)!
+        expect(request.path).toBe('/revit/v0/projects')
+        expect(request.method).toBe('POST')
+        expect(headerValue(request.headers, 'idempotency-key')).toBe('idem-1')
+        expect(JSON.parse(bodyAsString(request.body))).toEqual(payload)
+    })
+
+    it('updateProjectFromRevit PATCHes the Revit namespace project', async () => {
+        enqueue(200, { id: 'p1' })
+        const payload: RevitData_v0 = {
+            projectAddress: null,
+            projectName: null,
+            projectRotationDegrees: 0,
+            revitSpaces: [],
+        }
+        await requestClient.updateProjectFromRevit('p1', payload)
+        expect(requests.at(-1)?.path).toBe('/revit/v0/projects/p1')
+        expect(requests.at(-1)?.method).toBe('PATCH')
     })
 
     it('listProjects sends limit and cursor as query params', async () => {
@@ -177,13 +211,6 @@ describe('HVAKRClient request building', () => {
         })
     })
 
-    it('getProjectOutputs throws a parse error when the body is not JSON', async () => {
-        enqueue(200, 'not json')
-        await expect(
-            requestClient.getProjectOutputs('p1', 'loads')
-        ).rejects.toThrow(/failed to parse json/)
-    })
-
     it('getProject expands specific subcollections when given an array', async () => {
         enqueue(200, { id: 'p1' })
         await requestClient.getProject('p1', ['spaces', 'zones'])
@@ -198,82 +225,70 @@ describe('HVAKRClient request building', () => {
         expect(requests.at(-1)?.path).toBe('/v0/projects/p1')
     })
 
-    it('getProjectOutputs routes new output types to the right path', async () => {
+    it('getProjectCalculations hits /calculations with no include by default', async () => {
         enqueue(200, { errors: [], flags: {} })
-        await requestClient.getProjectOutputs('p1', 'ventilation')
+        await requestClient.getProjectCalculations('p1')
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/calculations')
+        expect(requests.at(-1)?.method).toBe('GET')
+    })
+
+    it('getProjectCalculations joins the include array into a query', async () => {
+        enqueue(200, { errors: [], flags: {} })
+        await requestClient.getProjectCalculations('p1', {
+            include: ['loads', 'ventilation'],
+        })
         expect(requests.at(-1)?.path).toBe(
-            '/v0/projects/p1/outputs/ventilation'
+            '/v0/projects/p1/calculations?include=loads%2Cventilation'
         )
     })
 
-    it('createReport POSTs to the reports route and sends the idempotency key', async () => {
-        enqueue(201, { id: 'rep_1', status: 'pending' })
-        const res = await requestClient.createReport(
+    it('createJob POSTs to the jobs route and sends the idempotency key', async () => {
+        enqueue(202, { jobId: 'job_1', type: 'report', status: 'queued' })
+        const res = await requestClient.createJob(
             'p1',
-            { template: 'load-calculation' },
+            { type: 'report', template: 'load-calculation' },
             { idempotencyKey: 'idem-123' }
         )
-        expect(res).toEqual({ id: 'rep_1', status: 'pending' })
+        expect(res).toEqual({
+            jobId: 'job_1',
+            type: 'report',
+            status: 'queued',
+        })
         const request = requests.at(-1)!
-        expect(request.path).toBe('/v0/projects/p1/reports')
+        expect(request.path).toBe('/v0/projects/p1/jobs')
         expect(request.method).toBe('POST')
         expect(headerValue(request.headers, 'idempotency-key')).toBe('idem-123')
         expect(JSON.parse(bodyAsString(request.body))).toEqual({
+            type: 'report',
             template: 'load-calculation',
         })
     })
 
-    it('listReports and getReport hit the reports routes', async () => {
-        enqueue(200, [])
-        await requestClient.listReports('p1')
-        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/reports')
-
-        enqueue(200, { id: 'rep_1', name: 'r', status: 'completed', date: 1 })
-        await requestClient.getReport('p1', 'rep_1')
-        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/reports/rep_1')
-    })
-
-    it('autoGroup POSTs the scope to the actions route', async () => {
-        enqueue(200, { created: 2, assigned: 10 })
-        const res = await requestClient.autoGroup('p1', { scope: 'spaces' })
-        expect(res).toEqual({ created: 2, assigned: 10 })
-        const request = requests.at(-1)!
-        expect(request.path).toBe('/v0/projects/p1/actions/auto-group')
-        expect(request.method).toBe('POST')
-        expect(JSON.parse(bodyAsString(request.body))).toEqual({
+    it('createJob returns a completed sync job inline', async () => {
+        enqueue(200, {
+            jobId: 'job_2',
+            type: 'auto-group',
+            status: 'completed',
+            result: { created: 2, assigned: 10 },
+        })
+        const res = await requestClient.createJob('p1', {
+            type: 'auto-group',
             scope: 'spaces',
         })
+        expect(res.status).toBe('completed')
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/jobs')
     })
 
-    it('checkProject POSTs to the check action route', async () => {
+    it('getJob GETs the job by id', async () => {
         enqueue(200, {
-            passed: true,
-            summary: { errors: 0, warnings: 0, info: 0 },
-            tiers: [],
+            jobId: 'job_1',
+            type: 'auto-takeoff',
+            status: 'completed',
+            result: {},
         })
-        const res = await requestClient.checkProject('p1')
-        expect(res.passed).toBe(true)
-        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/actions/check')
-        expect(requests.at(-1)?.method).toBe('POST')
-    })
-
-    it('createAutoTakeoffJob and getAutoTakeoffJob hit the auto-takeoff routes', async () => {
-        enqueue(202, { jobId: 'job_1', status: 'queued' })
-        const created = await requestClient.createAutoTakeoffJob('p1', {
-            levels: [1, 2],
-        })
-        expect(created).toEqual({ jobId: 'job_1', status: 'queued' })
-        expect(requests.at(-1)?.path).toBe(
-            '/v0/projects/p1/actions/auto-takeoff'
-        )
-        expect(requests.at(-1)?.method).toBe('POST')
-
-        enqueue(200, { jobId: 'job_1', status: 'completed', result: {} })
-        const job = await requestClient.getAutoTakeoffJob('p1', 'job_1')
+        const job = await requestClient.getJob('p1', 'job_1')
         expect(job.status).toBe('completed')
-        expect(requests.at(-1)?.path).toBe(
-            '/v0/projects/p1/actions/auto-takeoff/job_1'
-        )
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/jobs/job_1')
         expect(requests.at(-1)?.method).toBe('GET')
     })
 
@@ -350,34 +365,52 @@ describeApi('HVAKR Client', () => {
         expect(weatherStation.station).toBeTruthy()
     }, 5000)
 
-    it('should get HVAKR Project register schedule outputs', async () => {
-        const outputs = await hvakrClient.getProjectOutputs(
-            id!,
-            'register_schedule'
-        )
-        expect(outputs.registerSchedule.length).toBe(246)
+    it('should get HVAKR Project register schedule calculations', async () => {
+        const calc = await hvakrClient.getProjectCalculations(id!, {
+            include: ['register_schedule'],
+        })
+        expect(calc.registerSchedule?.length).toBe(246)
+        expect(calc.loads).toBeUndefined()
     }, 40000)
 
-    it('should get HVAKR Project loads outputs', async () => {
-        const outputs = await hvakrClient.getProjectOutputs(id!, 'loads')
+    it('should get HVAKR Project loads calculations', async () => {
+        const calc = await hvakrClient.getProjectCalculations(id!, {
+            include: ['loads'],
+        })
+        const loads = calc.loads!
 
-        expect(Object.keys(outputs.spaceCoolingLoads).length).toBe(123)
-        expect(Object.keys(outputs.spaceHeatingLoads).length).toBe(123)
-        expect(Object.keys(outputs.zoneCoolingLoads).length).toBe(115)
-        expect(Object.keys(outputs.zoneHeatingLoads).length).toBe(115)
-        expect(Object.keys(outputs.systemCoolingLoads).length).toBe(6)
-        expect(Object.keys(outputs.systemHeatingLoads).length).toBe(6)
-        expect(outputs.errors.length).toBe(0)
+        expect(Object.keys(loads.spaceCoolingLoads).length).toBe(123)
+        expect(Object.keys(loads.spaceHeatingLoads).length).toBe(123)
+        expect(Object.keys(loads.zoneCoolingLoads).length).toBe(115)
+        expect(Object.keys(loads.zoneHeatingLoads).length).toBe(115)
+        expect(Object.keys(loads.systemCoolingLoads).length).toBe(6)
+        expect(Object.keys(loads.systemHeatingLoads).length).toBe(6)
+        expect(calc.errors.length).toBe(0)
     }, 40000)
 
-    it('should get HVAKR Project dryside graph outputs', async () => {
-        const outputs = await hvakrClient.getProjectOutputs(
-            id!,
-            'dryside_graph'
-        )
+    it('should get multiple calculation sections from one call', async () => {
+        const calc = await hvakrClient.getProjectCalculations(id!, {
+            include: ['loads', 'dryside_graph'],
+        })
+        expect(Object.keys(calc.loads!.spaceCoolingLoads).length).toBe(123)
+        expect(Object.keys(calc.drySideGraph!).length).toBe(776)
+    }, 40000)
 
-        expect(Object.keys(outputs.drySideGraph).length).toBe(776)
-        expect(outputs.errors.length).toBe(0)
+    it('runs sync jobs inline and polls async jobs', async () => {
+        const check = await hvakrClient.createJob(id!, { type: 'check' })
+        expect(check.type).toBe('check')
+        expect(check.status).toBe('completed')
+
+        const reportJob = await hvakrClient.createJob(id!, {
+            type: 'report',
+            template: 'load-calculation',
+        })
+        expect(reportJob.status).toBe('queued')
+
+        const polled = await hvakrClient.getJob(id!, reportJob.jobId)
+        expect(polled.status).toBe('completed')
+        assert(polled.result && 'reportId' in polled.result)
+        expect(polled.result.report?.downloadUrl).toBeTruthy()
     }, 40000)
 
     it('should update HVAKR Project with valid project data', async () => {
@@ -619,7 +652,7 @@ describeApi('HVAKR Client Revit API', () => {
     const hvakrClient = createClient()
 
     it('should create a project from Revit data', async () => {
-        const res = await hvakrClient.createProject(revitData, true)
+        const res = await hvakrClient.createProjectFromRevit(revitData)
         expect(res.id).toBeTruthy()
 
         const project = await hvakrClient.getProject(res.id, true)
@@ -639,7 +672,7 @@ describeApi('HVAKR Client Revit API', () => {
         const res = await hvakrClient.createProject({})
         expect(res.id).toBeTruthy()
 
-        await hvakrClient.updateProject(res.id, revitData, true)
+        await hvakrClient.updateProjectFromRevit(res.id, revitData)
 
         const project = await hvakrClient.getProject(res.id, true)
         expect(project.spaces).toBeTruthy()

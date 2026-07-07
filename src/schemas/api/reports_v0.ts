@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { ReportFileTypeSchema_v0 } from '../database/project/report_v0'
-import { DisplayUnitSystemIdSchema } from '../misc'
 
 /** Report template slugs accepted by the v0 API. */
 export const APIReportTemplateIds_v0 = {
@@ -51,34 +50,6 @@ export const APIReportSchema_v0 = z
     .describe('A generated (or in-progress) project report.')
 export type APIReport_v0 = z.infer<typeof APIReportSchema_v0>
 
-/**
- * Response returned when creating a report. Generation runs asynchronously,
- * so only the id and initial status are returned; poll `getReport` for the
- * download URL once the status leaves "pending".
- */
-export const APIReportCreateResponseSchema_v0 = z
-    .object({
-        id: z.string().describe('ID of the created report.'),
-        status: APIReportStatusSchema_v0,
-    })
-    .describe('Response returned when creating a report.')
-export type APIReportCreateResponse_v0 = z.infer<
-    typeof APIReportCreateResponseSchema_v0
->
-
-/** Request body for creating a report. */
-export const APIReportCreateSchema_v0 = z
-    .object({
-        template: APIReportTemplateIdSchema_v0.describe(
-            'Template slug to generate.'
-        ),
-        name: z
-            .string()
-            .optional()
-            .describe('Optional report name; defaults to the template name.'),
-        displayUnitSystemId: DisplayUnitSystemIdSchema.optional().describe(
-            'Unit system for the report; defaults to IMPERIAL.'
-        ),
-    })
-    .describe('Request body to create a report.')
-export type APIReportCreate_v0 = z.infer<typeof APIReportCreateSchema_v0>
+// Reports are created via `POST /projects/{id}/jobs` with `type: "report"`
+// (see `APIJobCreateSchema_v0`), read via `GET /projects/{id}?expand=reports`,
+// and polled via `GET /projects/{id}/jobs/{jobId}`.

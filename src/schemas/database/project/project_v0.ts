@@ -233,6 +233,7 @@ export const ProjectTypes_v0 = {
     commercial: 'commercial',
 } as const
 export const ProjectTypeSchema_v0 = z.enum(Object.values(ProjectTypes_v0))
+export type ProjectType_v0 = z.infer<typeof ProjectTypeSchema_v0>
 
 export const ProjectStatuses_v0 = {
     new: 'new',

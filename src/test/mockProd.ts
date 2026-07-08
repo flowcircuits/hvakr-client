@@ -159,9 +159,11 @@ export class MockProdService {
                     name: 'Mock Product',
                 })
             }
-            return response(200, [
-                { id: 'mock-product-1', name: 'Mock Product' },
-            ])
+            return this.listProducts(url)
+        }
+
+        if (method === 'GET' && path === '/me') {
+            return this.me()
         }
 
         return response(500, { error: 'Unhandled mock prod request' })
@@ -191,6 +193,63 @@ export class MockProdService {
             projects: page.map(({ id, name }) => ({ id, name })),
             hasMore: nextCursor !== null,
             nextCursor,
+        })
+    }
+
+    private listProducts(url: URL) {
+        const all = [
+            {
+                id: 'mock-product-1',
+                name: 'Mock Product',
+                manufacturer: 'Mock',
+            },
+            {
+                id: 'mock-product-2',
+                name: 'Mock RTU',
+                manufacturer: 'Mock',
+                model: 'RTU-5',
+            },
+        ]
+        const search = url.searchParams.get('search')?.toLowerCase()
+        const filtered = search
+            ? all.filter((product) =>
+                  [product.name, product.manufacturer, product.model]
+                      .filter((field): field is string => !!field)
+                      .some((field) => field.toLowerCase().includes(search))
+              )
+            : all
+        const limit = Number(url.searchParams.get('limit') ?? filtered.length)
+        const cursor = Number(url.searchParams.get('cursor') ?? 0)
+        const page = filtered.slice(cursor, cursor + limit)
+        const nextCursor =
+            cursor + limit < filtered.length ? String(cursor + limit) : null
+
+        return response(200, {
+            products: page,
+            hasMore: nextCursor !== null,
+            nextCursor,
+        })
+    }
+
+    private me() {
+        return response(200, {
+            user: {
+                id: 'mock-user-1',
+                email: 'mock@hvakr.test',
+                firstName: 'Mock',
+                lastName: 'User',
+                license: 'team',
+            },
+            organizations: [
+                {
+                    id: 'mock-org-1',
+                    name: 'Mock MEP',
+                    domain: 'hvakr.test',
+                    role: 10,
+                },
+            ],
+            plan: { license: 'team', apiAccess: true },
+            rateLimit: { limitPerMinute: 120 },
         })
     }
 

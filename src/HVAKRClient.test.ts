@@ -250,11 +250,54 @@ describe('HVAKRClient request building', () => {
         expect(requests.at(-1)?.method).toBe('GET')
     })
 
-    it('listProducts GETs /products with an optional search filter', async () => {
-        enqueue(200, [{ id: 'prod_1', name: 'RTU-5' }])
-        const products = await requestClient.listProducts({ search: 'RTU' })
-        expect(products).toEqual([{ id: 'prod_1', name: 'RTU-5' }])
-        expect(requests.at(-1)?.path).toBe('/v0/products?search=RTU')
+    it('listProducts GETs /products and returns the pagination envelope', async () => {
+        enqueue(200, {
+            products: [{ id: 'prod_1', name: 'RTU-5' }],
+            hasMore: true,
+            nextCursor: 'prod_1',
+        })
+        const page = await requestClient.listProducts({
+            search: 'RTU',
+            limit: 1,
+            cursor: 'prod_0',
+        })
+        expect(page).toEqual({
+            products: [{ id: 'prod_1', name: 'RTU-5' }],
+            hasMore: true,
+            nextCursor: 'prod_1',
+        })
+        expect(requests.at(-1)?.path).toBe(
+            '/v0/products?search=RTU&limit=1&cursor=prod_0'
+        )
+        expect(requests.at(-1)?.method).toBe('GET')
+    })
+
+    it('listProjects forwards search/status/projectType filters', async () => {
+        enqueue(200, { projects: [], hasMore: false, nextCursor: null })
+        await requestClient.listProjects({
+            search: 'tower',
+            status: 'inProgress',
+            projectType: 'commercial',
+        })
+        expect(requests.at(-1)?.path).toBe(
+            '/v0/projects?search=tower&status=inProgress&projectType=commercial'
+        )
+        expect(requests.at(-1)?.method).toBe('GET')
+    })
+
+    it('me GETs /me and returns the caller identity envelope', async () => {
+        const body = {
+            user: { id: 'u1', email: 'eng@firm.com', license: 'team' },
+            organizations: [
+                { id: 'org1', name: 'Acme MEP', domain: 'acme.com', role: 10 },
+            ],
+            plan: { license: 'team', apiAccess: true },
+            rateLimit: { limitPerMinute: 120 },
+        }
+        enqueue(200, body)
+        const me = await requestClient.me()
+        expect(me).toEqual(body)
+        expect(requests.at(-1)?.path).toBe('/v0/me')
         expect(requests.at(-1)?.method).toBe('GET')
     })
 
@@ -323,9 +366,22 @@ describeApi('HVAKR Client', () => {
     }, 10000)
 
     it('should list catalog products', async () => {
-        const products = await hvakrClient.listProducts()
-        expect(Array.isArray(products)).toBe(true)
+        const page = await hvakrClient.listProducts()
+        expect(Array.isArray(page.products)).toBe(true)
+        expect(typeof page.hasMore).toBe('boolean')
+        expect(
+            page.nextCursor === null || typeof page.nextCursor === 'string'
+        ).toBe(true)
     }, 5000)
+
+    it('should return the caller identity from /me', async () => {
+        const me = await hvakrClient.me()
+        expect(me.user.email).toBeTruthy()
+        expect(me.user.license).toBeTruthy()
+        expect(Array.isArray(me.organizations)).toBe(true)
+        expect(typeof me.plan.apiAccess).toBe('boolean')
+        expect(typeof me.rateLimit.limitPerMinute).toBe('number')
+    }, 10000)
 
     it('should get HVAKR Project register schedule calculations', async () => {
         const calc = await hvakrClient.getProjectCalculations(id!, {

@@ -93,6 +93,7 @@ export const HeatingLoadsSchema_v0 = z.object({
 export const RegisterModelTypes_v0 = {
     CEILING_SQUARE: 'ceilingSquare',
     CEILING_LINEAR: 'ceilingLinear',
+    SIDEWALL: 'sidewall',
 } as const
 
 export const RegisterModelTypeSchema_v0 = z.enum(

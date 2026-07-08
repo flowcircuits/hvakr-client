@@ -9,6 +9,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.4.0] - 2026-07-07
+
+### Breaking Changes
+
+- Replaced `getProjectOutputs(id, type)` (one output type per call) with
+  `getProjectCalculations(id, { include? })`, which runs the calculator once and
+  returns any of `loads`, `register_schedule`, `dryside_graph`, `ventilation`,
+  `equipment`, `checksums`, and `airflows` (plus `errors` and `flags`) in a single
+  response. Omit `include` to return every section. The old per-output schema
+  exports (`APIProjectOutputLoadsSchema`, `APIProjectOutputDrySideGraphSchema`,
+  `APIProjectOutputRegisterScheduleSchema`) are removed; the output types now live
+  under `calculations_v0` / `calculator_v0`.
+- Removed the weather-station endpoints `searchWeatherStations` and
+  `getWeatherStation`, along with the `WeatherStationData_v0` export. Projects still
+  carry their resolved `weatherSpec` (the `CoolingPercentSchema_v0` /
+  `HeatingPercentSchema_v0` percentiles remain exported).
+- Removed the Revit ingestion endpoints `createProjectFromRevit` and
+  `updateProjectFromRevit`, the `createRevitURL` helper, and the `RevitData_v0`
+  schema. The persisted `revitId` field and the `API_REVIT` space creation source
+  are unchanged.
+
+### Added
+
+- `createJob(id, body, opts?)` and `getJob(id, jobId)` — one uniform job resource
+  covering `report`, `auto-group`, `check`, and `auto-takeoff`. Sync jobs return
+  `status: "completed"` with `result` populated; async jobs return `queued` — poll
+  `getJob` until the status settles. Adds `APIJob_v0` and `APIJobCreate_v0`.
+- `listProducts({ search? })` and `getProduct(id)` — read-only access to the product
+  catalog (the organization's products plus public products). Adds `APIProduct_v0`.
+- Idempotency for write methods: `createProject`, `updateProject`, and `createJob`
+  accept an optional `opts.idempotencyKey`, sent as the `Idempotency-Key` header, so
+  retrying a request returns the original result instead of repeating the action.
+- Structured error envelope: `HVAKRClientError` now exposes the HTTP `status`
+  alongside the parsed `metadata` body.
+- New `schemas/api` namespace (`error_v0`, `jobs_v0`, `products_v0`, `reports_v0`).
+
+### Changed
+
+- Reorganized the output schemas into `calculations_v0` / `calculator_v0` and bumped
+  dependencies.
+
 ## [0.3.1] - 2026-06-24
 
 ### Added

@@ -7,7 +7,7 @@ import {
 import type Dispatcher from 'undici/types/dispatcher'
 import type { MockInterceptor } from 'undici/types/mock-interceptor'
 import { afterEach, assert, beforeEach, describe, expect, it } from 'vitest'
-import { ExpandedProjectPatch_v0, RevitData_v0 } from './schemas'
+import { ExpandedProjectPatch_v0 } from './schemas'
 import { ExpandedProjectPostDataExample_v0 } from './fixtures'
 import { HVAKRClient } from './HVAKRClient'
 import { createClientTestTarget } from './test/clientTestTarget'
@@ -66,15 +66,13 @@ describe('HVAKRClient URL construction', () => {
 
     it('URL-encodes query parameters and preserves flag parameters', () => {
         expect(
-            client.createURL('/weather-stations', {
-                latitude: '33.2353947',
-                longitude: '-117.2149959',
-                expand: true,
-                revitPayload: false,
-                label: 'A&B Building',
+            client.createURL('/products', {
+                search: 'A&B Building',
+                active: true,
+                draft: false,
             })
         ).toBe(
-            'https://api.example.test/v0/weather-stations?latitude=33.2353947&longitude=-117.2149959&expand&label=A%26B%20Building'
+            'https://api.example.test/v0/products?search=A%26B%20Building&active'
         )
     })
 })
@@ -127,8 +125,8 @@ describe('HVAKRClient request building', () => {
         replies.push({ statusCode, data })
     }
 
-    it('createProject POSTs JSON with auth headers and the revitPayload flag', async () => {
-        enqueue(200, { id: 'proj_1' })
+    it('createProject POSTs JSON to /projects with auth headers', async () => {
+        enqueue(201, { id: 'proj_1' })
 
         const payload = { name: 'My Project' }
         const res = await requestClient.createProject(payload)
@@ -145,12 +143,6 @@ describe('HVAKRClient request building', () => {
             'application/json'
         )
         expect(JSON.parse(bodyAsString(request.body))).toEqual(payload)
-    })
-
-    it('createProject sets the revitPayload query flag when requested', async () => {
-        enqueue(200, { id: 'proj_1' })
-        await requestClient.createProject({ name: 'r' }, true)
-        expect(requests.at(-1)?.path).toBe('/v0/projects?revitPayload')
     })
 
     it('listProjects sends limit and cursor as query params', async () => {
@@ -172,15 +164,105 @@ describe('HVAKRClient request building', () => {
         await expect(requestClient.getProject('p1')).rejects.toMatchObject({
             name: 'HVAKRClientError',
             message: 'Error 403',
+            status: 403,
             metadata: { message: 'nope' },
         })
     })
 
-    it('getProjectOutputs throws a parse error when the body is not JSON', async () => {
-        enqueue(200, 'not json')
-        await expect(
-            requestClient.getProjectOutputs('p1', 'loads')
-        ).rejects.toThrow(/failed to parse json/)
+    it('getProject expands specific subcollections when given an array', async () => {
+        enqueue(200, { id: 'p1' })
+        await requestClient.getProject('p1', ['spaces', 'zones'])
+        expect(requests.at(-1)?.path).toBe(
+            '/v0/projects/p1?expand=spaces%2Czones'
+        )
+    })
+
+    it('getProject omits expand when not requested', async () => {
+        enqueue(200, { id: 'p1' })
+        await requestClient.getProject('p1')
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1')
+    })
+
+    it('getProjectCalculations hits /calculations with no include by default', async () => {
+        enqueue(200, { errors: [], flags: {} })
+        await requestClient.getProjectCalculations('p1')
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/calculations')
+        expect(requests.at(-1)?.method).toBe('GET')
+    })
+
+    it('getProjectCalculations joins the include array into a query', async () => {
+        enqueue(200, { errors: [], flags: {} })
+        await requestClient.getProjectCalculations('p1', {
+            include: ['loads', 'ventilation'],
+        })
+        expect(requests.at(-1)?.path).toBe(
+            '/v0/projects/p1/calculations?include=loads%2Cventilation'
+        )
+    })
+
+    it('createJob POSTs to the jobs route and sends the idempotency key', async () => {
+        enqueue(202, { jobId: 'job_1', type: 'report', status: 'queued' })
+        const res = await requestClient.createJob(
+            'p1',
+            { type: 'report', template: 'load-calculation' },
+            { idempotencyKey: 'idem-123' }
+        )
+        expect(res).toEqual({
+            jobId: 'job_1',
+            type: 'report',
+            status: 'queued',
+        })
+        const request = requests.at(-1)!
+        expect(request.path).toBe('/v0/projects/p1/jobs')
+        expect(request.method).toBe('POST')
+        expect(headerValue(request.headers, 'idempotency-key')).toBe('idem-123')
+        expect(JSON.parse(bodyAsString(request.body))).toEqual({
+            type: 'report',
+            template: 'load-calculation',
+        })
+    })
+
+    it('createJob returns a completed sync job inline', async () => {
+        enqueue(200, {
+            jobId: 'job_2',
+            type: 'auto-group',
+            status: 'completed',
+            result: { created: 2, assigned: 10 },
+        })
+        const res = await requestClient.createJob('p1', {
+            type: 'auto-group',
+            scope: 'spaces',
+        })
+        expect(res.status).toBe('completed')
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/jobs')
+    })
+
+    it('getJob GETs the job by id', async () => {
+        enqueue(200, {
+            jobId: 'job_1',
+            type: 'auto-takeoff',
+            status: 'completed',
+            result: {},
+        })
+        const job = await requestClient.getJob('p1', 'job_1')
+        expect(job.status).toBe('completed')
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/jobs/job_1')
+        expect(requests.at(-1)?.method).toBe('GET')
+    })
+
+    it('listProducts GETs /products with an optional search filter', async () => {
+        enqueue(200, [{ id: 'prod_1', name: 'RTU-5' }])
+        const products = await requestClient.listProducts({ search: 'RTU' })
+        expect(products).toEqual([{ id: 'prod_1', name: 'RTU-5' }])
+        expect(requests.at(-1)?.path).toBe('/v0/products?search=RTU')
+        expect(requests.at(-1)?.method).toBe('GET')
+    })
+
+    it('getProduct GETs /products/{id}', async () => {
+        enqueue(200, { id: 'prod_1', name: 'RTU-5' })
+        const product = await requestClient.getProduct('prod_1')
+        expect(product).toEqual({ id: 'prod_1', name: 'RTU-5' })
+        expect(requests.at(-1)?.path).toBe('/v0/products/prod_1')
     })
 })
 
@@ -240,43 +322,57 @@ describeApi('HVAKR Client', () => {
         expect(fetchedProjectData.weatherSpec?.selectedStationId).toBeTruthy()
     }, 10000)
 
-    it('should find weather station data', async () => {
-        const fetchedProjectData = await hvakrClient.getProject(id!, true)
-        const weatherStationId =
-            fetchedProjectData.weatherSpec!.selectedStationId!
-        const weatherStation =
-            await hvakrClient.getWeatherStation(weatherStationId)
-        expect(weatherStation.station).toBeTruthy()
+    it('should list catalog products', async () => {
+        const products = await hvakrClient.listProducts()
+        expect(Array.isArray(products)).toBe(true)
     }, 5000)
 
-    it('should get HVAKR Project register schedule outputs', async () => {
-        const outputs = await hvakrClient.getProjectOutputs(
-            id!,
-            'register_schedule'
-        )
-        expect(outputs.registerSchedule.length).toBe(246)
+    it('should get HVAKR Project register schedule calculations', async () => {
+        const calc = await hvakrClient.getProjectCalculations(id!, {
+            include: ['register_schedule'],
+        })
+        expect(calc.registerSchedule?.length).toBe(246)
+        expect(calc.loads).toBeUndefined()
     }, 40000)
 
-    it('should get HVAKR Project loads outputs', async () => {
-        const outputs = await hvakrClient.getProjectOutputs(id!, 'loads')
+    it('should get HVAKR Project loads calculations', async () => {
+        const calc = await hvakrClient.getProjectCalculations(id!, {
+            include: ['loads'],
+        })
+        const loads = calc.loads!
 
-        expect(Object.keys(outputs.spaceCoolingLoads).length).toBe(123)
-        expect(Object.keys(outputs.spaceHeatingLoads).length).toBe(123)
-        expect(Object.keys(outputs.zoneCoolingLoads).length).toBe(115)
-        expect(Object.keys(outputs.zoneHeatingLoads).length).toBe(115)
-        expect(Object.keys(outputs.systemCoolingLoads).length).toBe(6)
-        expect(Object.keys(outputs.systemHeatingLoads).length).toBe(6)
-        expect(outputs.errors.length).toBe(0)
+        expect(Object.keys(loads.spaceCoolingLoads).length).toBe(123)
+        expect(Object.keys(loads.spaceHeatingLoads).length).toBe(123)
+        expect(Object.keys(loads.zoneCoolingLoads).length).toBe(115)
+        expect(Object.keys(loads.zoneHeatingLoads).length).toBe(115)
+        expect(Object.keys(loads.systemCoolingLoads).length).toBe(6)
+        expect(Object.keys(loads.systemHeatingLoads).length).toBe(6)
+        expect(calc.errors.length).toBe(0)
     }, 40000)
 
-    it('should get HVAKR Project dryside graph outputs', async () => {
-        const outputs = await hvakrClient.getProjectOutputs(
-            id!,
-            'dryside_graph'
-        )
+    it('should get multiple calculation sections from one call', async () => {
+        const calc = await hvakrClient.getProjectCalculations(id!, {
+            include: ['loads', 'dryside_graph'],
+        })
+        expect(Object.keys(calc.loads!.spaceCoolingLoads).length).toBe(123)
+        expect(Object.keys(calc.drySideGraph!).length).toBe(776)
+    }, 40000)
 
-        expect(Object.keys(outputs.drySideGraph).length).toBe(776)
-        expect(outputs.errors.length).toBe(0)
+    it('runs sync jobs inline and polls async jobs', async () => {
+        const check = await hvakrClient.createJob(id!, { type: 'check' })
+        expect(check.type).toBe('check')
+        expect(check.status).toBe('completed')
+
+        const reportJob = await hvakrClient.createJob(id!, {
+            type: 'report',
+            template: 'load-calculation',
+        })
+        expect(reportJob.status).toBe('queued')
+
+        const polled = await hvakrClient.getJob(id!, reportJob.jobId)
+        expect(polled.status).toBe('completed')
+        assert(polled.result && 'reportId' in polled.result)
+        expect(polled.result.report?.downloadUrl).toBeTruthy()
     }, 40000)
 
     it('should update HVAKR Project with valid project data', async () => {
@@ -440,110 +536,5 @@ describeApi('HVAKR Client', () => {
         await hvakrClient.deleteProject(id!)
         const { projects } = await hvakrClient.listProjects()
         expect(projects.map((p) => p.id)).not.toContain(id!)
-    }, 40000)
-})
-
-describeApi('HVAKR Client Weather API', () => {
-    const hvakrClient = createClient()
-
-    it('should find weather stations by me', async () => {
-        const { weatherStationIds } = await hvakrClient.searchWeatherStations(
-            33.2353947,
-            -117.2149959
-        )
-        expect(weatherStationIds).toHaveLength(5)
-    })
-})
-
-const revitData: RevitData_v0 = {
-    projectAddress: '24546 Golden Oak Lane, Newhall, CA, 91321',
-    projectName: 'Test Project',
-    projectRotationDegrees: 0,
-    revitSpaces: [
-        {
-            area: 100,
-            uniqueId: '123',
-            levelElevation: 0,
-            name: 'Test Space',
-            number: '1',
-            unboundedHeight: 10,
-            volume: 1000,
-            boundaries: [
-                [
-                    { x1: 0, y1: 0, x2: 100, y2: 0 },
-                    { x1: 100, y1: 0, x2: 100, y2: 100 },
-                    { x1: 100, y1: 100, x2: 0, y2: 100 },
-                    { x1: 0, y1: 100, x2: 0, y2: 0 },
-                ],
-            ],
-        },
-        {
-            area: 200,
-            uniqueId: '456',
-            levelElevation: 0,
-            name: 'Test Space 2',
-            number: '2',
-            unboundedHeight: 20,
-            volume: 2000,
-            boundaries: [
-                [
-                    { x1: 100, y1: 100, x2: 200, y2: 100 },
-                    { x1: 200, y1: 100, x2: 200, y2: 200 },
-                    { x1: 200, y1: 200, x2: 100, y2: 200 },
-                    { x1: 100, y1: 200, x2: 100, y2: 100 },
-                ],
-            ],
-        },
-        {
-            area: 300,
-            uniqueId: '789',
-            levelElevation: 100,
-            name: 'Test Space 3',
-            number: '3',
-            unboundedHeight: 30,
-            volume: 3000,
-            boundaries: [
-                [
-                    { x1: 0, y1: 0, x2: 100, y2: 0 },
-                    { x1: 100, y1: 0, x2: 100, y2: 100 },
-                    { x1: 100, y1: 100, x2: 0, y2: 100 },
-                    { x1: 0, y1: 100, x2: 0, y2: 0 },
-                ],
-            ],
-        },
-    ],
-}
-
-describeApi('HVAKR Client Revit API', () => {
-    const hvakrClient = createClient()
-
-    it('should create a project from Revit data', async () => {
-        const res = await hvakrClient.createProject(revitData, true)
-        expect(res.id).toBeTruthy()
-
-        const project = await hvakrClient.getProject(res.id, true)
-        expect(project.spaces).toBeTruthy()
-        expect(Object.keys(project.spaces!).length).toBe(3)
-        const spaces = Object.values(project.spaces!)
-        assert(spaces.some((space) => space.revitId === '123'))
-        assert(spaces.some((space) => space.revitId === '456'))
-        assert(spaces.some((space) => space.revitId === '789'))
-        assert(spaces.some((space) => space.level === 0))
-        assert(spaces.some((space) => space.level === 1))
-
-        await hvakrClient.deleteProject(res.id)
-    }, 40000)
-
-    it('should update a project from Revit data', async () => {
-        const res = await hvakrClient.createProject({})
-        expect(res.id).toBeTruthy()
-
-        await hvakrClient.updateProject(res.id, revitData, true)
-
-        const project = await hvakrClient.getProject(res.id, true)
-        expect(project.spaces).toBeTruthy()
-        expect(Object.keys(project.spaces!).length).toBe(3)
-
-        await hvakrClient.deleteProject(res.id)
     }, 40000)
 })

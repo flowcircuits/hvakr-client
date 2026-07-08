@@ -1,30 +1,47 @@
 import {
-    APIOutputType_v0,
-    APIProjectOutputDrySideGraph,
-    APIProjectOutputLoads_v0,
-    APIProjectOutputRegisterSchedule_v0,
+    APICalculationSection_v0,
+    APIJob_v0,
+    APIJobCreate_v0,
+    APIProduct_v0,
+    APIProjectCalculations_v0,
     ExpandedProjectPatch_v0,
     ExpandedProjectPost_v0,
     ExpandedProject_v0,
     ProjectListResponse_v0,
+    ProjectSubcollections_v0,
     Project_v0,
-    RevitData_v0,
-    WeatherStationData_v0,
 } from './schemas'
+
+/** A subcollection key that can be requested via `expand`. */
+export type ProjectSubcollectionKey_v0 = keyof ProjectSubcollections_v0
 
 /**
  * Error thrown when the HVAKR API returns an unsuccessful response.
- * Contains the HTTP status code in the message and optional metadata with additional details.
+ * Contains the HTTP status code and optional metadata with the parsed
+ * error body (the API's standard error envelope for v0 endpoints).
  */
 export class HVAKRClientError extends Error {
-    /** Additional error details from the API response */
+    /** Additional error details from the API response (parsed JSON body). */
     metadata?: unknown
+    /** HTTP status code of the response, when available. */
+    status?: number
 
-    constructor(message?: string, metadata?: unknown) {
+    constructor(message?: string, metadata?: unknown, status?: number) {
         super(message)
         this.name = 'HVAKRClientError'
         this.metadata = metadata
+        this.status = status
     }
+}
+
+/** Options accepted by write (POST) methods. */
+export interface WriteOptions {
+    /**
+     * Idempotency key sent as the `Idempotency-Key` header. Retrying a POST
+     * with the same key returns the original result instead of performing
+     * the action twice.
+     */
+    idempotencyKey?: string
 }
 
 /** Configuration options for initializing the HVAKR client */
@@ -73,7 +90,29 @@ export class HVAKRClient {
     }
 
     /**
-     * Constructs a full API URL with optional query parameters.
+     * Serializes query params: `string` values become `k=v`, a truthy boolean
+     * becomes a bare flag (`k`), and a falsy boolean is omitted. Returns the
+     * `?...` suffix, or `''` when there is nothing to append.
+     */
+    private buildQuery = (
+        queryParams?: Record<string, string | boolean>
+    ): string => {
+        if (!queryParams) return ''
+        const params = Object.entries(queryParams)
+            .map(([k, v]) =>
+                typeof v === 'string'
+                    ? `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
+                    : v
+                      ? encodeURIComponent(k)
+                      : null
+            )
+            .filter((a) => a)
+            .join('&')
+        return params ? `?${params}` : ''
+    }
+
+    /**
+     * Constructs a full API URL under the core version prefix (e.g. `/v0`).
      * @param path - API endpoint path (e.g., "/projects")
      * @param queryParams - Optional query parameters to append
      * @returns The full URL string
@@ -82,53 +121,53 @@ export class HVAKRClient {
         path: string,
         queryParams?: Record<string, string | boolean>
     ) => {
-        let url = `${this.baseUrl.replace(/\/$/, '')}/${this.version}${path}`
-        if (queryParams) {
-            const params = Object.entries(queryParams)
-                .map(([k, v]) =>
-                    typeof v === 'string'
-                        ? `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
-                        : v
-                          ? encodeURIComponent(k)
-                          : null
-                )
-                .filter((a) => a)
-                .join('&')
-            if (params) {
-                url += `?${params}`
-            }
+        const base = `${this.baseUrl.replace(/\/$/, '')}/${this.version}${path}`
+        return base + this.buildQuery(queryParams)
+    }
+
+    /**
+     * Performs a request and parses the JSON body, throwing an
+     * {@link HVAKRClientError} (carrying the status and parsed error body)
+     * on a non-2xx response.
+     */
+    private request = async <T>(url: string, init: RequestInit): Promise<T> => {
+        const res = await fetch(url, init)
+        const data = await res.json()
+        if (!res.ok) {
+            throw new HVAKRClientError(`Error ${res.status}`, data, res.status)
         }
-        return url
+        return data as T
+    }
+
+    /** Builds headers for a JSON POST/PATCH, including optional idempotency. */
+    private writeHeaders = (opts?: WriteOptions): HeadersInit => {
+        const headers: Record<string, string> = {
+            ...(this.getAuthHeaders() as Record<string, string>),
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        }
+        if (opts?.idempotencyKey) {
+            headers['Idempotency-Key'] = opts.idempotencyKey
+        }
+        return headers
     }
 
     /**
      * Creates a new HVAKR project.
      * @param projectData - The project data to create
-     * @param revitPayload - Set to true if the data is in Revit format
+     * @param opts - Optional write options (e.g. idempotencyKey)
      * @returns The ID of the newly created project
      * @throws {HVAKRClientError} If the API returns an error response
      */
     createProject = async (
-        projectData: ExpandedProjectPost_v0 | RevitData_v0,
-        revitPayload?: boolean
+        projectData: ExpandedProjectPost_v0,
+        opts?: WriteOptions
     ): Promise<{ id: string }> => {
-        const res = await fetch(
-            this.createURL(`/projects`, { revitPayload: !!revitPayload }),
-            {
-                method: 'POST',
-                headers: {
-                    ...this.getAuthHeaders(),
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(projectData),
-            }
-        )
-        const data = await res.json()
-        if (!res.ok) {
-            throw new HVAKRClientError(`Error ${res.status}`, data)
-        }
-        return data
+        return this.request<{ id: string }>(this.createURL(`/projects`), {
+            method: 'POST',
+            headers: this.writeHeaders(opts),
+            body: JSON.stringify(projectData),
+        })
     }
 
     /**
@@ -153,22 +192,19 @@ export class HVAKRClient {
         if (params.cursor !== undefined) {
             queryParams.cursor = params.cursor
         }
-        const res = await fetch(this.createURL(`/projects`, queryParams), {
-            method: 'GET',
-            headers: this.getAuthHeaders(),
-        })
-        const data = await res.json()
-        if (!res.ok) {
-            throw new HVAKRClientError(`Error ${res.status}`, data)
-        }
-        return data as ProjectListResponse_v0
+        return this.request<ProjectListResponse_v0>(
+            this.createURL(`/projects`, queryParams),
+            { method: 'GET', headers: this.getAuthHeaders() }
+        )
     }
 
     /**
      * Retrieves a project by ID.
      * @param projectId - The ID of the project to retrieve
-     * @param expand - If true, returns the full expanded project data
-     * @returns The project data (expanded or basic depending on the expand parameter)
+     * @param expand - `true` to expand all subcollections, or an array of
+     *   subcollection keys (e.g. `['spaces', 'zones']`) to expand only those.
+     *   Omit or `false` to return the base project only.
+     * @returns The project data (expanded or basic depending on `expand`)
      * @throws {HVAKRClientError} If the API returns an error response
      */
     getProject(projectId: string): Promise<Project_v0>
@@ -179,57 +215,52 @@ export class HVAKRClient {
 
     getProject(
         projectId: string,
-        expand?: boolean
+        expand: ProjectSubcollectionKey_v0[]
+    ): Promise<ExpandedProject_v0>
+
+    getProject(
+        projectId: string,
+        expand?: boolean | ProjectSubcollectionKey_v0[]
     ): Promise<Project_v0 | ExpandedProject_v0>
 
-    async getProject(projectId: string, expand?: boolean) {
+    async getProject(
+        projectId: string,
+        expand?: boolean | ProjectSubcollectionKey_v0[]
+    ) {
+        const expandParam: string | boolean = Array.isArray(expand)
+            ? expand.join(',')
+            : !!expand
         const url = this.createURL(
             `/projects/${this.encodePathSegment(projectId)}`,
-            { expand: !!expand }
+            { expand: expandParam }
         )
-        const res = await fetch(url, {
+        return this.request(url, {
             method: 'GET',
             headers: this.getAuthHeaders(),
         })
-        const data = await res.json()
-        if (!res.ok) {
-            throw new HVAKRClientError(`Error ${res.status}`, data)
-        }
-        return data
     }
 
     /**
      * Updates an existing HVAKR project.
      * @param projectId - The ID of the project to update
      * @param projectData - The updated project data
-     * @param revitPayload - Set to true if the data is in Revit format
+     * @param opts - Optional write options (e.g. idempotencyKey)
      * @returns The ID of the updated project
      * @throws {HVAKRClientError} If the API returns an error response
      */
     updateProject = async (
         projectId: string,
-        projectData: ExpandedProjectPatch_v0 | RevitData_v0,
-        revitPayload?: boolean
+        projectData: ExpandedProjectPatch_v0,
+        opts?: WriteOptions
     ): Promise<{ id: string }> => {
-        const res = await fetch(
-            this.createURL(`/projects/${this.encodePathSegment(projectId)}`, {
-                revitPayload: !!revitPayload,
-            }),
+        return this.request<{ id: string }>(
+            this.createURL(`/projects/${this.encodePathSegment(projectId)}`),
             {
                 method: 'PATCH',
-                headers: {
-                    ...this.getAuthHeaders(),
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
+                headers: this.writeHeaders(opts),
                 body: JSON.stringify(projectData),
             }
         )
-        const data = await res.json()
-        if (!res.ok) {
-            throw new HVAKRClientError(`Error ${res.status}`, data)
-        }
-        return data
     }
 
     /**
@@ -241,118 +272,118 @@ export class HVAKRClient {
     deleteProject = async (
         projectId: string
     ): Promise<{ id: string; deleted: true }> => {
-        const res = await fetch(
+        return this.request<{ id: string; deleted: true }>(
             this.createURL(`/projects/${this.encodePathSegment(projectId)}`),
             { method: 'DELETE', headers: this.getAuthHeaders() }
         )
-        const data = await res.json()
-        if (!res.ok) {
-            throw new HVAKRClientError(`Error ${res.status}`, data)
-        }
-        return data
     }
 
     /**
-     * Retrieves calculated outputs for a project.
+     * Runs the calculator once and returns the requested calculation sections.
      * @param projectId - The ID of the project
-     * @param outputType - The type of output to retrieve ("loads", "dryside_graph", or "register_schedule")
-     * @returns The project output data for the specified type
-     * @throws {HVAKRClientError} If the API returns an error response or JSON parsing fails
+     * @param opts.include - Sections to compute and return (`loads`,
+     *   `register_schedule`, `dryside_graph`, `ventilation`, `equipment`,
+     *   `checksums`, `airflows`). Omit to return every section (one calc run;
+     *   the response can be large).
+     * @returns `errors`, `flags`, and each requested section
+     * @throws {HVAKRClientError} If the API returns an error response
      */
-    getProjectOutputs(
+    getProjectCalculations = async (
         projectId: string,
-        outputType: 'loads'
-    ): Promise<APIProjectOutputLoads_v0>
-
-    getProjectOutputs(
-        projectId: string,
-        outputType: 'dryside_graph'
-    ): Promise<APIProjectOutputDrySideGraph>
-
-    getProjectOutputs(
-        projectId: string,
-        outputType: 'register_schedule'
-    ): Promise<APIProjectOutputRegisterSchedule_v0>
-
-    getProjectOutputs(
-        projectId: string,
-        outputType: string
-    ): Promise<
-        | APIProjectOutputLoads_v0
-        | APIProjectOutputDrySideGraph
-        | APIProjectOutputRegisterSchedule_v0
-    >
-
-    async getProjectOutputs(projectId: string, outputType: APIOutputType_v0) {
-        const res = await fetch(
+        opts?: { include?: APICalculationSection_v0[] }
+    ): Promise<APIProjectCalculations_v0> => {
+        const include = opts?.include
+        const queryParams =
+            include && include.length > 0
+                ? { include: include.join(',') }
+                : undefined
+        return this.request<APIProjectCalculations_v0>(
             this.createURL(
-                `/projects/${this.encodePathSegment(projectId)}/outputs/${this.encodePathSegment(outputType)}`
+                `/projects/${this.encodePathSegment(projectId)}/calculations`,
+                queryParams
             ),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
-        let data: unknown
-        try {
-            data = await res.json()
-        } catch (error) {
-            throw new HVAKRClientError(
-                `Error ${res.status} - failed to parse json`,
-                { error }
-            )
-        }
-
-        if (!res.ok) {
-            throw new HVAKRClientError(`Error ${res.status}`, { data })
-        }
-
-        switch (outputType) {
-            case 'loads':
-                return data as APIProjectOutputLoads_v0
-            case 'dryside_graph':
-                return data as APIProjectOutputDrySideGraph
-            case 'register_schedule':
-                return data as APIProjectOutputRegisterSchedule_v0
-        }
     }
 
     /**
-     * Searches for weather stations near a geographic location.
-     * @param latitude - The latitude coordinate
-     * @param longitude - The longitude coordinate
-     * @returns An object containing an array of nearby weather station IDs
+     * Creates a job. One uniform resource covers every job kind (set `body.type`
+     * to `report`, `auto-group`, `check`, or `auto-takeoff`). Sync jobs
+     * (`auto-group`, `check`) return `status:"completed"` with `result`
+     * populated; async jobs (`report`, `auto-takeoff`) return `status:"queued"`
+     * — poll {@link getJob} with the returned `jobId` until the status settles.
+     * @param projectId - The ID of the project
+     * @param body - The job request (`type` + the fields that kind consumes)
+     * @param opts - Optional write options (e.g. idempotencyKey)
+     * @returns The created job
      * @throws {HVAKRClientError} If the API returns an error response
      */
-    searchWeatherStations = async (latitude: number, longitude: number) => {
-        const res = await fetch(
-            this.createURL(`/weather-stations`, {
-                latitude: latitude.toString(),
-                longitude: longitude.toString(),
-            }),
-            { method: 'GET', headers: this.getAuthHeaders() }
-        )
-        const data = await res.json()
-        if (!res.ok) {
-            throw new HVAKRClientError(`Error ${res.status}`, data)
-        }
-        return data as { weatherStationIds: string[] }
-    }
-
-    /**
-     * Retrieves detailed data for a specific weather station.
-     * @param weatherStationId - The ID of the weather station
-     * @returns The weather station data including climate information
-     * @throws {HVAKRClientError} If the API returns an error response
-     */
-    getWeatherStation = async (weatherStationId: string) => {
-        const res = await fetch(
+    createJob = async (
+        projectId: string,
+        body: APIJobCreate_v0,
+        opts?: WriteOptions
+    ): Promise<APIJob_v0> => {
+        return this.request<APIJob_v0>(
             this.createURL(
-                `/weather-stations/${this.encodePathSegment(weatherStationId)}`
+                `/projects/${this.encodePathSegment(projectId)}/jobs`
+            ),
+            {
+                method: 'POST',
+                headers: this.writeHeaders(opts),
+                body: JSON.stringify(body),
+            }
+        )
+    }
+
+    /**
+     * Retrieves the current state of a job. For `report`/`auto-takeoff` jobs,
+     * poll this until `status` leaves `queued`/`running`; the settled `result`
+     * (or `error`) is then populated.
+     * @param projectId - The ID of the project
+     * @param jobId - The ID of the job (from {@link createJob})
+     * @returns The job
+     * @throws {HVAKRClientError} If the API returns an error response
+     */
+    getJob = async (projectId: string, jobId: string): Promise<APIJob_v0> => {
+        return this.request<APIJob_v0>(
+            this.createURL(
+                `/projects/${this.encodePathSegment(projectId)}/jobs/${this.encodePathSegment(jobId)}`
             ),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
-        const data = await res.json()
-        if (!res.ok) {
-            throw new HVAKRClientError(`Error ${res.status}`, data)
+    }
+
+    /**
+     * Lists products from the catalog accessible to the authenticated user
+     * (the organization's products plus public products).
+     * @param params - Optional filters
+     * @param params.search - Case-insensitive filter over name/manufacturer/model
+     * @returns The accessible products
+     * @throws {HVAKRClientError} If the API returns an error response
+     */
+    listProducts = async (
+        params: { search?: string } = {}
+    ): Promise<APIProduct_v0[]> => {
+        const queryParams: Record<string, string> = {}
+        if (params.search !== undefined) {
+            queryParams.search = params.search
         }
-        return data as WeatherStationData_v0
+        return this.request<APIProduct_v0[]>(
+            this.createURL(`/products`, queryParams),
+            { method: 'GET', headers: this.getAuthHeaders() }
+        )
+    }
+
+    /**
+     * Retrieves a single product by ID.
+     * @param productId - The ID of the product
+     * @returns The product
+     * @throws {HVAKRClientError} If the API returns an error response
+     */
+    getProduct = async (productId: string): Promise<APIProduct_v0> => {
+        return this.request<APIProduct_v0>(
+            this.createURL(`/products/${this.encodePathSegment(productId)}`),
+            { method: 'GET', headers: this.getAuthHeaders() }
+        )
     }
 }

@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.5.0] - 2026-07-08
+
+### Breaking Changes
+
+- `listProducts` is now paginated and returns `{ products, hasMore, nextCursor }`
+  (`ProductListResponse_v0`) instead of a bare `APIProduct_v0[]`, matching
+  `listProjects`. It also accepts `limit` and `cursor`. Update callers from
+  `const products = await client.listProducts()` to
+  `const { products } = await client.listProducts()`.
+
+### Added
+
+- `me()` — returns the authenticated caller's identity, organization memberships,
+  plan, and rate-limit budget. A good first call to confirm auth and capabilities.
+  Adds `MeResponseSchema_v0` / `APIMe_v0`.
+- `listProjects` gains optional `search` (name/number/address), `status`, and
+  `projectType` filters. Exports the `ProjectType_v0` type.
+- `sidewall` added to `RegisterModelTypes_v0`, widening the register-schedule
+  `modelType` to match the platform.
+- The client now sends `X-HVAKR-Client: hvakr-client-ts/<version>` on every
+  request. When the API reports the version as outdated (via an
+  `X-HVAKR-Client-Warning` response header), the client logs a one-time upgrade
+  notice.
+
 ## [0.4.0] - 2026-07-07
 
 ### Breaking Changes

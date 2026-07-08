@@ -16,6 +16,22 @@ import {
     Project_v0,
 } from './schemas'
 
+/**
+ * Package version, inlined at build time by the `__CLIENT_VERSION__` define in
+ * `tsdown.config.ts` (and mirrored in `vitest.config.ts`). package.json is the
+ * single source of truth.
+ */
+declare const __CLIENT_VERSION__: string
+
+/** SDK identifier sent on every request as `X-HVAKR-Client`. */
+const CLIENT_ID = `hvakr-client-ts/${__CLIENT_VERSION__}`
+
+/**
+ * Upgrade warnings already surfaced, so a stale-version notice is logged once
+ * per distinct message per process rather than on every request.
+ */
+const warnedClientMessages = new Set<string>()
+
 /** A subcollection key that can be requested via `expand`. */
 export type ProjectSubcollectionKey_v0 = keyof ProjectSubcollections_v0
 
@@ -86,7 +102,12 @@ export class HVAKRClient {
     }
 
     private getAuthHeaders = (): HeadersInit => {
-        return { Authorization: `Bearer ${this.accessToken}` }
+        return {
+            Authorization: `Bearer ${this.accessToken}`,
+            // Identifies the SDK + version so the API can attribute usage and
+            // warn (via `X-HVAKR-Client-Warning`) when a version is outdated.
+            'X-HVAKR-Client': CLIENT_ID,
+        }
     }
 
     private encodePathSegment = (segment: string) => {
@@ -130,12 +151,26 @@ export class HVAKRClient {
     }
 
     /**
+     * If the API flagged this client as outdated (`X-HVAKR-Client-Warning`),
+     * log the advisory once per distinct message. The header is set on every
+     * response — success or error — so the notice surfaces regardless of outcome.
+     */
+    private warnIfOutdated = (res: Response) => {
+        const warning = res.headers.get('X-HVAKR-Client-Warning')
+        if (warning && !warnedClientMessages.has(warning)) {
+            warnedClientMessages.add(warning)
+            console.warn(`[hvakr-client] ${warning}`)
+        }
+    }
+
+    /**
      * Performs a request and parses the JSON body, throwing an
      * {@link HVAKRClientError} (carrying the status and parsed error body)
      * on a non-2xx response.
      */
     private request = async <T>(url: string, init: RequestInit): Promise<T> => {
         const res = await fetch(url, init)
+        this.warnIfOutdated(res)
         const data = await res.json()
         if (!res.ok) {
             throw new HVAKRClientError(`Error ${res.status}`, data, res.status)

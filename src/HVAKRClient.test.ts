@@ -6,7 +6,7 @@ import {
 } from 'undici'
 import type Dispatcher from 'undici/types/dispatcher'
 import type { MockInterceptor } from 'undici/types/mock-interceptor'
-import { afterEach, assert, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ExpandedProjectPatch_v0 } from './schemas'
 import { ExpandedProjectPostDataExample_v0 } from './fixtures'
 import { HVAKRClient } from './HVAKRClient'
@@ -18,11 +18,14 @@ const exampleApiBaseUrl = 'https://api.example.test'
 
 const mockResponse = (
     statusCode: number,
-    data: Record<string, any> | string
+    data: Record<string, any> | string,
+    headers: Record<string, string> = {}
 ) => ({
     statusCode,
     data,
-    responseOptions: { headers: { 'content-type': 'application/json' } },
+    responseOptions: {
+        headers: { 'content-type': 'application/json', ...headers },
+    },
 })
 
 const bodyAsString = (
@@ -89,6 +92,7 @@ describe('HVAKRClient request building', () => {
     let replies: Array<{
         statusCode: number
         data: Record<string, any> | string
+        headers?: Record<string, string>
     }>
     let requests: MockInterceptor.MockResponseCallbackOptions[]
 
@@ -105,7 +109,7 @@ describe('HVAKRClient request building', () => {
             .reply((request) => {
                 requests.push(request)
                 const reply = replies.shift() ?? { statusCode: 200, data: {} }
-                return mockResponse(reply.statusCode, reply.data)
+                return mockResponse(reply.statusCode, reply.data, reply.headers)
             })
             .persist()
         setGlobalDispatcher(agent)
@@ -120,9 +124,10 @@ describe('HVAKRClient request building', () => {
 
     const enqueue = (
         statusCode: number,
-        data: Record<string, any> | string
+        data: Record<string, any> | string,
+        headers?: Record<string, string>
     ) => {
-        replies.push({ statusCode, data })
+        replies.push({ statusCode, data, headers })
     }
 
     it('createProject POSTs JSON to /projects with auth headers', async () => {
@@ -142,7 +147,34 @@ describe('HVAKRClient request building', () => {
         expect(headerValue(request.headers, 'content-type')).toBe(
             'application/json'
         )
+        expect(headerValue(request.headers, 'x-hvakr-client')).toMatch(
+            /^hvakr-client-ts\/\d+\.\d+\.\d+/
+        )
         expect(JSON.parse(bodyAsString(request.body))).toEqual(payload)
+    })
+
+    it('sends the X-HVAKR-Client SDK version header on reads', async () => {
+        enqueue(200, { projects: [], hasMore: false, nextCursor: null })
+        await requestClient.listProjects()
+        expect(headerValue(requests.at(-1)!.headers, 'x-hvakr-client')).toMatch(
+            /^hvakr-client-ts\/\d+\.\d+\.\d+/
+        )
+    })
+
+    it('logs the server client-upgrade warning once per distinct message', async () => {
+        const warning =
+            'hvakr-client-ts 0.4.0 is outdated; upgrade to >=9.9.9-test'
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const body = { projects: [], hasMore: false, nextCursor: null }
+        enqueue(200, body, { 'x-hvakr-client-warning': warning })
+        enqueue(200, body, { 'x-hvakr-client-warning': warning })
+
+        await requestClient.listProjects()
+        await requestClient.listProjects()
+
+        expect(warn).toHaveBeenCalledTimes(1)
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining(warning))
+        warn.mockRestore()
     })
 
     it('listProjects sends limit and cursor as query params', async () => {

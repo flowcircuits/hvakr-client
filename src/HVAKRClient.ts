@@ -2,6 +2,7 @@ import {
     APICalculationSection_v0,
     APIJob_v0,
     APIJobCreate_v0,
+    APIProduct_v0,
     APIProjectCalculations_v0,
     ExpandedProjectPatch_v0,
     ExpandedProjectPost_v0,
@@ -10,7 +11,6 @@ import {
     ProjectSubcollections_v0,
     Project_v0,
     RevitData_v0,
-    WeatherStationData_v0,
 } from './schemas'
 
 /** A subcollection key that can be requested via `expand`. */
@@ -418,58 +418,35 @@ export class HVAKRClient {
     }
 
     /**
-     * Exports a project as gbXML.
-     * @param projectId - The ID of the project
-     * @returns The gbXML document as a string
+     * Lists products from the catalog accessible to the authenticated user
+     * (the organization's products plus public products).
+     * @param params - Optional filters
+     * @param params.search - Case-insensitive filter over name/manufacturer/model
+     * @returns The accessible products
      * @throws {HVAKRClientError} If the API returns an error response
      */
-    exportGbXML = async (projectId: string): Promise<string> => {
-        const res = await fetch(
-            this.createURL(
-                `/projects/${this.encodePathSegment(projectId)}/exports/gbxml`
-            ),
-            { method: 'GET', headers: this.getAuthHeaders() }
-        )
-        if (!res.ok) {
-            let data: unknown
-            try {
-                data = await res.json()
-            } catch {
-                data = await res.text().catch(() => undefined)
-            }
-            throw new HVAKRClientError(`Error ${res.status}`, data, res.status)
+    listProducts = async (
+        params: { search?: string } = {}
+    ): Promise<APIProduct_v0[]> => {
+        const queryParams: Record<string, string> = {}
+        if (params.search !== undefined) {
+            queryParams.search = params.search
         }
-        return res.text()
-    }
-
-    /**
-     * Searches for weather stations near a geographic location.
-     * @param latitude - The latitude coordinate
-     * @param longitude - The longitude coordinate
-     * @returns An object containing an array of nearby weather station IDs
-     * @throws {HVAKRClientError} If the API returns an error response
-     */
-    searchWeatherStations = async (latitude: number, longitude: number) => {
-        return this.request<{ weatherStationIds: string[] }>(
-            this.createURL(`/weather-stations`, {
-                latitude: latitude.toString(),
-                longitude: longitude.toString(),
-            }),
+        return this.request<APIProduct_v0[]>(
+            this.createURL(`/products`, queryParams),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
     }
 
     /**
-     * Retrieves detailed data for a specific weather station.
-     * @param weatherStationId - The ID of the weather station
-     * @returns The weather station data including climate information
+     * Retrieves a single product by ID.
+     * @param productId - The ID of the product
+     * @returns The product
      * @throws {HVAKRClientError} If the API returns an error response
      */
-    getWeatherStation = async (weatherStationId: string) => {
-        return this.request<WeatherStationData_v0>(
-            this.createURL(
-                `/weather-stations/${this.encodePathSegment(weatherStationId)}`
-            ),
+    getProduct = async (productId: string): Promise<APIProduct_v0> => {
+        return this.request<APIProduct_v0>(
+            this.createURL(`/products/${this.encodePathSegment(productId)}`),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
     }

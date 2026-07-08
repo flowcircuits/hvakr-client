@@ -75,15 +75,13 @@ describe('HVAKRClient URL construction', () => {
 
     it('URL-encodes query parameters and preserves flag parameters', () => {
         expect(
-            client.createURL('/weather-stations', {
-                latitude: '33.2353947',
-                longitude: '-117.2149959',
-                expand: true,
+            client.createURL('/products', {
+                search: 'A&B Building',
+                active: true,
                 draft: false,
-                label: 'A&B Building',
             })
         ).toBe(
-            'https://api.example.test/v0/weather-stations?latitude=33.2353947&longitude=-117.2149959&expand&label=A%26B%20Building'
+            'https://api.example.test/v0/products?search=A%26B%20Building&active'
         )
     })
 })
@@ -292,11 +290,19 @@ describe('HVAKRClient request building', () => {
         expect(requests.at(-1)?.method).toBe('GET')
     })
 
-    it('exportGbXML returns the raw XML body', async () => {
-        enqueue(200, '<?xml version="1.0"?><gbXML></gbXML>')
-        const xml = await requestClient.exportGbXML('p1')
-        expect(xml.startsWith('<?xml')).toBe(true)
-        expect(requests.at(-1)?.path).toBe('/v0/projects/p1/exports/gbxml')
+    it('listProducts GETs /products with an optional search filter', async () => {
+        enqueue(200, [{ id: 'prod_1', name: 'RTU-5' }])
+        const products = await requestClient.listProducts({ search: 'RTU' })
+        expect(products).toEqual([{ id: 'prod_1', name: 'RTU-5' }])
+        expect(requests.at(-1)?.path).toBe('/v0/products?search=RTU')
+        expect(requests.at(-1)?.method).toBe('GET')
+    })
+
+    it('getProduct GETs /products/{id}', async () => {
+        enqueue(200, { id: 'prod_1', name: 'RTU-5' })
+        const product = await requestClient.getProduct('prod_1')
+        expect(product).toEqual({ id: 'prod_1', name: 'RTU-5' })
+        expect(requests.at(-1)?.path).toBe('/v0/products/prod_1')
     })
 })
 
@@ -356,13 +362,9 @@ describeApi('HVAKR Client', () => {
         expect(fetchedProjectData.weatherSpec?.selectedStationId).toBeTruthy()
     }, 10000)
 
-    it('should find weather station data', async () => {
-        const fetchedProjectData = await hvakrClient.getProject(id!, true)
-        const weatherStationId =
-            fetchedProjectData.weatherSpec!.selectedStationId!
-        const weatherStation =
-            await hvakrClient.getWeatherStation(weatherStationId)
-        expect(weatherStation.station).toBeTruthy()
+    it('should list catalog products', async () => {
+        const products = await hvakrClient.listProducts()
+        expect(Array.isArray(products)).toBe(true)
     }, 5000)
 
     it('should get HVAKR Project register schedule calculations', async () => {
@@ -575,18 +577,6 @@ describeApi('HVAKR Client', () => {
         const { projects } = await hvakrClient.listProjects()
         expect(projects.map((p) => p.id)).not.toContain(id!)
     }, 40000)
-})
-
-describeApi('HVAKR Client Weather API', () => {
-    const hvakrClient = createClient()
-
-    it('should find weather stations by me', async () => {
-        const { weatherStationIds } = await hvakrClient.searchWeatherStations(
-            33.2353947,
-            -117.2149959
-        )
-        expect(weatherStationIds).toHaveLength(5)
-    })
 })
 
 const revitData: RevitData_v0 = {

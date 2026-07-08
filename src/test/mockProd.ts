@@ -184,15 +184,17 @@ export class MockProdService {
             })
         }
 
-        if (method === 'GET' && path === '/weather-stations') {
-            return response(200, { weatherStationIds: stationIds })
-        }
-
-        const weatherStationMatch = path.match(/^\/weather-stations\/(.+)$/)
-        if (method === 'GET' && weatherStationMatch) {
-            return response(200, {
-                station: { id: decodeURIComponent(weatherStationMatch[1]!) },
-            })
+        if (method === 'GET' && path.startsWith('/products')) {
+            const productMatch = path.match(/^\/products\/(.+)$/)
+            if (productMatch) {
+                return response(200, {
+                    id: decodeURIComponent(productMatch[1]!),
+                    name: 'Mock Product',
+                })
+            }
+            return response(200, [
+                { id: 'mock-product-1', name: 'Mock Product' },
+            ])
         }
 
         return response(500, { error: 'Unhandled mock prod request' })

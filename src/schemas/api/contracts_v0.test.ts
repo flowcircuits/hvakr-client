@@ -11,6 +11,7 @@ import {
     APIJobCreateSchema_v0,
     APIJobSchema_v0,
 } from './jobs_v0'
+import { APIProductSchema_v0 } from './products_v0'
 import { APIReportSchema_v0 } from './reports_v0'
 
 describe('APIErrorSchema_v0', () => {
@@ -189,12 +190,32 @@ describe('job schemas', () => {
     })
 })
 
+describe('product schema', () => {
+    it('parses a product and drops nothing required', () => {
+        const parsed = APIProductSchema_v0.parse({
+            id: 'prod_1',
+            name: 'RTU-5',
+            manufacturer: 'Acme',
+            price: 1200,
+            specifications: { tonnage: 5 },
+            files: { f1: { name: 'cut-sheet.pdf', url: 'https://x/f.pdf' } },
+        })
+        expect(parsed.name).toBe('RTU-5')
+        expect(parsed.files?.f1?.url).toBe('https://x/f.pdf')
+    })
+
+    it('requires id and name', () => {
+        expect(APIProductSchema_v0.safeParse({ id: 'p' }).success).toBe(false)
+    })
+})
+
 describe('OpenAPI JSON Schema generation', () => {
     const schemas = {
         APIErrorSchema_v0,
         APIProjectCalculationsSchema_v0,
         APIJobCreateSchema_v0,
         APIJobSchema_v0,
+        APIProductSchema_v0,
     }
 
     for (const [name, schema] of Object.entries(schemas)) {

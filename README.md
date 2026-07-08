@@ -124,21 +124,32 @@ The `HVAKRClient` supports the following options on initialization. These option
 
 ### Projects
 
-| Method                                   | Description                                                               |
-| ---------------------------------------- | ------------------------------------------------------------------------- |
-| `listProjects({ limit?, cursor? })`      | List a page of projects accessible to the authenticated user. Page with `nextCursor` while `hasMore` |
-| `getProject(id, expand?)`                | Get a project by ID. Set `expand: true` for full project data             |
-| `createProject(data, revitPayload?)`     | Create a new project                                                      |
-| `updateProject(id, data, revitPayload?)` | Update an existing project                                                |
-| `deleteProject(id)`                      | Delete a project                                                          |
-| `getProjectOutputs(id, type)`            | Get calculated outputs (`loads`, `dryside_graph`, or `register_schedule`) |
+| Method                                     | Description                                                                                                                                                                        |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `listProjects({ limit?, cursor? })`        | List a page of projects accessible to the authenticated user. Page with `nextCursor` while `hasMore`                                                                               |
+| `getProject(id, expand?)`                  | Get a project by ID. Set `expand: true` for full project data, or pass an array of subcollection keys (e.g. `['spaces', 'zones']`) to expand only those                            |
+| `createProject(data, opts?)`               | Create a new project                                                                                                                                                               |
+| `updateProject(id, data, opts?)`           | Update an existing project                                                                                                                                                         |
+| `deleteProject(id)`                        | Delete a project                                                                                                                                                                   |
+| `getProjectCalculations(id, { include? })` | Run the calculator and return the requested sections (`loads`, `register_schedule`, `dryside_graph`, `ventilation`, `equipment`, `checksums`, `airflows`). Omit `include` for all. |
 
-### Weather Stations
+### Jobs
 
-| Method                            | Description                           |
-| --------------------------------- | ------------------------------------- |
-| `searchWeatherStations(lat, lng)` | Find weather stations near a location |
-| `getWeatherStation(id)`           | Get detailed weather station data     |
+| Method                       | Description                                                                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `createJob(id, body, opts?)` | Create a job (`report`, `auto-group`, `check`, or `auto-takeoff`). Sync jobs return `status: "completed"`; async jobs return `queued` |
+| `getJob(id, jobId)`          | Get a job's current state. Poll async jobs until `status` leaves `queued`/`running`                                                   |
+
+### Products
+
+| Method                      | Description                                                                        |
+| --------------------------- | ---------------------------------------------------------------------------------- |
+| `listProducts({ search? })` | List products accessible to the authenticated user (read-only). Filter by `search` |
+| `getProduct(id)`            | Get a single product by ID                                                         |
+
+Write methods (`createProject`, `updateProject`, `createJob`) accept an optional
+`opts` argument with an `idempotencyKey` — retrying a request with the same key
+returns the original result instead of performing the action twice.
 
 ## Receiving webhooks
 
@@ -209,10 +220,10 @@ This SDK is **pre-1.0** and the API it wraps is still evolving. We deliberately 
 `0.x` so we can move quickly, and we follow the [SemVer](https://semver.org/) `0.x`
 convention:
 
-| Bump            | Example           | Meaning                                                                    |
-| --------------- | ----------------- | -------------------------------------------------------------------------- |
-| **Minor** `0.x.0` | `0.1.16` → `0.2.0` | **Breaking change** — response shapes, arguments, or exported types changed |
-| **Patch** `0.x.y` | `0.1.16` → `0.1.17` | Backwards-compatible fix or addition                                       |
+| Bump              | Example             | Meaning                                                                     |
+| ----------------- | ------------------- | --------------------------------------------------------------------------- |
+| **Minor** `0.x.0` | `0.1.16` → `0.2.0`  | **Breaking change** — response shapes, arguments, or exported types changed |
+| **Patch** `0.x.y` | `0.1.16` → `0.1.17` | Backwards-compatible fix or addition                                        |
 
 We do **not** version the API path beyond `v0` or run multiple API versions in parallel.
 There is one current version; breaking changes apply to everyone. When the API surface

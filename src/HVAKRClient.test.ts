@@ -7,7 +7,7 @@ import {
 import type Dispatcher from 'undici/types/dispatcher'
 import type { MockInterceptor } from 'undici/types/mock-interceptor'
 import { afterEach, assert, beforeEach, describe, expect, it } from 'vitest'
-import { ExpandedProjectPatch_v0, RevitData_v0 } from './schemas'
+import { ExpandedProjectPatch_v0 } from './schemas'
 import { ExpandedProjectPostDataExample_v0 } from './fixtures'
 import { HVAKRClient } from './HVAKRClient'
 import { createClientTestTarget } from './test/clientTestTarget'
@@ -61,15 +61,6 @@ describe('HVAKRClient URL construction', () => {
     it('normalizes a trailing base URL slash', () => {
         expect(client.createURL('/projects')).toBe(
             'https://api.example.test/v0/projects'
-        )
-    })
-
-    it('builds Revit ingestion URLs under /revit/v0', () => {
-        expect(client.createRevitURL('/projects')).toBe(
-            'https://api.example.test/revit/v0/projects'
-        )
-        expect(client.createRevitURL('/projects/p1')).toBe(
-            'https://api.example.test/revit/v0/projects/p1'
         )
     })
 
@@ -152,37 +143,6 @@ describe('HVAKRClient request building', () => {
             'application/json'
         )
         expect(JSON.parse(bodyAsString(request.body))).toEqual(payload)
-    })
-
-    it('createProjectFromRevit POSTs to the Revit namespace with idempotency', async () => {
-        enqueue(201, { id: 'proj_1' })
-        const payload: RevitData_v0 = {
-            projectAddress: null,
-            projectName: 'R',
-            projectRotationDegrees: 0,
-            revitSpaces: [],
-        }
-        await requestClient.createProjectFromRevit(payload, {
-            idempotencyKey: 'idem-1',
-        })
-        const request = requests.at(-1)!
-        expect(request.path).toBe('/revit/v0/projects')
-        expect(request.method).toBe('POST')
-        expect(headerValue(request.headers, 'idempotency-key')).toBe('idem-1')
-        expect(JSON.parse(bodyAsString(request.body))).toEqual(payload)
-    })
-
-    it('updateProjectFromRevit PATCHes the Revit namespace project', async () => {
-        enqueue(200, { id: 'p1' })
-        const payload: RevitData_v0 = {
-            projectAddress: null,
-            projectName: null,
-            projectRotationDegrees: 0,
-            revitSpaces: [],
-        }
-        await requestClient.updateProjectFromRevit('p1', payload)
-        expect(requests.at(-1)?.path).toBe('/revit/v0/projects/p1')
-        expect(requests.at(-1)?.method).toBe('PATCH')
     })
 
     it('listProjects sends limit and cursor as query params', async () => {
@@ -576,98 +536,5 @@ describeApi('HVAKR Client', () => {
         await hvakrClient.deleteProject(id!)
         const { projects } = await hvakrClient.listProjects()
         expect(projects.map((p) => p.id)).not.toContain(id!)
-    }, 40000)
-})
-
-const revitData: RevitData_v0 = {
-    projectAddress: '24546 Golden Oak Lane, Newhall, CA, 91321',
-    projectName: 'Test Project',
-    projectRotationDegrees: 0,
-    revitSpaces: [
-        {
-            area: 100,
-            uniqueId: '123',
-            levelElevation: 0,
-            name: 'Test Space',
-            number: '1',
-            unboundedHeight: 10,
-            volume: 1000,
-            boundaries: [
-                [
-                    { x1: 0, y1: 0, x2: 100, y2: 0 },
-                    { x1: 100, y1: 0, x2: 100, y2: 100 },
-                    { x1: 100, y1: 100, x2: 0, y2: 100 },
-                    { x1: 0, y1: 100, x2: 0, y2: 0 },
-                ],
-            ],
-        },
-        {
-            area: 200,
-            uniqueId: '456',
-            levelElevation: 0,
-            name: 'Test Space 2',
-            number: '2',
-            unboundedHeight: 20,
-            volume: 2000,
-            boundaries: [
-                [
-                    { x1: 100, y1: 100, x2: 200, y2: 100 },
-                    { x1: 200, y1: 100, x2: 200, y2: 200 },
-                    { x1: 200, y1: 200, x2: 100, y2: 200 },
-                    { x1: 100, y1: 200, x2: 100, y2: 100 },
-                ],
-            ],
-        },
-        {
-            area: 300,
-            uniqueId: '789',
-            levelElevation: 100,
-            name: 'Test Space 3',
-            number: '3',
-            unboundedHeight: 30,
-            volume: 3000,
-            boundaries: [
-                [
-                    { x1: 0, y1: 0, x2: 100, y2: 0 },
-                    { x1: 100, y1: 0, x2: 100, y2: 100 },
-                    { x1: 100, y1: 100, x2: 0, y2: 100 },
-                    { x1: 0, y1: 100, x2: 0, y2: 0 },
-                ],
-            ],
-        },
-    ],
-}
-
-describeApi('HVAKR Client Revit API', () => {
-    const hvakrClient = createClient()
-
-    it('should create a project from Revit data', async () => {
-        const res = await hvakrClient.createProjectFromRevit(revitData)
-        expect(res.id).toBeTruthy()
-
-        const project = await hvakrClient.getProject(res.id, true)
-        expect(project.spaces).toBeTruthy()
-        expect(Object.keys(project.spaces!).length).toBe(3)
-        const spaces = Object.values(project.spaces!)
-        assert(spaces.some((space) => space.revitId === '123'))
-        assert(spaces.some((space) => space.revitId === '456'))
-        assert(spaces.some((space) => space.revitId === '789'))
-        assert(spaces.some((space) => space.level === 0))
-        assert(spaces.some((space) => space.level === 1))
-
-        await hvakrClient.deleteProject(res.id)
-    }, 40000)
-
-    it('should update a project from Revit data', async () => {
-        const res = await hvakrClient.createProject({})
-        expect(res.id).toBeTruthy()
-
-        await hvakrClient.updateProjectFromRevit(res.id, revitData)
-
-        const project = await hvakrClient.getProject(res.id, true)
-        expect(project.spaces).toBeTruthy()
-        expect(Object.keys(project.spaces!).length).toBe(3)
-
-        await hvakrClient.deleteProject(res.id)
     }, 40000)
 })

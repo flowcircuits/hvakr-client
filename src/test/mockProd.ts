@@ -6,7 +6,6 @@ import {
 } from 'undici'
 import type Dispatcher from 'undici/types/dispatcher'
 import type { MockInterceptor } from 'undici/types/mock-interceptor'
-import { RevitData_v0 } from '../schemas'
 
 export const MOCK_PROD_BASE_URL = 'https://api.mock-prod.test'
 export const MOCK_PROD_ACCESS_TOKEN = 'mock-prod-token'
@@ -66,19 +65,6 @@ const withWeatherDefaults = <T extends Record<string, any>>(project: T): T => ({
     },
 })
 
-const spacesFromRevit = (data: RevitData_v0) =>
-    Object.fromEntries(
-        data.revitSpaces.map((space, index) => [
-            `revit-space-${space.uniqueId}`,
-            {
-                name: space.name,
-                level: index === 2 ? 1 : 0,
-                revitId: space.uniqueId,
-                creationSource: 'API_REVIT',
-            },
-        ])
-    )
-
 const hasInvalidPatch = (data: Record<string, any>) =>
     data.name === null ||
     Object.values((data.spaces ?? {}) as Record<string, any>).some(
@@ -124,25 +110,6 @@ export class MockProdService {
     private handle(request: MockInterceptor.MockResponseCallbackOptions) {
         const url = new URL(request.path, MOCK_PROD_BASE_URL)
         const method = request.method
-
-        // Revit ingestion namespace — versioned independently of `/v0`.
-        if (url.pathname.startsWith('/revit/v0')) {
-            const revitPath = url.pathname.replace(/^\/revit\/v0/, '')
-            if (method === 'POST' && revitPath === '/projects') {
-                const project = this.createProjectFromRevit(
-                    readBody(request.body)
-                )
-                return response(201, { id: project.id })
-            }
-            const revitProjectMatch = revitPath.match(/^\/projects\/([^/]+)$/)
-            if (method === 'PATCH' && revitProjectMatch) {
-                return this.updateProjectFromRevit(
-                    decodeURIComponent(revitProjectMatch[1]!),
-                    readBody(request.body)
-                )
-            }
-            return response(500, { error: 'Unhandled mock prod revit request' })
-        }
 
         const path = url.pathname.replace(/^\/v0/, '')
 
@@ -210,27 +177,6 @@ export class MockProdService {
         })
         this.projects.set(id, project)
         return project
-    }
-
-    private createProjectFromRevit(data: RevitData_v0) {
-        const id = `mock-project-${++this.projectCounter}`
-        const project = withWeatherDefaults({
-            id,
-            name: data.projectName ?? 'Mock Project',
-            address: data.projectAddress ?? undefined,
-            spaces: spacesFromRevit(data),
-        })
-        this.projects.set(id, project)
-        return project
-    }
-
-    private updateProjectFromRevit(projectId: string, data: RevitData_v0) {
-        const project = this.projects.get(projectId)
-        if (!project) {
-            return response(404, { error: 'Not found' })
-        }
-        project.spaces = spacesFromRevit(data)
-        return response(200, { id: projectId })
     }
 
     private listProjects(url: URL) {

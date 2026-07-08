@@ -3,8 +3,6 @@
     "bracketSameLine": false,
     "bracketSpacing": true,
     "endOfLine": "lf",
-    "importOrderSeparation": false,
-    "importOrderSortSpecifiers": true,
     "jsxSingleQuote": true,
     "objectWrap": "collapse",
     "plugins": [],

@@ -10,7 +10,6 @@ import {
     ProjectListResponse_v0,
     ProjectSubcollections_v0,
     Project_v0,
-    RevitData_v0,
 } from './schemas'
 
 /** A subcollection key that can be requested via `expand`. */
@@ -127,22 +126,6 @@ export class HVAKRClient {
     }
 
     /**
-     * Constructs a full URL under the Revit ingestion namespace (`/revit/v0`),
-     * which is versioned independently of the core API so the Revit plugin's
-     * payload can evolve on its own cadence.
-     * @param path - Endpoint path under the namespace (e.g., "/projects")
-     * @param queryParams - Optional query parameters to append
-     * @returns The full URL string
-     */
-    createRevitURL = (
-        path: string,
-        queryParams?: Record<string, string | boolean>
-    ) => {
-        const base = `${this.baseUrl.replace(/\/$/, '')}/revit/v0${path}`
-        return base + this.buildQuery(queryParams)
-    }
-
-    /**
      * Performs a request and parses the JSON body, throwing an
      * {@link HVAKRClientError} (carrying the status and parsed error body)
      * on a non-2xx response.
@@ -184,26 +167,6 @@ export class HVAKRClient {
             method: 'POST',
             headers: this.writeHeaders(opts),
             body: JSON.stringify(projectData),
-        })
-    }
-
-    /**
-     * Creates a project from a Revit plugin payload. Posts to the Revit
-     * ingestion namespace (`/revit/v0/projects`), which the server converts
-     * into a project; the payload versions independently of the core API.
-     * @param revitData - The Revit export payload
-     * @param opts - Optional write options (e.g. idempotencyKey)
-     * @returns The ID of the newly created project
-     * @throws {HVAKRClientError} If the API returns an error response
-     */
-    createProjectFromRevit = async (
-        revitData: RevitData_v0,
-        opts?: WriteOptions
-    ): Promise<{ id: string }> => {
-        return this.request<{ id: string }>(this.createRevitURL(`/projects`), {
-            method: 'POST',
-            headers: this.writeHeaders(opts),
-            body: JSON.stringify(revitData),
         })
     }
 
@@ -296,33 +259,6 @@ export class HVAKRClient {
                 method: 'PATCH',
                 headers: this.writeHeaders(opts),
                 body: JSON.stringify(projectData),
-            }
-        )
-    }
-
-    /**
-     * Updates a project from a Revit plugin payload. Patches the Revit
-     * ingestion namespace (`/revit/v0/projects/{id}`); the server merges the
-     * converted payload into the existing project (importing new Revit spaces).
-     * @param projectId - The ID of the project to update
-     * @param revitData - The Revit export payload
-     * @param opts - Optional write options (e.g. idempotencyKey)
-     * @returns The ID of the updated project
-     * @throws {HVAKRClientError} If the API returns an error response
-     */
-    updateProjectFromRevit = async (
-        projectId: string,
-        revitData: RevitData_v0,
-        opts?: WriteOptions
-    ): Promise<{ id: string }> => {
-        return this.request<{ id: string }>(
-            this.createRevitURL(
-                `/projects/${this.encodePathSegment(projectId)}`
-            ),
-            {
-                method: 'PATCH',
-                headers: this.writeHeaders(opts),
-                body: JSON.stringify(revitData),
             }
         )
     }

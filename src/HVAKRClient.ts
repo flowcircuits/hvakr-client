@@ -2,15 +2,35 @@ import {
     APICalculationSection_v0,
     APIJob_v0,
     APIJobCreate_v0,
+    APIMe_v0,
     APIProduct_v0,
     APIProjectCalculations_v0,
     ExpandedProjectPatch_v0,
     ExpandedProjectPost_v0,
     ExpandedProject_v0,
+    ProductListResponse_v0,
     ProjectListResponse_v0,
+    ProjectStatus_v0,
     ProjectSubcollections_v0,
+    ProjectType_v0,
     Project_v0,
 } from './schemas'
+
+/**
+ * Package version, inlined at build time by the `__CLIENT_VERSION__` define in
+ * `tsdown.config.ts` (and mirrored in `vitest.config.ts`). package.json is the
+ * single source of truth.
+ */
+declare const __CLIENT_VERSION__: string
+
+/** SDK identifier sent on every request as `X-HVAKR-Client`. */
+const CLIENT_ID = `hvakr-client-ts/${__CLIENT_VERSION__}`
+
+/**
+ * Upgrade warnings already surfaced, so a stale-version notice is logged once
+ * per distinct message per process rather than on every request.
+ */
+const warnedClientMessages = new Set<string>()
 
 /** A subcollection key that can be requested via `expand`. */
 export type ProjectSubcollectionKey_v0 = keyof ProjectSubcollections_v0
@@ -82,7 +102,12 @@ export class HVAKRClient {
     }
 
     private getAuthHeaders = (): HeadersInit => {
-        return { Authorization: `Bearer ${this.accessToken}` }
+        return {
+            Authorization: `Bearer ${this.accessToken}`,
+            // Identifies the SDK + version so the API can attribute usage and
+            // warn (via `X-HVAKR-Client-Warning`) when a version is outdated.
+            'X-HVAKR-Client': CLIENT_ID,
+        }
     }
 
     private encodePathSegment = (segment: string) => {
@@ -126,12 +151,26 @@ export class HVAKRClient {
     }
 
     /**
+     * If the API flagged this client as outdated (`X-HVAKR-Client-Warning`),
+     * log the advisory once per distinct message. The header is set on every
+     * response — success or error — so the notice surfaces regardless of outcome.
+     */
+    private warnIfOutdated = (res: Response) => {
+        const warning = res.headers.get('X-HVAKR-Client-Warning')
+        if (warning && !warnedClientMessages.has(warning)) {
+            warnedClientMessages.add(warning)
+            console.warn(`[hvakr-client] ${warning}`)
+        }
+    }
+
+    /**
      * Performs a request and parses the JSON body, throwing an
      * {@link HVAKRClientError} (carrying the status and parsed error body)
      * on a non-2xx response.
      */
     private request = async <T>(url: string, init: RequestInit): Promise<T> => {
         const res = await fetch(url, init)
+        this.warnIfOutdated(res)
         const data = await res.json()
         if (!res.ok) {
             throw new HVAKRClientError(`Error ${res.status}`, data, res.status)
@@ -176,14 +215,23 @@ export class HVAKRClient {
      * Results are paginated. When `hasMore` is true, pass the returned
      * `nextCursor` back as `cursor` to fetch the next page.
      *
-     * @param params - Optional pagination parameters
+     * @param params - Optional pagination and filter parameters
      * @param params.limit - Maximum number of projects to return per page
      * @param params.cursor - Cursor from a previous response's `nextCursor`
+     * @param params.search - Case-insensitive filter over name/number/address
+     * @param params.status - Only return projects with this status
+     * @param params.projectType - Only return projects of this type
      * @returns A page of project summaries with pagination metadata
      * @throws {HVAKRClientError} If the API returns an error response
      */
     listProjects = async (
-        params: { limit?: number; cursor?: string } = {}
+        params: {
+            limit?: number
+            cursor?: string
+            search?: string
+            status?: ProjectStatus_v0
+            projectType?: ProjectType_v0
+        } = {}
     ): Promise<ProjectListResponse_v0> => {
         const queryParams: Record<string, string> = {}
         if (params.limit !== undefined) {
@@ -191,6 +239,15 @@ export class HVAKRClient {
         }
         if (params.cursor !== undefined) {
             queryParams.cursor = params.cursor
+        }
+        if (params.search !== undefined) {
+            queryParams.search = params.search
+        }
+        if (params.status !== undefined) {
+            queryParams.status = params.status
+        }
+        if (params.projectType !== undefined) {
+            queryParams.projectType = params.projectType
         }
         return this.request<ProjectListResponse_v0>(
             this.createURL(`/projects`, queryParams),
@@ -356,19 +413,31 @@ export class HVAKRClient {
     /**
      * Lists products from the catalog accessible to the authenticated user
      * (the organization's products plus public products).
-     * @param params - Optional filters
+     *
+     * Results are paginated. When `hasMore` is true, pass the returned
+     * `nextCursor` back as `cursor` to fetch the next page.
+     *
+     * @param params - Optional filter and pagination parameters
      * @param params.search - Case-insensitive filter over name/manufacturer/model
-     * @returns The accessible products
+     * @param params.limit - Maximum number of products to return per page
+     * @param params.cursor - Cursor from a previous response's `nextCursor`
+     * @returns A page of products with pagination metadata
      * @throws {HVAKRClientError} If the API returns an error response
      */
     listProducts = async (
-        params: { search?: string } = {}
-    ): Promise<APIProduct_v0[]> => {
+        params: { search?: string; limit?: number; cursor?: string } = {}
+    ): Promise<ProductListResponse_v0> => {
         const queryParams: Record<string, string> = {}
         if (params.search !== undefined) {
             queryParams.search = params.search
         }
-        return this.request<APIProduct_v0[]>(
+        if (params.limit !== undefined) {
+            queryParams.limit = params.limit.toString()
+        }
+        if (params.cursor !== undefined) {
+            queryParams.cursor = params.cursor
+        }
+        return this.request<ProductListResponse_v0>(
             this.createURL(`/products`, queryParams),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
@@ -385,5 +454,19 @@ export class HVAKRClient {
             this.createURL(`/products/${this.encodePathSegment(productId)}`),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
+    }
+
+    /**
+     * Returns the authenticated caller's identity, organization memberships,
+     * plan entitlements, and rate-limit budget. Recommended first call for any
+     * integration — confirms the token is valid and reports what it can do.
+     * @returns The caller's identity, orgs, plan, and rate limit
+     * @throws {HVAKRClientError} If the API returns an error response
+     */
+    me = async (): Promise<APIMe_v0> => {
+        return this.request<APIMe_v0>(this.createURL(`/me`), {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        })
     }
 }

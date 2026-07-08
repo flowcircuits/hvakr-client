@@ -40,3 +40,21 @@ export const APIProductSchema_v0 = z
     .describe('A catalog product.')
 
 export type APIProduct_v0 = z.infer<typeof APIProductSchema_v0>
+
+/**
+ * Paginated response shape returned by the list-products endpoint. Mirrors
+ * `ProjectListResponseSchema_v0`: `hasMore` signals another page, and
+ * `nextCursor` is the opaque cursor to pass back as `cursor` (null on the
+ * last page).
+ */
+export const ProductListResponseSchema_v0 = z
+    .object({
+        products: z.array(APIProductSchema_v0),
+        hasMore: z.boolean(),
+        nextCursor: z.string().nullable(),
+    })
+    .describe('A page of catalog products with pagination metadata.')
+
+export type ProductListResponse_v0 = z.infer<
+    typeof ProductListResponseSchema_v0
+>

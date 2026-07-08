@@ -6,7 +6,7 @@ import {
 } from 'undici'
 import type Dispatcher from 'undici/types/dispatcher'
 import type { MockInterceptor } from 'undici/types/mock-interceptor'
-import { afterEach, assert, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ExpandedProjectPatch_v0 } from './schemas'
 import { ExpandedProjectPostDataExample_v0 } from './fixtures'
 import { HVAKRClient } from './HVAKRClient'
@@ -18,11 +18,14 @@ const exampleApiBaseUrl = 'https://api.example.test'
 
 const mockResponse = (
     statusCode: number,
-    data: Record<string, any> | string
+    data: Record<string, any> | string,
+    headers: Record<string, string> = {}
 ) => ({
     statusCode,
     data,
-    responseOptions: { headers: { 'content-type': 'application/json' } },
+    responseOptions: {
+        headers: { 'content-type': 'application/json', ...headers },
+    },
 })
 
 const bodyAsString = (
@@ -89,6 +92,7 @@ describe('HVAKRClient request building', () => {
     let replies: Array<{
         statusCode: number
         data: Record<string, any> | string
+        headers?: Record<string, string>
     }>
     let requests: MockInterceptor.MockResponseCallbackOptions[]
 
@@ -105,7 +109,7 @@ describe('HVAKRClient request building', () => {
             .reply((request) => {
                 requests.push(request)
                 const reply = replies.shift() ?? { statusCode: 200, data: {} }
-                return mockResponse(reply.statusCode, reply.data)
+                return mockResponse(reply.statusCode, reply.data, reply.headers)
             })
             .persist()
         setGlobalDispatcher(agent)
@@ -120,9 +124,10 @@ describe('HVAKRClient request building', () => {
 
     const enqueue = (
         statusCode: number,
-        data: Record<string, any> | string
+        data: Record<string, any> | string,
+        headers?: Record<string, string>
     ) => {
-        replies.push({ statusCode, data })
+        replies.push({ statusCode, data, headers })
     }
 
     it('createProject POSTs JSON to /projects with auth headers', async () => {
@@ -142,7 +147,34 @@ describe('HVAKRClient request building', () => {
         expect(headerValue(request.headers, 'content-type')).toBe(
             'application/json'
         )
+        expect(headerValue(request.headers, 'x-hvakr-client')).toMatch(
+            /^hvakr-client-ts\/\d+\.\d+\.\d+/
+        )
         expect(JSON.parse(bodyAsString(request.body))).toEqual(payload)
+    })
+
+    it('sends the X-HVAKR-Client SDK version header on reads', async () => {
+        enqueue(200, { projects: [], hasMore: false, nextCursor: null })
+        await requestClient.listProjects()
+        expect(headerValue(requests.at(-1)!.headers, 'x-hvakr-client')).toMatch(
+            /^hvakr-client-ts\/\d+\.\d+\.\d+/
+        )
+    })
+
+    it('logs the server client-upgrade warning once per distinct message', async () => {
+        const warning =
+            'hvakr-client-ts 0.4.0 is outdated; upgrade to >=9.9.9-test'
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const body = { projects: [], hasMore: false, nextCursor: null }
+        enqueue(200, body, { 'x-hvakr-client-warning': warning })
+        enqueue(200, body, { 'x-hvakr-client-warning': warning })
+
+        await requestClient.listProjects()
+        await requestClient.listProjects()
+
+        expect(warn).toHaveBeenCalledTimes(1)
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining(warning))
+        warn.mockRestore()
     })
 
     it('listProjects sends limit and cursor as query params', async () => {
@@ -250,11 +282,54 @@ describe('HVAKRClient request building', () => {
         expect(requests.at(-1)?.method).toBe('GET')
     })
 
-    it('listProducts GETs /products with an optional search filter', async () => {
-        enqueue(200, [{ id: 'prod_1', name: 'RTU-5' }])
-        const products = await requestClient.listProducts({ search: 'RTU' })
-        expect(products).toEqual([{ id: 'prod_1', name: 'RTU-5' }])
-        expect(requests.at(-1)?.path).toBe('/v0/products?search=RTU')
+    it('listProducts GETs /products and returns the pagination envelope', async () => {
+        enqueue(200, {
+            products: [{ id: 'prod_1', name: 'RTU-5' }],
+            hasMore: true,
+            nextCursor: 'prod_1',
+        })
+        const page = await requestClient.listProducts({
+            search: 'RTU',
+            limit: 1,
+            cursor: 'prod_0',
+        })
+        expect(page).toEqual({
+            products: [{ id: 'prod_1', name: 'RTU-5' }],
+            hasMore: true,
+            nextCursor: 'prod_1',
+        })
+        expect(requests.at(-1)?.path).toBe(
+            '/v0/products?search=RTU&limit=1&cursor=prod_0'
+        )
+        expect(requests.at(-1)?.method).toBe('GET')
+    })
+
+    it('listProjects forwards search/status/projectType filters', async () => {
+        enqueue(200, { projects: [], hasMore: false, nextCursor: null })
+        await requestClient.listProjects({
+            search: 'tower',
+            status: 'inProgress',
+            projectType: 'commercial',
+        })
+        expect(requests.at(-1)?.path).toBe(
+            '/v0/projects?search=tower&status=inProgress&projectType=commercial'
+        )
+        expect(requests.at(-1)?.method).toBe('GET')
+    })
+
+    it('me GETs /me and returns the caller identity envelope', async () => {
+        const body = {
+            user: { id: 'u1', email: 'eng@firm.com', license: 'team' },
+            organizations: [
+                { id: 'org1', name: 'Acme MEP', domain: 'acme.com', role: 10 },
+            ],
+            plan: { license: 'team', apiAccess: true },
+            rateLimit: { limitPerMinute: 120 },
+        }
+        enqueue(200, body)
+        const me = await requestClient.me()
+        expect(me).toEqual(body)
+        expect(requests.at(-1)?.path).toBe('/v0/me')
         expect(requests.at(-1)?.method).toBe('GET')
     })
 
@@ -323,9 +398,22 @@ describeApi('HVAKR Client', () => {
     }, 10000)
 
     it('should list catalog products', async () => {
-        const products = await hvakrClient.listProducts()
-        expect(Array.isArray(products)).toBe(true)
+        const page = await hvakrClient.listProducts()
+        expect(Array.isArray(page.products)).toBe(true)
+        expect(typeof page.hasMore).toBe('boolean')
+        expect(
+            page.nextCursor === null || typeof page.nextCursor === 'string'
+        ).toBe(true)
     }, 5000)
+
+    it('should return the caller identity from /me', async () => {
+        const me = await hvakrClient.me()
+        expect(me.user.email).toBeTruthy()
+        expect(me.user.license).toBeTruthy()
+        expect(Array.isArray(me.organizations)).toBe(true)
+        expect(typeof me.plan.apiAccess).toBe('boolean')
+        expect(typeof me.rateLimit.limitPerMinute).toBe('number')
+    }, 10000)
 
     it('should get HVAKR Project register schedule calculations', async () => {
         const calc = await hvakrClient.getProjectCalculations(id!, {

@@ -120,18 +120,26 @@ The `HVAKRClient` supports the following options on initialization. These option
 | `baseUrl`     | `"https://api.hvakr.com"` | `string` | The root URL for sending API requests. This can be changed to test with a mock server. |
 | `version`     | `"v0"`                    | `string` | The API version to use.                                                                |
 
+### Version reporting
+
+The client sends its version to the API on every request (`X-HVAKR-Client:
+hvakr-client-ts/<version>`). If your installed version is behind the minimum the
+API still supports, the response carries an `X-HVAKR-Client-Warning` header and
+the client logs a one-time `console.warn` telling you to upgrade — useful because
+breaking changes ship in minor bumps (see [Versioning & stability](#versioning--stability)).
+
 ## API Reference
 
 ### Projects
 
-| Method                                     | Description                                                                                                                                                                        |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `listProjects({ limit?, cursor? })`        | List a page of projects accessible to the authenticated user. Page with `nextCursor` while `hasMore`                                                                               |
-| `getProject(id, expand?)`                  | Get a project by ID. Set `expand: true` for full project data, or pass an array of subcollection keys (e.g. `['spaces', 'zones']`) to expand only those                            |
-| `createProject(data, opts?)`               | Create a new project                                                                                                                                                               |
-| `updateProject(id, data, opts?)`           | Update an existing project                                                                                                                                                         |
-| `deleteProject(id)`                        | Delete a project                                                                                                                                                                   |
-| `getProjectCalculations(id, { include? })` | Run the calculator and return the requested sections (`loads`, `register_schedule`, `dryside_graph`, `ventilation`, `equipment`, `checksums`, `airflows`). Omit `include` for all. |
+| Method                                                              | Description                                                                                                                                                                        |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `listProjects({ limit?, cursor?, search?, status?, projectType? })` | List a page of projects accessible to the authenticated user. Page with `nextCursor` while `hasMore`. Optional `search` (name/number/address), `status`, and `projectType` filters |
+| `getProject(id, expand?)`                                           | Get a project by ID. Set `expand: true` for full project data, or pass an array of subcollection keys (e.g. `['spaces', 'zones']`) to expand only those                            |
+| `createProject(data, opts?)`                                        | Create a new project                                                                                                                                                               |
+| `updateProject(id, data, opts?)`                                    | Update an existing project                                                                                                                                                         |
+| `deleteProject(id)`                                                 | Delete a project                                                                                                                                                                   |
+| `getProjectCalculations(id, { include? })`                          | Run the calculator and return the requested sections (`loads`, `register_schedule`, `dryside_graph`, `ventilation`, `equipment`, `checksums`, `airflows`). Omit `include` for all. |
 
 ### Jobs
 
@@ -142,10 +150,19 @@ The `HVAKRClient` supports the following options on initialization. These option
 
 ### Products
 
-| Method                      | Description                                                                        |
-| --------------------------- | ---------------------------------------------------------------------------------- |
-| `listProducts({ search? })` | List products accessible to the authenticated user (read-only). Filter by `search` |
-| `getProduct(id)`            | Get a single product by ID                                                         |
+| Method                                       | Description                                                                                                                          |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `listProducts({ search?, limit?, cursor? })` | List a page of products accessible to the authenticated user (read-only). Page with `nextCursor` while `hasMore`. Filter by `search` |
+| `getProduct(id)`                             | Get a single product by ID                                                                                                           |
+
+Like `listProjects`, `listProducts` is paginated — it returns
+`{ products, hasMore, nextCursor }`; page with `nextCursor` while `hasMore`.
+
+### Account
+
+| Method | Description                                                                                                                          |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `me()` | Return the authenticated caller's identity, organization memberships, plan, and rate-limit budget. A good first call to confirm auth |
 
 Write methods (`createProject`, `updateProject`, `createJob`) accept an optional
 `opts` argument with an `idempotencyKey` — retrying a request with the same key

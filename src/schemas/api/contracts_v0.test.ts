@@ -14,6 +14,7 @@ import {
     APICheckReportSchema_v0,
     APIJobCreateSchema_v0,
     APIJobSchema_v0,
+    APISheetUploadJobResultSchema_v0,
 } from './jobs_v0'
 import { APIProductSchema_v0 } from './products_v0'
 import { APIReportSchema_v0 } from './reports_v0'
@@ -300,6 +301,42 @@ describe('job schemas', () => {
             'https://example.test/report.pdf'
         )
     })
+
+    it('keeps sheet-upload response-only and exposes actionable page state', () => {
+        expect(
+            APIJobCreateSchema_v0.safeParse({ type: 'sheet-upload' }).success
+        ).toBe(false)
+
+        const parsed = APIJobSchema_v0.parse({
+            jobId: 'job_sheet_1',
+            type: 'sheet-upload',
+            status: 'completed',
+            result: {
+                sheetFileId: 'sheet_file_1',
+                sourceFileName: 'A-Plans.pdf',
+                readyForTakeoff: true,
+                pagesProcessed: 1,
+                placedSheets: 1,
+                pages: [
+                    {
+                        id: 'page_1',
+                        pageNumber: 1,
+                        sheetNumber: 'A101',
+                        sheetType: 'Overall Floor Plan',
+                        detectedLevel: 1,
+                        scale: 0.125,
+                        status: 'completed',
+                        placed: true,
+                    },
+                ],
+            },
+        })
+        expect(parsed.type).toBe('sheet-upload')
+        if (parsed.type !== 'sheet-upload')
+            throw new Error('Expected sheet upload')
+        if (!parsed.result) throw new Error('Expected sheet-upload result')
+        expect(parsed.result?.pages[0]?.placed).toBe(true)
+    })
 })
 
 describe('product schema', () => {
@@ -329,6 +366,7 @@ describe('OpenAPI JSON Schema generation', () => {
         EquipmentDataSchema_v0,
         APIJobCreateSchema_v0,
         APIJobSchema_v0,
+        APISheetUploadJobResultSchema_v0,
         APIProductSchema_v0,
         ProjectScopeAirflowsSchema_v0,
         SpaceDataSchema_v0,

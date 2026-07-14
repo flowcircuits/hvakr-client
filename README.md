@@ -148,6 +148,37 @@ breaking changes ship in minor bumps (see [Versioning & stability](#versioning--
 | `createJob(id, body, opts?)` | Create a job (`report`, `auto-group`, `check`, or `auto-takeoff`). Sync jobs return `status: "completed"`; async jobs return `queued` |
 | `getJob(id, jobId)`          | Get a job's current state. Poll async jobs until `status` leaves `queued`/`running`                                                   |
 
+### Sheet files
+
+| Method                                           | Description                                                                                                                   |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `createSheetFile(id, { file, fileName, name? })` | Upload one PDF (up to 30 MiB) and receive a multipart-only `sheet-upload` job. Poll it with `getJob`; `name` is display-only. |
+
+```ts
+const upload = await hvakr.createSheetFile(
+    projectId,
+    { file: pdfBytes, fileName: 'A-Plans.pdf', name: 'Architectural Plans' },
+    { idempotencyKey: crypto.randomUUID() }
+)
+
+let job = upload
+while (job.status === 'queued' || job.status === 'running') {
+    await new Promise((resolve) => setTimeout(resolve, 1_000))
+    job = await hvakr.getJob(projectId, job.jobId)
+}
+
+if (job.type === 'sheet-upload' && job.status === 'completed') {
+    if (!job.result?.readyForTakeoff) {
+        // Patch project.sheets to place an eligible page, then poll again.
+    } else {
+        await hvakr.createJob(projectId, { type: 'auto-takeoff' })
+    }
+}
+```
+
+`auto-takeoff` remains project-wide: it processes all active placed sheets and
+eligible maps, not only pages from this upload.
+
 ### Products
 
 | Method                                       | Description                                                                                                                          |
@@ -203,9 +234,10 @@ complete field mapping. The API path remains `/v0`.
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `me()` | Return the authenticated caller's identity, organization memberships, plan, and rate-limit budget. A good first call to confirm auth |
 
-Write methods (`createProject`, `updateProject`, `createJob`) accept an optional
-`opts` argument with an `idempotencyKey` — retrying a request with the same key
-returns the original result instead of performing the action twice.
+Write methods (`createProject`, `updateProject`, `createJob`, `createSheetFile`)
+accept an optional `opts` argument with an `idempotencyKey` — retrying a request
+with the same key returns the original result instead of performing the action
+twice.
 
 ## Receiving webhooks
 

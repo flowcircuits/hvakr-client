@@ -9,7 +9,7 @@ import type { MockInterceptor } from 'undici/types/mock-interceptor'
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ExpandedProjectPatch_v0 } from './schemas'
 import { ExpandedProjectPostDataExample_v0 } from './fixtures'
-import { HVAKRClient } from './HVAKRClient'
+import { HVAKRClient, MAX_API_SHEET_UPLOAD_BYTES } from './HVAKRClient'
 import { createClientTestTarget } from './test/clientTestTarget'
 
 const { createClient, describeApi } = createClientTestTarget()
@@ -230,6 +230,65 @@ describe('HVAKRClient request building', () => {
         expect(requests.at(-1)?.path).toBe(
             '/v0/projects/p1/calculations?include=loads%2Cventilation'
         )
+    })
+
+    it('createSheetFile POSTs PDF multipart data without a JSON content type', async () => {
+        const response = {
+            jobId: 'job_sheet_1',
+            type: 'sheet-upload',
+            status: 'queued',
+            result: {
+                sheetFileId: 'sheet_file_1',
+                sourceFileName: 'A-Plans.pdf',
+                name: 'Architectural Plans',
+                pagesProcessed: 0,
+                placedSheets: 0,
+                pages: [],
+            },
+        }
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(
+                new Response(JSON.stringify(response), { status: 202 })
+            )
+        globalThis.fetch = fetchMock
+
+        const result = await requestClient.createSheetFile(
+            'p1',
+            {
+                file: new Blob(['%PDF-1.7']),
+                fileName: 'A-Plans.pdf',
+                name: 'Architectural Plans',
+            },
+            { idempotencyKey: 'idem-sheet-1' }
+        )
+
+        expect(result.type).toBe('sheet-upload')
+        expect(fetchMock).toHaveBeenCalledWith(
+            'https://api.example.test/v0/projects/p1/sheet-files',
+            expect.objectContaining({ method: 'POST' })
+        )
+        const init = fetchMock.mock.calls[0]?.[1] as RequestInit
+        expect(init.headers).toMatchObject({
+            Accept: 'application/json',
+            'Idempotency-Key': 'idem-sheet-1',
+        })
+        expect(init.headers).not.toHaveProperty('Content-Type')
+        expect(init.body).toBeInstanceOf(FormData)
+        const formData = init.body as FormData
+        expect(formData.get('name')).toBe('Architectural Plans')
+        const uploadedFile = formData.get('file') as File
+        expect(uploadedFile.name).toBe('A-Plans.pdf')
+    })
+
+    it('createSheetFile preflights the API upload limit before requesting', async () => {
+        await expect(
+            requestClient.createSheetFile('p1', {
+                file: new Uint8Array(MAX_API_SHEET_UPLOAD_BYTES + 1),
+                fileName: 'too-large.pdf',
+            })
+        ).rejects.toThrow('30 MiB API upload limit')
+        expect(requests).toHaveLength(0)
     })
 
     it('createJob POSTs to the jobs route and sends the idempotency key', async () => {

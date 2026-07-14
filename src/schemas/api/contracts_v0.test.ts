@@ -1,8 +1,12 @@
 import { assert, describe, expect, it } from 'vitest'
 import { getJSONSchema } from '../getJSONSchema'
+import { EquipmentDataSchema_v0, SpaceDataSchema_v0 } from '../database/project'
 import {
     APIProjectCalculationsSchema_v0,
     CalculatorFlagsSchema_v0,
+    EquipmentCalculationsSchema_v0,
+    EquipmentSectionOutputSchema_v0,
+    ProjectScopeAirflowsSchema_v0,
 } from '../outputs'
 import { APIErrorSchema_v0 } from './error_v0'
 import {
@@ -13,6 +17,43 @@ import {
 } from './jobs_v0'
 import { APIProductSchema_v0 } from './products_v0'
 import { APIReportSchema_v0 } from './reports_v0'
+
+const airflows = {
+    exhaust: 10,
+    outside: 20,
+    relief: 5,
+    return: 90,
+    supply: 100,
+}
+
+const modeAirflows = {
+    airflowDifferential: { design: 15, required: 10 },
+    design: airflows,
+    monthHour: { hour: 15, month: 7 },
+    required: airflows,
+    spacePeaksSum: airflows,
+    supplySources: {
+        codeRequiredSupply: 80,
+        directAirSpaceSensible: 0,
+        directOutsideAir: 0,
+        loadRequiredSupply: 100,
+        totalSpaceSensible: 12_000,
+    },
+}
+
+const projectScopeAirflows = {
+    byMode: { cooling_mode: modeAirflows },
+    calculatedOutsideAirflow: { cooling: 20, heating: 18, max: 20 },
+    max: {
+        airflowDifferential: modeAirflows.airflowDifferential,
+        design: airflows,
+        required: airflows,
+    },
+    requiredOutsideAirflowComponents: {
+        code: { ach: 0 },
+        load: { area: 8, people: 12, total: 20 },
+    },
+}
 
 describe('APIErrorSchema_v0', () => {
     it('accepts a valid error envelope', () => {
@@ -43,6 +84,21 @@ describe('calculator flags', () => {
             entityType: 'space',
             id: 'sp_1',
         })
+    })
+
+    it('parses component- and mode-scoped equipment flag details', () => {
+        expect(
+            CalculatorFlagsSchema_v0.parse({
+                EQUIPMENT_COMPONENT_SKIPPED: [
+                    {
+                        entityType: 'equipment',
+                        id: 'ahu-1',
+                        componentId: 'cc-1',
+                        modeId: 'cooling_mode',
+                    },
+                ],
+            }).EQUIPMENT_COMPONENT_SKIPPED?.[0]
+        ).toMatchObject({ componentId: 'cc-1', modeId: 'cooling_mode' })
     })
 })
 
@@ -80,6 +136,62 @@ describe('calculations contract', () => {
         expect(
             parsed.ventilation?.spaces.sp_1?.iaqp?.minimumOutsideAirflow
         ).toBe('not achievable')
+    })
+
+    it('parses mode-keyed airflow sections without legacy condition wrappers', () => {
+        const parsed = APIProjectCalculationsSchema_v0.parse({
+            errors: [],
+            flags: {},
+            airflows: {
+                project: projectScopeAirflows,
+                spaces: { sp_1: projectScopeAirflows },
+                systems: {},
+                zones: {},
+            },
+        })
+
+        expect(parsed.airflows?.spaces.sp_1?.byMode.cooling_mode).toEqual(
+            modeAirflows
+        )
+        expect(
+            ProjectScopeAirflowsSchema_v0.safeParse({
+                design: { cooling: airflows },
+            }).success
+        ).toBe(false)
+    })
+
+    it('parses canonical equipment mode summaries and keeps checksums separate', () => {
+        const equipment = EquipmentCalculationsSchema_v0.parse({
+            airflows: { raw: { cooling_mode: airflows } },
+            checksums: { cooling_mode: { airflowDensity: 0.8 } },
+            modes: {
+                cooling_mode: {
+                    pipeline: { componentResults: {} },
+                    summary: {
+                        airflows: {
+                            asConfigured: airflows,
+                            withoutLeakage: airflows,
+                        },
+                        coilTotals: {
+                            coilLoad: -24_000,
+                            sensibleCoilLoad: -18_000,
+                        },
+                        systemProcess: {
+                            fanMotorHeatGain: 500,
+                            otherInefficiencies: 250,
+                            total: 750,
+                        },
+                    },
+                },
+            },
+        })
+
+        expect(
+            equipment.modes?.cooling_mode?.summary.coilTotals?.coilLoad
+        ).toBe(-24_000)
+        expect(EquipmentSectionOutputSchema_v0.shape).not.toHaveProperty(
+            'checksums'
+        )
     })
 })
 
@@ -213,9 +325,13 @@ describe('OpenAPI JSON Schema generation', () => {
     const schemas = {
         APIErrorSchema_v0,
         APIProjectCalculationsSchema_v0,
+        EquipmentCalculationsSchema_v0,
+        EquipmentDataSchema_v0,
         APIJobCreateSchema_v0,
         APIJobSchema_v0,
         APIProductSchema_v0,
+        ProjectScopeAirflowsSchema_v0,
+        SpaceDataSchema_v0,
     }
 
     for (const [name, schema] of Object.entries(schemas)) {

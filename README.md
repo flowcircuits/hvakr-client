@@ -158,6 +158,45 @@ breaking changes ship in minor bumps (see [Versioning & stability](#versioning--
 Like `listProjects`, `listProducts` is paginated — it returns
 `{ products, hasMore, nextCursor }`; page with `nextCursor` while `hasMore`.
 
+### Equipment modes and calculations
+
+Since `0.6.0`, projects use a shared `equipmentModes` registry. System and zone
+equipment configuration is stored under `equipmentConfig`, with an ordered
+component list and per-mode component configuration:
+
+```ts
+import {
+    ComponentTypes_v0,
+    DEFAULT_COOLING_MODE_ID_v0,
+    OutsideAirMethods_v0,
+} from '@hvakr/client'
+
+const system = {
+    equipmentConfig: {
+        components: [{ id: 'oa', type: ComponentTypes_v0.OUTSIDE_AIR_INTAKE }],
+        componentConfigsByMode: {
+            [DEFAULT_COOLING_MODE_ID_v0]: {
+                oa: {
+                    enabled: true,
+                    configuration: {
+                        componentType: ComponentTypes_v0.OUTSIDE_AIR_INTAKE,
+                        method: OutsideAirMethods_v0.SUM_OF_SPACES,
+                    },
+                },
+            },
+        },
+    },
+}
+```
+
+Space design overrides live under `designAirflowsByMode`; ventilation and
+infiltration requirements live under `airflowRequirementsByLoadCondition`.
+Calculation sections remain selectable with `include`, while airflow,
+checksum, and equipment results are keyed by the project's mode ids.
+
+See the [`0.6.0` migration table](./CHANGELOG.md#060---2026-07-13) for the
+complete field mapping. The API path remains `/v0`.
+
 ### Account
 
 | Method | Description                                                                                                                          |

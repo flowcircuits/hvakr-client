@@ -337,6 +337,8 @@ export class HVAKRClient {
 
     /**
      * Runs the calculator once and returns the requested calculation sections.
+     * Airflow, checksum, and equipment contents are keyed by the project's
+     * equipment mode ids.
      * @param projectId - The ID of the project
      * @param opts.include - Sections to compute and return (`loads`,
      *   `register_schedule`, `dryside_graph`, `ventilation`, `equipment`,

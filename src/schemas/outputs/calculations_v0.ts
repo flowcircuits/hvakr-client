@@ -1,15 +1,12 @@
 import { z } from 'zod'
 import {
-    AirStatePsychrometricsSchema_v0,
     CalculatedOutsideAirflowSchema_v0,
     CalculatorFlagsSchema_v0,
     CentralUnitAirflowDataSchema_v0,
-    CoilOutputsSchema_v0,
-    DesignLoadConditionAirflowsSchema_v0,
-    EquipmentAirflowsSchema_v0,
+    EquipmentCalculationsSchema_v0,
     EquipmentChecksumsSchema_v0,
     IAQPCalculationsSchema_v0,
-    RequiredLoadConditionAirflowsSchema_v0,
+    ProjectScopeAirflowsSchema_v0,
     RequiredOutsideAirflowComponentsSchema_v0,
     ScopeChecksumsSchema_v0,
 } from './calculator_v0'
@@ -135,42 +132,16 @@ export type CalcVentilationSection_v0 = z.infer<
 // --------------------------------------------------------------------
 // -- Equipment -------------------------------------------------------
 
-/**
- * Coil loads flattened to the design condition. Each condition reports the
- * `withLeakage.withHeatGain` coil outputs — the values used for equipment
- * sizing.
- */
-export const EquipmentCoilOutputsSchema_v0 = z
-    .object({
-        cooling: CoilOutputsSchema_v0.describe(
-            'Cooling coil outputs (withLeakage.withHeatGain).'
-        ),
-        heating: CoilOutputsSchema_v0.describe(
-            'Heating coil outputs (withLeakage.withHeatGain).'
-        ),
-    })
-    .describe('Design-condition coil loads.')
+/** Equipment pipeline/summary output; checksums remain in their own section. */
+export const EquipmentSectionOutputSchema_v0 =
+    EquipmentCalculationsSchema_v0.omit({ checksums: true })
+export type EquipmentSectionOutput_v0 = z.infer<
+    typeof EquipmentSectionOutputSchema_v0
+>
 
-/** Psychrometric air states per load condition. */
-export const EquipmentPsychrometricsSchema_v0 = z
-    .object({
-        cooling: AirStatePsychrometricsSchema_v0,
-        heating: AirStatePsychrometricsSchema_v0,
-    })
-    .describe('Equipment psychrometric air states per load condition.')
-
-/** Calculated outputs for a single piece of equipment. */
-export const EquipmentOutputSchema_v0 = z
-    .object({
-        airflows: EquipmentAirflowsSchema_v0.optional(),
-        coil: EquipmentCoilOutputsSchema_v0.optional(),
-        psychrometrics: EquipmentPsychrometricsSchema_v0.optional(),
-    })
-    .describe('Calculated outputs for a piece of equipment.')
-
-/** Per-equipment calculated outputs (airflows, coil loads, psychrometrics). */
+/** Per-equipment canonical outputs, keyed by equipment id. */
 export const CalcEquipmentSectionSchema_v0 = z
-    .record(z.string(), EquipmentOutputSchema_v0)
+    .record(z.string(), EquipmentSectionOutputSchema_v0)
     .describe('Per-equipment calculated outputs, keyed by equipment id.')
 export type CalcEquipmentSection_v0 = z.infer<
     typeof CalcEquipmentSectionSchema_v0
@@ -196,28 +167,13 @@ export type CalcChecksumsSection_v0 = z.infer<
 // --------------------------------------------------------------------
 // -- Airflows --------------------------------------------------------
 
-/** Airflow results for a single scope (space, zone, system, or project). */
-export const ScopeAirflowsSchema_v0 = z
-    .object({
-        design: DesignLoadConditionAirflowsSchema_v0.describe(
-            'Design airflows per load condition.'
-        ),
-        required: RequiredLoadConditionAirflowsSchema_v0.describe(
-            'Required airflows per load condition.'
-        ),
-        calculatedOutsideAirflow: CalculatedOutsideAirflowSchema_v0.describe(
-            'Code-calculated outside airflow V_OZ per condition.'
-        ),
-    })
-    .describe('Airflow results for a scope.')
-
 /** Design and required airflows per scope. */
 export const CalcAirflowsSectionSchema_v0 = z
     .object({
-        project: ScopeAirflowsSchema_v0.optional(),
-        spaces: z.record(z.string(), ScopeAirflowsSchema_v0),
-        systems: z.record(z.string(), ScopeAirflowsSchema_v0),
-        zones: z.record(z.string(), ScopeAirflowsSchema_v0),
+        project: ProjectScopeAirflowsSchema_v0.optional(),
+        spaces: z.record(z.string(), ProjectScopeAirflowsSchema_v0),
+        systems: z.record(z.string(), ProjectScopeAirflowsSchema_v0),
+        zones: z.record(z.string(), ProjectScopeAirflowsSchema_v0),
     })
     .describe('Design and required airflows per scope.')
 export type CalcAirflowsSection_v0 = z.infer<

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { ExpandedProjectPatchSchema_v0 } from './expandedProject_v0'
+import { ExpandedProjectPostDataExample_v0 } from '../../../fixtures'
 import {
+    ExpandedProjectPatchSchema_v0,
+    ExpandedProjectPostSchema_v0,
+} from './expandedProject_v0'
+import {
+    DEFAULT_EQUIPMENT_MODES_v0,
     PROJECT_PRIVATE_READ_FIELDS_V0,
     PROJECT_RESTRICTED_WRITE_FIELDS_V0,
     ProjectDataSchema_v0,
@@ -18,6 +23,7 @@ describe('Project v0 schemas', () => {
     it('accepts both ASHRAE and NCC template sources', () => {
         expect(
             ProjectDataSchema_v0.safeParse({
+                equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
                 name: 'ASHRAE template',
                 users: {},
                 source: 'ASHRAE',
@@ -26,6 +32,7 @@ describe('Project v0 schemas', () => {
 
         expect(
             ProjectDataSchema_v0.safeParse({
+                equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
                 name: 'NCC template',
                 users: {},
                 source: 'NCC',
@@ -49,5 +56,30 @@ describe('Project v0 schemas', () => {
         expect(WritableProjectDataSchema_v0.shape).toHaveProperty(
             'utilityRates'
         )
+    })
+
+    it('requires equipment modes on reads and defaults them on create', () => {
+        expect(
+            ProjectDataSchema_v0.safeParse({ name: 'Missing modes', users: {} })
+                .success
+        ).toBe(false)
+        expect(
+            ProjectPostSchema_v0.safeParse({ name: 'Default modes' }).success
+        ).toBe(true)
+        expect(
+            ProjectDataSchema_v0.safeParse({
+                equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+                name: 'Canonical modes',
+                users: {},
+            }).success
+        ).toBe(true)
+    })
+
+    it('keeps the expanded project example valid under the canonical contract', () => {
+        expect(
+            ExpandedProjectPostSchema_v0.safeParse(
+                ExpandedProjectPostDataExample_v0
+            ).success
+        ).toBe(true)
     })
 })

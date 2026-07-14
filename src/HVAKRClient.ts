@@ -19,6 +19,12 @@ import {
 /** Firebase HTTP functions reserve request overhead within their 32 MiB limit. */
 export const MAX_API_SHEET_UPLOAD_BYTES = 30 * 1024 * 1024
 
+const isBlobLike = (value: Blob | Uint8Array): value is Blob =>
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as Blob).size === 'number' &&
+    typeof (value as Blob).arrayBuffer === 'function'
+
 export interface CreateSheetFileInput {
     /** PDF bytes to upload. */
     file: Blob | Uint8Array
@@ -400,19 +406,20 @@ export class HVAKRClient {
         { file, fileName, name }: CreateSheetFileInput,
         opts?: WriteOptions
     ): Promise<APIJob_v0> => {
-        const fileSize = file instanceof Blob ? file.size : file.byteLength
+        const isBlob = isBlobLike(file)
+        const fileSize = isBlob ? file.size : file.byteLength
         if (fileSize > MAX_API_SHEET_UPLOAD_BYTES) {
             throw new RangeError(
                 `Sheet PDF exceeds the ${MAX_API_SHEET_UPLOAD_BYTES / (1024 * 1024)} MiB API upload limit.`
             )
         }
 
-        const pdf =
-            file instanceof Blob
-                ? file
-                : new Blob([new Uint8Array(file)], { type: 'application/pdf' })
+        const blob = isBlob
+            ? new Blob([await file.arrayBuffer()], { type: 'application/pdf' })
+            : new Blob([new Uint8Array(file)], { type: 'application/pdf' })
+
         const formData = new FormData()
-        formData.append('file', pdf, fileName)
+        formData.append('file', blob, fileName)
         if (name !== undefined) {
             formData.append('name', name)
         }

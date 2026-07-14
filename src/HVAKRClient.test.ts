@@ -279,6 +279,39 @@ describe('HVAKRClient request building', () => {
         expect(formData.get('name')).toBe('Architectural Plans')
         const uploadedFile = formData.get('file') as File
         expect(uploadedFile.name).toBe('A-Plans.pdf')
+        expect(uploadedFile.type).toBe('application/pdf')
+        expect(await uploadedFile.text()).toBe('%PDF-1.7')
+    })
+
+    it('createSheetFile accepts a Blob-like value from another realm', async () => {
+        const response = {
+            jobId: 'job_sheet_cross_realm',
+            type: 'sheet-upload',
+            status: 'queued',
+        }
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(
+                new Response(JSON.stringify(response), { status: 202 })
+            )
+        globalThis.fetch = fetchMock
+
+        const source = new Blob(['%PDF-cross-realm'])
+        const crossRealmBlob = {
+            size: source.size,
+            type: source.type,
+            arrayBuffer: source.arrayBuffer.bind(source),
+        } as unknown as Blob
+
+        await requestClient.createSheetFile('p1', {
+            file: crossRealmBlob,
+            fileName: 'cross-realm.pdf',
+        })
+
+        const init = fetchMock.mock.calls[0]?.[1] as RequestInit
+        const uploadedFile = (init.body as FormData).get('file') as File
+        expect(uploadedFile.type).toBe('application/pdf')
+        expect(await uploadedFile.text()).toBe('%PDF-cross-realm')
     })
 
     it('createSheetFile preflights the API upload limit before requesting', async () => {

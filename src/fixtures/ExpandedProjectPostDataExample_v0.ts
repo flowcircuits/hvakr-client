@@ -1,10 +1,145 @@
-import { ExpandedProjectPost_v0 } from '../schemas'
+import {
+    CentralUnitConfiguration_v0,
+    ComponentTypes_v0,
+    DEFAULT_COOLING_MODE_ID_v0,
+    DEFAULT_EQUIPMENT_MODES_v0,
+    DEFAULT_HEATING_MODE_ID_v0,
+    EquipmentInletMethods_v0,
+    ExpandedProjectPost_v0,
+    OutsideAirMethods_v0,
+    TerminalUnitConfiguration_v0,
+} from '../schemas'
+
+const centralUnitEquipmentConfig: CentralUnitConfiguration_v0 = {
+    components: [
+        { id: 'OA', type: ComponentTypes_v0.OUTSIDE_AIR_INTAKE },
+        { id: 'CC', type: ComponentTypes_v0.COOLING_COIL },
+        { id: 'HC', type: ComponentTypes_v0.HEATING_COIL },
+    ],
+    componentConfigsByMode: {
+        [DEFAULT_COOLING_MODE_ID_v0]: {
+            OA: {
+                enabled: true,
+                configuration: {
+                    componentType: ComponentTypes_v0.OUTSIDE_AIR_INTAKE,
+                    method: OutsideAirMethods_v0.SUM_OF_SPACES,
+                },
+            },
+            CC: {
+                enabled: true,
+                configuration: {
+                    componentType: ComponentTypes_v0.COOLING_COIL,
+                    targetTemperature: 55,
+                    type: 0,
+                },
+            },
+            HC: {
+                enabled: false,
+                configuration: {
+                    componentType: ComponentTypes_v0.HEATING_COIL,
+                    type: 0,
+                },
+            },
+        },
+        [DEFAULT_HEATING_MODE_ID_v0]: {
+            OA: {
+                enabled: true,
+                configuration: {
+                    componentType: ComponentTypes_v0.OUTSIDE_AIR_INTAKE,
+                    method: OutsideAirMethods_v0.SUM_OF_SPACES,
+                },
+            },
+            CC: {
+                enabled: false,
+                configuration: {
+                    componentType: ComponentTypes_v0.COOLING_COIL,
+                    type: 0,
+                },
+            },
+            HC: {
+                enabled: true,
+                configuration: {
+                    componentType: ComponentTypes_v0.HEATING_COIL,
+                    targetTemperature: 90,
+                    type: 0,
+                },
+            },
+        },
+    },
+}
+
+const terminalUnitEquipmentConfig: TerminalUnitConfiguration_v0 = {
+    components: [
+        { id: 'RA', type: ComponentTypes_v0.RETURN_AIR_INTAKE },
+        { id: 'CC', type: ComponentTypes_v0.COOLING_COIL },
+        { id: 'HC', type: ComponentTypes_v0.HEATING_COIL },
+    ],
+    componentConfigsByMode: {
+        [DEFAULT_COOLING_MODE_ID_v0]: {
+            RA: {
+                enabled: true,
+                configuration: {
+                    componentType: ComponentTypes_v0.RETURN_AIR_INTAKE,
+                    reliefEnabled: false,
+                },
+            },
+            CC: {
+                enabled: true,
+                configuration: {
+                    componentType: ComponentTypes_v0.COOLING_COIL,
+                    targetTemperature: 55,
+                    type: 1,
+                },
+            },
+            HC: {
+                enabled: false,
+                configuration: {
+                    componentType: ComponentTypes_v0.HEATING_COIL,
+                    type: 1,
+                },
+            },
+        },
+        [DEFAULT_HEATING_MODE_ID_v0]: {
+            RA: {
+                enabled: true,
+                configuration: {
+                    componentType: ComponentTypes_v0.RETURN_AIR_INTAKE,
+                    reliefEnabled: false,
+                },
+            },
+            CC: {
+                enabled: false,
+                configuration: {
+                    componentType: ComponentTypes_v0.COOLING_COIL,
+                    type: 1,
+                },
+            },
+            HC: {
+                enabled: true,
+                configuration: {
+                    componentType: ComponentTypes_v0.HEATING_COIL,
+                    targetTemperature: 90,
+                    type: 1,
+                },
+            },
+        },
+    },
+    inletData: {
+        enabled: true,
+        configuration: {
+            componentType: ComponentTypes_v0.EQUIPMENT_INLET,
+            decoupled: false,
+            method: EquipmentInletMethods_v0.SUM_OF_SPACES_OA,
+        },
+    },
+}
 
 export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
     name: 'Ramtech Corp Office',
     address: 'Mansfield, TX, USA',
     building: { ashraeBuildingTypeId: '11' },
     description: 'Central AHUs with CHW and Preheat HHW serving VAVs w/ RH',
+    equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
     weatherSpec: { coolPercent: '0.4', heatPercent: '99.6' },
     wallTypes: {
         '9yUqbVuVZ71lJSOR1gm2': {
@@ -88,13 +223,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             name: 'CU-01',
             color: '#8a8a8a',
             configured: true,
-            centralUnitConfiguration: {
-                returnAirData: {},
-                heatingCoilData: {},
-                outsideAir: true,
-                coolingCoilData: {},
-                outsideAirData: { method: 2, custom: 0 },
-            },
+            equipmentConfig: centralUnitEquipmentConfig,
         },
     },
     slabTypes: {
@@ -462,36 +591,14 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             color: '#6a040f',
             systemId: 'E76ZWMo8hMDwybbgwzX6',
             configured: true,
-            terminalUnitConfiguration: {
-                returnAir: true,
-                outsideAirData: { method: 2, custom: 0 },
-                coolingCoil: true,
-                heatingCoilData: { type: 1 },
-                coolingCoilData: { type: 1 },
-                supplyAirData: {
-                    coolingTemperature: 55,
-                    heatingTemperature: 90,
-                },
-                heatingCoil: false,
-            },
+            equipmentConfig: terminalUnitEquipmentConfig,
         },
         nAU4ubzKE34QRN1YA9nl: {
             name: 'FCU-1',
             color: '#6a040f',
             systemId: 'E76ZWMo8hMDwybbgwzX6',
             configured: true,
-            terminalUnitConfiguration: {
-                returnAir: true,
-                outsideAirData: { method: 2, custom: 0 },
-                coolingCoil: true,
-                heatingCoilData: { type: 1 },
-                coolingCoilData: { type: 1 },
-                supplyAirData: {
-                    coolingTemperature: 55,
-                    heatingTemperature: 90,
-                },
-                heatingCoil: false,
-            },
+            equipmentConfig: terminalUnitEquipmentConfig,
         },
     },
     spaces: {

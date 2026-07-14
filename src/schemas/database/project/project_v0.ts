@@ -1,11 +1,16 @@
 import { z } from 'zod'
-import { PointSchema, DisplayUnitSystemIdSchema } from '../../misc'
+import {
+    PointSchema,
+    DisplayUnitSystemIdSchema,
+    LoadConditions_v0,
+} from '../../misc'
 import { FlowTypeSchema_v0 } from '../../outputs/misc_v0'
 import {
     CoolingPercentSchema_v0,
     HeatingPercentSchema_v0,
 } from '../weatherStation'
 import * as DrySide_v0 from './graph_v0'
+import { ModeIdSchema_v0, ModeSchema_v0 } from './equipment_v0'
 import { SpaceDataSchema_v0 } from './space_v0'
 
 export const WeatherSpecSchema_v0 = z.object({
@@ -207,6 +212,27 @@ export const VentilationStandardSchema_v0 = z.enum(
     Object.values(VentilationStandards_v0)
 )
 
+export const EquipmentModesSchema_v0 = z.record(ModeIdSchema_v0, ModeSchema_v0)
+export type EquipmentModes_v0 = z.infer<typeof EquipmentModesSchema_v0>
+
+export const DEFAULT_COOLING_MODE_ID_v0 = 'cooling_mode'
+export const DEFAULT_HEATING_MODE_ID_v0 = 'heating_mode'
+
+export const DEFAULT_EQUIPMENT_MODES_v0: EquipmentModes_v0 = {
+    [DEFAULT_COOLING_MODE_ID_v0]: {
+        id: DEFAULT_COOLING_MODE_ID_v0,
+        loadCondition: LoadConditions_v0.COOLING,
+        name: 'Cooling',
+        description: '',
+    },
+    [DEFAULT_HEATING_MODE_ID_v0]: {
+        id: DEFAULT_HEATING_MODE_ID_v0,
+        loadCondition: LoadConditions_v0.HEATING,
+        name: 'Heating',
+        description: '',
+    },
+}
+
 export const ProjectUserRoles_v0 = {
     NONE: 0,
     VIEWER: 1,
@@ -259,6 +285,7 @@ export const ProjectDataSchema_v0 = z.object({
     drySide: DrySideDataSchema_v0.optional(),
     duplicatedFrom: z.string().optional(),
     elevation: z.number().optional(),
+    equipmentModes: EquipmentModesSchema_v0,
     fromExample: z.string().optional(),
     isExample: z.boolean().optional(),
     isHealthcare: z.boolean().optional(),
@@ -376,6 +403,8 @@ export const WritableProjectDataSchema_v0 = ProjectDataSchema_v0.omit(
 
 export const ProjectPostSchema_v0 = z.object({
     ...WritableProjectDataSchema_v0.shape,
+    /** Optional because creation seeds the default cooling/heating modes. */
+    equipmentModes: EquipmentModesSchema_v0.optional(),
     /** Optional because the project can be created with a default name */
     name: z.string().optional(),
 })

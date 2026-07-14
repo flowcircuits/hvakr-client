@@ -9,6 +9,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.6.0] - 2026-07-13
+
+### Breaking Changes
+
+- Replaced the legacy central/terminal equipment fields with the modular,
+  mode-keyed equipment model from HVAKR's advanced equipment configuration
+  release. `SystemData_v0.centralUnitConfiguration` and
+  `ZoneData_v0.terminalUnitConfiguration` are removed; use `equipmentConfig`
+  with an ordered `components` registry and `componentConfigsByMode`.
+- Added required `ProjectData_v0.equipmentModes`, keyed by mode id. Project
+  creation may omit it to receive the default `cooling_mode` and `heating_mode`
+  registry.
+- Replaced flat space design-airflow fields (`customSupply`, `customReturn`,
+  `customExhaust`, `airTransferIn`, and `airTransferOut`) with
+  `designAirflowsByMode`. Moved ventilation and infiltration overrides into
+  `airflowRequirementsByLoadCondition`; removed the separate flat winter
+  override fields.
+- Calculation `airflows`, `checksums`, and `equipment` payloads now preserve
+  arbitrary project modes instead of collapsing them into `cooling` and
+  `heating`. Removed the legacy load-condition airflow/checksum, flattened coil,
+  and psychrometric output schemas. The `/v0` route and calculation section
+  selectors are unchanged.
+- Removed legacy equipment-config schemas and supporting exports without
+  deprecated aliases or runtime adapters. Replacement schemas use their clean
+  canonical names (`CentralUnitConfigurationSchema_v0` and
+  `TerminalUnitConfigurationSchema_v0`); no `NEW_*` names are exported.
+
+### Added
+
+- Modular equipment component schemas for outside-air and return-air intakes,
+  energy recovery, cooling/heating coils, equipment inefficiency, equipment
+  inlets/outlets, component registries, per-mode configuration, and equipment
+  mode definitions.
+- `EquipmentLinkDataSchema_v0`, `LoadConditionSchema_v0`,
+  `EquipmentModesSchema_v0`, and default equipment-mode ids/data.
+- Canonical mode-keyed calculator schemas, including equipment pipeline IO,
+  per-mode summaries, airflow differentials and supply sources, and mode-keyed
+  scope/equipment checksums.
+
+### Migration
+
+| 0.5.x                                                  | 0.6.0                                                               |
+| ------------------------------------------------------ | ------------------------------------------------------------------- |
+| `system.centralUnitConfiguration`                      | `system.equipmentConfig`                                            |
+| `zone.terminalUnitConfiguration`                       | `zone.equipmentConfig`                                              |
+| `space.customSupply/customReturn/customExhaust`        | `space.designAirflowsByMode[modeId].supplyAir/returnAir/exhaustAir` |
+| `space.airTransferIn/airTransferOut`                   | `space.designAirflowsByMode[modeId].airTransferIn/airTransferOut`   |
+| Flat `space.ventilationReq` and infiltration overrides | `space.airflowRequirementsByLoadCondition.COOLING/HEATING`          |
+| `airflows.design/required.cooling/heating`             | `airflows.byMode[modeId].design/required`                           |
+| `checksums.cooling/heating`                            | `checksums[modeId]`                                                 |
+| `equipment.coil/psychrometrics`                        | `equipment.modes[modeId].pipeline/summary`                          |
+
+Removed schema exports map as follows:
+
+| Removed in 0.6.0                                                                                                                                           | Replacement                                                                                                                                                |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SupplyAirDataSchema_v0`, `CoolingCoilDataSchema_v0`, `HeatingCoilDataSchema_v0`, `ReturnAirDataSchema_v0`, `OutsideAirDataSchema_v0`                      | Component schemas in `equipment_v0`, including `CoolingCoilSchema_v0`, `HeatingCoilSchema_v0`, `ReturnAirIntakeSchema_v0`, and `OutsideAirIntakeSchema_v0` |
+| `TerminalUnitOutsideAirDataSchema_v0`, `TerminalUnitSupplyAirDataSchema_v0`                                                                                | `EquipmentInletSchema_v0` and the component schemas above                                                                                                  |
+| `LoadConditionAirflowsSchema_v0`, `DesignLoadConditionAirflowsSchema_v0`, `RequiredLoadConditionAirflowsSchema_v0`                                         | `ModeAirflowsSchema_v0` and `ProjectScopeAirflowsSchema_v0`                                                                                                |
+| `CoolingChecksumsSchema_v0`, `HeatingChecksumsSchema_v0`, `ScopeCoolingChecksumsSchema_v0`                                                                 | `ModeChecksumsSchema_v0` and `ScopeModeChecksumsSchema_v0`                                                                                                 |
+| `CoilOutputsSchema_v0`, `AirStatePsychrometricsSchema_v0`, `EquipmentCoilOutputsSchema_v0`, `EquipmentPsychrometricsSchema_v0`, `EquipmentOutputSchema_v0` | `EquipmentModeCalculationsSchema_v0`, `EquipmentCalculationsSchema_v0`, and `EquipmentSectionOutputSchema_v0`                                              |
+
 ## [0.5.0] - 2026-07-08
 
 ### Breaking Changes

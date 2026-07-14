@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { LoadConditionSchema_v0 } from '../../misc'
+import { ModeIdSchema_v0 } from './equipment_v0'
 
 const InfiltrationRequirementMethods = {
     AREA: 'AREA',
@@ -96,29 +98,46 @@ export const EdgeSchema_v0 = z.object({
 })
 export type Edge_v0 = z.infer<typeof EdgeSchema_v0>
 
-export const SpaceDataSchema_v0 = z.object({
+export const SpaceDesignAirflowsSchema_v0 = z.object({
     airTransferIn: z.number().optional(),
     airTransferOut: z.number().optional(),
-    applyRoofLoadToCeiling: z.boolean().optional(),
-    ceilingHeight: z.number().optional(),
-    creationSource: SpaceCreationSourceSchema_v0,
-    customExhaust: z.number().optional(),
-    customReturn: z.number().optional(),
-    customSupply: z.number().optional(),
-    edges: z.record(z.string(), EdgeSchema_v0),
-    exhaustUnits: z.number().optional(),
+    exhaustAir: z.number().optional(),
+    outsideAir: z.number().optional(),
+    returnAir: z.number().optional(),
+    supplyAir: z.number().optional(),
+})
+export type SpaceDesignAirflows_v0 = z.infer<
+    typeof SpaceDesignAirflowsSchema_v0
+>
+
+export const SpaceAirflowRequirementsSchema_v0 = z.object({
     infiltrationAchReq: z.number().optional(),
     infiltrationAreaReq: z.number().optional(),
     infiltrationFlowRateReq: z.number().optional(),
     infiltrationLfReq: z.number().optional(),
     infiltrationReqMethod: InfiltrationRequirementMethodSchema_v0.optional(),
+    ventilationReq: z.number().optional(),
+})
+export type SpaceAirflowRequirements_v0 = z.infer<
+    typeof SpaceAirflowRequirementsSchema_v0
+>
+
+export const SpaceDataSchema_v0 = z.object({
+    designAirflowsByMode: z
+        .record(ModeIdSchema_v0, SpaceDesignAirflowsSchema_v0)
+        .optional(),
+    airflowRequirementsByLoadCondition: z
+        .partialRecord(
+            LoadConditionSchema_v0,
+            SpaceAirflowRequirementsSchema_v0
+        )
+        .optional(),
+    applyRoofLoadToCeiling: z.boolean().optional(),
+    ceilingHeight: z.number().optional(),
+    creationSource: SpaceCreationSourceSchema_v0,
+    edges: z.record(z.string(), EdgeSchema_v0),
+    exhaustUnits: z.number().optional(),
     infiltrationUseSeparateWinterReqs: z.boolean().optional(),
-    infiltrationWinterAchReq: z.number().optional(),
-    infiltrationWinterAreaReq: z.number().optional(),
-    infiltrationWinterFlowRateReq: z.number().optional(),
-    infiltrationWinterLfReq: z.number().optional(),
-    infiltrationWinterReqMethod:
-        InfiltrationRequirementMethodSchema_v0.optional(),
     level: z.number(),
     miscHeatingLoad: z.number().optional(),
     miscLatentCoolingLoad: z.number().optional(),
@@ -139,7 +158,6 @@ export const SpaceDataSchema_v0 = z.object({
     suggested: z.boolean().optional(),
     suggestedSpaceName: z.string().optional(),
     suggestedSpaceNumber: z.string().optional(),
-    ventilationReq: z.number().optional(),
     zoneId: z.string().optional(),
 })
 export type SpaceData_v0 = z.infer<typeof SpaceDataSchema_v0>

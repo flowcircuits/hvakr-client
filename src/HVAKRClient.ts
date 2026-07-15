@@ -16,6 +16,24 @@ import {
     Project_v0,
 } from './schemas'
 
+/** Firebase HTTP functions reserve request overhead within their 32 MiB limit. */
+export const MAX_API_SHEET_UPLOAD_BYTES = 30 * 1024 * 1024
+
+const isBlobLike = (value: Blob | Uint8Array): value is Blob =>
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as Blob).size === 'number' &&
+    typeof (value as Blob).arrayBuffer === 'function'
+
+export interface CreateSheetFileInput {
+    /** PDF bytes to upload. */
+    file: Blob | Uint8Array
+    /** Filename preserved as the upload identity. */
+    fileName: string
+    /** Optional display name; it never replaces `fileName`. */
+    name?: string
+}
+
 /**
  * Package version, inlined at build time by the `__CLIENT_VERSION__` define in
  * `tsdown.config.ts` (and mirrored in `vitest.config.ts`). package.json is the
@@ -184,6 +202,18 @@ export class HVAKRClient {
             ...(this.getAuthHeaders() as Record<string, string>),
             Accept: 'application/json',
             'Content-Type': 'application/json',
+        }
+        if (opts?.idempotencyKey) {
+            headers['Idempotency-Key'] = opts.idempotencyKey
+        }
+        return headers
+    }
+
+    /** Builds headers for a multipart POST without overriding FormData's boundary. */
+    private multipartWriteHeaders = (opts?: WriteOptions): HeadersInit => {
+        const headers: Record<string, string> = {
+            ...(this.getAuthHeaders() as Record<string, string>),
+            Accept: 'application/json',
         }
         if (opts?.idempotencyKey) {
             headers['Idempotency-Key'] = opts.idempotencyKey
@@ -362,6 +392,47 @@ export class HVAKRClient {
                 queryParams
             ),
             { method: 'GET', headers: this.getAuthHeaders() }
+        )
+    }
+
+    /**
+     * Uploads one PDF sheet file and returns its queued `sheet-upload` job.
+     * Poll {@link getJob} with the returned `jobId` until it completes, then
+     * patch `sheets` if pages need placement before running project-wide
+     * `createJob(projectId, { type: 'auto-takeoff' })`.
+     */
+    createSheetFile = async (
+        projectId: string,
+        { file, fileName, name }: CreateSheetFileInput,
+        opts?: WriteOptions
+    ): Promise<APIJob_v0> => {
+        const isBlob = isBlobLike(file)
+        const fileSize = isBlob ? file.size : file.byteLength
+        if (fileSize > MAX_API_SHEET_UPLOAD_BYTES) {
+            throw new RangeError(
+                `Sheet PDF exceeds the ${MAX_API_SHEET_UPLOAD_BYTES / (1024 * 1024)} MiB API upload limit.`
+            )
+        }
+
+        const blob = isBlob
+            ? new Blob([await file.arrayBuffer()], { type: 'application/pdf' })
+            : new Blob([new Uint8Array(file)], { type: 'application/pdf' })
+
+        const formData = new FormData()
+        formData.append('file', blob, fileName)
+        if (name !== undefined) {
+            formData.append('name', name)
+        }
+
+        return this.request<APIJob_v0>(
+            this.createURL(
+                `/projects/${this.encodePathSegment(projectId)}/sheet-files`
+            ),
+            {
+                method: 'POST',
+                headers: this.multipartWriteHeaders(opts),
+                body: formData,
+            }
         )
     }
 

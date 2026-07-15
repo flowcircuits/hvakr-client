@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.6.1] - 2026-07-14
+
+### Added
+
+- `createSheetFile(projectId, { file, fileName, name? }, opts?)` uploads one PDF
+  through multipart form data and returns a `sheet-upload` job. It preflights the
+  API's 30 MiB limit, preserves the supplied filename, and supports idempotency.
+- `sheet-upload` is now a response-only API job kind. Its discriminated result
+  includes the uploaded file, placement counts, takeoff readiness, and actionable
+  per-page processing state. JSON `createJob` requests remain limited to the
+  existing report, auto-group, check, and auto-takeoff job kinds.
+
 ## [0.6.0] - 2026-07-13
 
 ### Breaking Changes

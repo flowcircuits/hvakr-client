@@ -1,6 +1,10 @@
 import { z } from 'zod'
 import { APIReportSchema_v0 } from '../../api/reports_v0'
-import { getPatchSchema, getUserWritableSchema } from '../../utility'
+import {
+    disableUserWrite,
+    getPatchSchema,
+    getUserWritableSchema,
+} from '../../utility'
 import { BranchTypeDataSchema_v0 } from './branchType_v0'
 import { DeadlineDataSchema_v0 } from './deadline_v0'
 import { DoorTypeDataSchema_v0 } from './doorType_v0'
@@ -29,10 +33,9 @@ export const ProjectSubcollectionsSchema_v0 = z.object({
     graph: GraphSchema_v0.optional(),
     pipeTypes: z.record(z.string(), PipeTypeDataSchema_v0).optional(),
     registerTypes: z.record(z.string(), RegisterTypeDataSchema_v0).optional(),
-    reports: z
-        .record(z.string(), APIReportSchema_v0)
-        .optional()
-        .meta({ disableUserWrite: true }),
+    reports: disableUserWrite(
+        z.record(z.string(), APIReportSchema_v0).optional()
+    ),
     roofTypes: z.record(z.string(), RoofTypeDataSchema_v0).optional(),
     sheetFiles: z.record(z.string(), SheetFileDataSchema_v0).optional(),
     sheets: z.record(z.string(), SheetDataSchema_v0).optional(),

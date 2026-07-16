@@ -1,11 +1,12 @@
 import { z } from 'zod'
+import { disableUserWrite } from '../../utility'
 
 export const RoofTypeDataSchema_v0 = z.object({
     ashraeRoofTypeId: z.string().optional(),
     color: z.string().optional(),
     name: z.string().optional(),
     surfaceAbsorptance: z.number().optional(),
-    timestamp: z.number().optional().meta({ disableUserWrite: true }),
+    timestamp: disableUserWrite(z.number().optional()),
     uValue: z.number().optional(),
     unconditionedCoolingTempF: z.number().optional(),
     unconditionedHeatingTempF: z.number().optional(),

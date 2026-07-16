@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { z } from 'zod'
 import { ExpandedProjectPostDataExample_v0 } from '../../../fixtures'
 import {
     ExpandedProjectPatchSchema_v0,
     ExpandedProjectPostSchema_v0,
+    WritableProjectSubcollectionsSchema_v0,
 } from './expandedProject_v0'
 import {
     DEFAULT_EQUIPMENT_MODES_v0,
@@ -16,6 +18,71 @@ import {
 describe('Project v0 schemas', () => {
     it('exposes every canonical project field on reads', () => {
         expect(PROJECT_PRIVATE_READ_FIELDS_V0).toEqual({})
+        expect(Object.keys(ProjectDataSchema_v0.shape)).toEqual([
+            '_owner',
+            '_userEmails',
+            '_userIds',
+            '_nameLowercase',
+            'address',
+            'organizationId',
+            'airflowIncrement',
+            'analytics',
+            'annotations',
+            'apiCreated',
+            'automations',
+            'building',
+            'climateZone',
+            'constraints',
+            'constructionType',
+            'contacts',
+            'description',
+            'drySide',
+            'duplicatedFrom',
+            'elevation',
+            'equipmentModes',
+            'fromExample',
+            'iaqpOutdoorAirMerv',
+            'isDeleted',
+            'isExample',
+            'isHealthcare',
+            'isHVAKRTemplate',
+            'isOpen',
+            'isTemplate',
+            'lastOpenTime',
+            'latitude',
+            'levels',
+            'longitude',
+            'maps',
+            'name',
+            'number',
+            'outdoorContaminants',
+            'outsideAirSpec',
+            'pendingPayment',
+            'pictureThumbnailURL',
+            'pictureURL',
+            'pictureVerticalPosition',
+            'presentMode',
+            'projectType',
+            'revision',
+            'revisions',
+            'sheetMarkers',
+            'slackChannelId',
+            'source',
+            'spaceTypeAutoAssignment',
+            'standardNumber',
+            'standardYear',
+            'standards',
+            'status',
+            'suggestedSpaces',
+            'takeoffModel',
+            'timestamp',
+            'unitSystem',
+            'users',
+            'utilityRates',
+            'ventilationStandard',
+            'weatherSpec',
+            'yearBuilt',
+        ])
         expect(
             ProjectDataSchema_v0.safeParse({
                 equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
@@ -59,6 +126,16 @@ describe('Project v0 schemas', () => {
     })
 
     it('derives project write restrictions from schema metadata', () => {
+        type RestrictedField = keyof typeof PROJECT_RESTRICTED_WRITE_FIELDS_V0
+        const includesWritableField: 'name' extends RestrictedField
+            ? true
+            : false = false
+        const includesRestrictedField: 'latitude' extends RestrictedField
+            ? true
+            : false = true
+        expect(includesWritableField).toBe(false)
+        expect(includesRestrictedField).toBe(true)
+
         for (const field of Object.keys(PROJECT_RESTRICTED_WRITE_FIELDS_V0)) {
             expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(field)
             expect(ProjectPostSchema_v0.shape).not.toHaveProperty(field)
@@ -80,6 +157,14 @@ describe('Project v0 schemas', () => {
     })
 
     it('applies write restrictions recursively', () => {
+        type WritableSubcollections = z.input<
+            typeof WritableProjectSubcollectionsSchema_v0
+        >
+        const includesReports: 'reports' extends keyof WritableSubcollections
+            ? true
+            : false = false
+        expect(includesReports).toBe(false)
+
         expect(
             ExpandedProjectPatchSchema_v0.safeParse({ latitude: 40 }).success
         ).toBe(false)
@@ -114,7 +199,10 @@ describe('Project v0 schemas', () => {
             }).success
         ).toBe(false)
         expect(
-            ExpandedProjectPostSchema_v0.safeParse({ sheetFiles: {} }).success
+            ExpandedProjectPostSchema_v0.safeParse({
+                ...ExpandedProjectPostDataExample_v0,
+                sheetFiles: {},
+            }).success
         ).toBe(false)
     })
 

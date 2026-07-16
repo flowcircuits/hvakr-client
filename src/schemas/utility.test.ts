@@ -1,21 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { getPatchSchema, getUserWritableSchema } from './utility'
+import {
+    disableUserWrite,
+    getPatchSchema,
+    getUserWritableSchema,
+} from './utility'
 
 describe('getUserWritableSchema', () => {
     it('removes disabled fields recursively', () => {
         const schema = getUserWritableSchema(
             z.object({
                 name: z.string(),
-                elevation: z
-                    .number()
-                    .optional()
-                    .meta({ disableUserWrite: true }),
+                elevation: disableUserWrite(z.number().optional()),
                 items: z.record(
                     z.string(),
                     z.object({
                         value: z.number(),
-                        timestamp: z.number().meta({ disableUserWrite: true }),
+                        timestamp: disableUserWrite(z.number()),
                     })
                 ),
             }),
@@ -40,6 +41,17 @@ describe('getUserWritableSchema', () => {
                 items: { item: { value: 1, timestamp: 1 } },
             }).success
         ).toBe(false)
+
+        type Writable = z.input<typeof schema>
+        type WritableItem = Writable['items'][string]
+        const includesElevation: 'elevation' extends keyof Writable
+            ? true
+            : false = false
+        const includesTimestamp: 'timestamp' extends keyof WritableItem
+            ? true
+            : false = false
+        expect(includesElevation).toBe(false)
+        expect(includesTimestamp).toBe(false)
     })
 
     it('uses a separate policy schema for transport projection', () => {
@@ -51,7 +63,7 @@ describe('getUserWritableSchema', () => {
             }),
             z.object({
                 name: z.string(),
-                serverValue: z.number().meta({ disableUserWrite: true }),
+                serverValue: disableUserWrite(z.number()),
             }),
             { strict: true }
         )
@@ -64,6 +76,76 @@ describe('getUserWritableSchema', () => {
             schema.safeParse({ name: 'Project', legacyValue: true }).success
         ).toBe(false)
         expect(schema.shape.name.meta()?.description).toBe('Project name')
+    })
+
+    it('projects disabled fields inside unions and intersections', () => {
+        const schema = getUserWritableSchema(
+            z.object({
+                selection: z.union([
+                    z.object({
+                        kind: z.literal('named'),
+                        name: z.string(),
+                        serverValue: disableUserWrite(z.number().optional()),
+                    }),
+                    z.object({
+                        kind: z.literal('counted'),
+                        count: z.number(),
+                        serverValue: disableUserWrite(z.number().optional()),
+                    }),
+                ]),
+                details: z.intersection(
+                    z.object({ name: z.string() }),
+                    z.object({
+                        count: z.number(),
+                        serverValue: disableUserWrite(z.number().optional()),
+                    })
+                ),
+            }),
+            undefined,
+            { strict: true }
+        )
+
+        expect(
+            schema.safeParse({
+                selection: { kind: 'named', name: 'Project' },
+                details: { name: 'Project', count: 1 },
+            }).success
+        ).toBe(true)
+        expect(
+            schema.safeParse({
+                selection: { kind: 'named', name: 'Project', serverValue: 1 },
+                details: { name: 'Project', count: 1 },
+            }).success
+        ).toBe(false)
+        expect(
+            schema.safeParse({
+                selection: { kind: 'counted', count: 1 },
+                details: { name: 'Project', count: 1, serverValue: 1 },
+            }).success
+        ).toBe(false)
+    })
+
+    it('preserves laziness when projecting recursive schemas', () => {
+        let nodeSchema!: z.ZodObject
+        nodeSchema = z.object({
+            name: z.string(),
+            serverValue: disableUserWrite(z.number().optional()),
+            child: z.lazy(() => nodeSchema).optional(),
+        })
+
+        const schema = getUserWritableSchema(nodeSchema, undefined, {
+            strict: true,
+        })
+
+        expect(
+            schema.safeParse({ name: 'root', child: { name: 'child' } }).success
+        ).toBe(true)
+        expect(
+            schema.safeParse({
+                name: 'root',
+                child: { name: 'child', serverValue: 1 },
+            }).success
+        ).toBe(false)
     })
 })
 
@@ -128,6 +210,32 @@ describe('getUpdateSchema', () => {
         expect(
             updateSchema.safeParse({ user: { email: undefined } }).success
         ).toBe(true)
+    })
+
+    it('should preserve wrappers around nested patch objects', () => {
+        const nestedSchema = z.object({ requiredValue: z.string() })
+        const schema = z.object({
+            nullable: nestedSchema.nullable(),
+            defaulted: nestedSchema.default({ requiredValue: 'default' }),
+            lazy: z.lazy(() => nestedSchema),
+        })
+
+        const updateSchema = getPatchSchema(schema, { strict: true })
+
+        expect(
+            updateSchema.safeParse({ nullable: {}, defaulted: {}, lazy: {} })
+                .success
+        ).toBe(true)
+        expect(updateSchema.safeParse({ nullable: null }).success).toBe(true)
+        expect(
+            updateSchema.safeParse({ nullable: { unexpected: true } }).success
+        ).toBe(false)
+        expect(
+            updateSchema.safeParse({ defaulted: { unexpected: true } }).success
+        ).toBe(false)
+        expect(
+            updateSchema.safeParse({ lazy: { unexpected: true } }).success
+        ).toBe(false)
     })
 
     it('should preserve non-object field types', () => {

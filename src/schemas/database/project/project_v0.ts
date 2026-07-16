@@ -9,7 +9,11 @@ import {
     CoolingPercentSchema_v0,
     HeatingPercentSchema_v0,
 } from '../weatherStation'
-import { getUserWritableSchema } from '../../utility'
+import {
+    disableUserWrite,
+    getUserWritableSchema,
+    type UserWriteDisabledKeys,
+} from '../../utility'
 import * as DrySide_v0 from './graph_v0'
 import { ModeIdSchema_v0, ModeSchema_v0 } from './equipment_v0'
 import { SpaceDataSchema_v0 } from './space_v0'
@@ -20,11 +24,8 @@ export const WeatherSpecSchema_v0 = z.object({
     coolWb: z.number().optional(),
     heatDb: z.number().optional(),
     heatPercent: HeatingPercentSchema_v0.optional(),
-    loading: z.boolean().optional().meta({ disableUserWrite: true }),
-    nearestWeatherStationIds: z
-        .array(z.string())
-        .optional()
-        .meta({ disableUserWrite: true }),
+    loading: disableUserWrite(z.boolean().optional()),
+    nearestWeatherStationIds: disableUserWrite(z.array(z.string()).optional()),
     selectedStationId: z.string().optional(),
 })
 
@@ -108,7 +109,7 @@ export const OutdoorContaminantDataSchema_v0 = z.object({
 export const ConstraintSchema_v0 = z.object({
     description: z.string().optional(),
     name: z.string().optional(),
-    timestamp: z.number().meta({ disableUserWrite: true }),
+    timestamp: disableUserWrite(z.number()),
 })
 
 export const ContactSchema_v0 = z.object({
@@ -118,14 +119,14 @@ export const ContactSchema_v0 = z.object({
     name: z.string().optional(),
     phone: z.string().optional(),
     role: z.string().optional(),
-    timestamp: z.number().meta({ disableUserWrite: true }),
+    timestamp: disableUserWrite(z.number()),
     trade: z.string().optional(),
 })
 
 export const StandardSchema_v0 = z.object({
     description: z.string().optional(),
     name: z.string().optional(),
-    timestamp: z.number().meta({ disableUserWrite: true }),
+    timestamp: disableUserWrite(z.number()),
 })
 
 export const BuildingDataSchema_v0 = z.object({
@@ -311,27 +312,20 @@ export const AutomationsSchema_v0 = z.object({
 export type Automations_v0 = z.infer<typeof AutomationsSchema_v0>
 
 export const ComputedProjectDataSchema_v0 = z.object({
-    _owner: z.string().optional().meta({ disableUserWrite: true }),
-    _userEmails: z
-        .array(z.string())
-        .optional()
-        .meta({ disableUserWrite: true }),
-    _userIds: z.array(z.string()).optional().meta({ disableUserWrite: true }),
-    _nameLowercase: z.string().optional().meta({ disableUserWrite: true }),
+    _owner: disableUserWrite(z.string().optional()),
+    _userEmails: disableUserWrite(z.array(z.string()).optional()),
+    _userIds: disableUserWrite(z.array(z.string()).optional()),
+    _nameLowercase: disableUserWrite(z.string().optional()),
 })
 
 export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     address: z.string().optional(),
-    organizationId: z.string().optional().meta({ disableUserWrite: true }),
+    organizationId: disableUserWrite(z.string().optional()),
     airflowIncrement: z.number().int().min(1).optional(),
-    analytics: ProjectAnalyticsSchema_v0.optional().meta({
-        disableUserWrite: true,
-    }),
+    analytics: disableUserWrite(ProjectAnalyticsSchema_v0.optional()),
     annotations: z.record(z.string(), AnnotationDataSchema_v0).optional(),
-    apiCreated: z.boolean().optional().meta({ disableUserWrite: true }),
-    automations: AutomationsSchema_v0.optional().meta({
-        disableUserWrite: true,
-    }),
+    apiCreated: disableUserWrite(z.boolean().optional()),
+    automations: disableUserWrite(AutomationsSchema_v0.optional()),
     building: BuildingDataSchema_v0.optional(),
     climateZone: z.string().optional(),
     constraints: z.record(z.string(), ConstraintSchema_v0).optional(),
@@ -339,21 +333,21 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     contacts: z.record(z.string(), ContactSchema_v0).optional(),
     description: z.string().optional(),
     drySide: DrySideDataSchema_v0.optional(),
-    duplicatedFrom: z.string().optional().meta({ disableUserWrite: true }),
-    elevation: z.number().optional().meta({ disableUserWrite: true }),
+    duplicatedFrom: disableUserWrite(z.string().optional()),
+    elevation: disableUserWrite(z.number().optional()),
     equipmentModes: EquipmentModesSchema_v0,
-    fromExample: z.string().optional().meta({ disableUserWrite: true }),
+    fromExample: disableUserWrite(z.string().optional()),
     iaqpOutdoorAirMerv: z.number().int().min(8).max(15).optional(),
-    isDeleted: z.boolean().optional().meta({ disableUserWrite: true }),
-    isExample: z.boolean().optional().meta({ disableUserWrite: true }),
+    isDeleted: disableUserWrite(z.boolean().optional()),
+    isExample: disableUserWrite(z.boolean().optional()),
     isHealthcare: z.boolean().optional(),
-    isHVAKRTemplate: z.boolean().optional().meta({ disableUserWrite: true }),
-    isOpen: z.boolean().optional().meta({ disableUserWrite: true }),
+    isHVAKRTemplate: disableUserWrite(z.boolean().optional()),
+    isOpen: disableUserWrite(z.boolean().optional()),
     isTemplate: z.boolean().optional(),
-    lastOpenTime: z.number().optional().meta({ disableUserWrite: true }),
-    latitude: z.number().optional().meta({ disableUserWrite: true }),
+    lastOpenTime: disableUserWrite(z.number().optional()),
+    latitude: disableUserWrite(z.number().optional()),
     levels: z.record(z.coerce.number(), LevelDataSchema_v0).optional(),
-    longitude: z.number().optional().meta({ disableUserWrite: true }),
+    longitude: disableUserWrite(z.number().optional()),
     maps: z.record(z.string(), MapDataSchema_v0).optional(),
     name: z.string(),
     number: z.string().optional(),
@@ -363,38 +357,32 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
             OutdoorContaminantDataSchema_v0
         )
         .optional(),
-    outsideAirSpec: OutsideAirSpecSchema_v0.optional().meta({
-        disableUserWrite: true,
-    }),
-    pendingPayment: z.boolean().optional().meta({ disableUserWrite: true }),
+    outsideAirSpec: disableUserWrite(OutsideAirSpecSchema_v0.optional()),
+    pendingPayment: disableUserWrite(z.boolean().optional()),
     pictureThumbnailURL: z.string().optional(),
     pictureURL: z.string().optional(),
     pictureVerticalPosition: z.number().optional(),
     presentMode: PresentModeConfigSchema_v0.optional(),
     projectType: ProjectTypeSchema_v0.optional(),
-    revision: z.string().optional().meta({ disableUserWrite: true }),
-    revisions: z
-        .record(z.string(), RevisionSchema_v0)
-        .optional()
-        .meta({ disableUserWrite: true }),
+    revision: disableUserWrite(z.string().optional()),
+    revisions: disableUserWrite(
+        z.record(z.string(), RevisionSchema_v0).optional()
+    ),
     sheetMarkers: z.record(z.string(), PointSchema).optional(),
-    slackChannelId: z.string().optional().meta({ disableUserWrite: true }),
+    slackChannelId: disableUserWrite(z.string().optional()),
     source: TemplateSourceSchema_v0.optional(),
     spaceTypeAutoAssignment: SpaceTypeAutoAssignmentSourcesSchema_v0.optional(),
     standardNumber: z.string().optional(),
     standardYear: z.number().int().optional(),
     standards: z.record(z.string(), StandardSchema_v0).optional(),
     status: ProjectStatusSchema_v0.optional(),
-    suggestedSpaces: z
-        .record(z.string(), SpaceDataSchema_v0)
-        .optional()
-        .meta({ disableUserWrite: true }),
+    suggestedSpaces: disableUserWrite(
+        z.record(z.string(), SpaceDataSchema_v0).optional()
+    ),
     takeoffModel: TakeoffModelSchema_v0.optional(),
-    timestamp: z.number().optional().meta({ disableUserWrite: true }),
+    timestamp: disableUserWrite(z.number().optional()),
     unitSystem: DisplayUnitSystemIdSchema.optional(),
-    users: z
-        .record(z.string(), ProjectUserDataSchema_v0)
-        .meta({ disableUserWrite: true }),
+    users: disableUserWrite(z.record(z.string(), ProjectUserDataSchema_v0)),
     utilityRates: UtilityRatesSchema_v0.optional(),
     ventilationStandard: VentilationStandardSchema_v0.optional(),
     weatherSpec: WeatherSpecSchema_v0.optional(),
@@ -415,7 +403,7 @@ const disabledUserWriteFields = Object.fromEntries(
     Object.entries(ProjectDataSchema_v0.shape)
         .filter(([, schema]) => schema.meta()?.disableUserWrite)
         .map(([field]) => [field, true])
-) as Partial<Record<keyof ProjectData_v0, true>>
+) as Record<UserWriteDisabledKeys<typeof ProjectDataSchema_v0>, true>
 
 /** Compatibility view derived from canonical Zod metadata. */
 export const PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0 = disabledUserWriteFields

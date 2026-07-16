@@ -149,6 +149,11 @@ inside spaces, type collections, weather data, and sheet files. Reports remain
 job-created, and uploaded sheet-file data is read-only except for
 `sheetFiles[id].name` in project patches.
 
+Projects can also store flat, user-writable `metadata` for external-system
+linking and application-specific context. Metadata values may be strings,
+numbers, or booleans; nested objects and arrays are intentionally excluded.
+Set an individual metadata key to `null` in `updateProject` to delete it.
+
 ### Jobs
 
 | Method                       | Description                                                                                                                           |

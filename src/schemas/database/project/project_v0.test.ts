@@ -53,6 +53,7 @@ describe('Project v0 schemas', () => {
             'levels',
             'longitude',
             'maps',
+            'metadata',
             'name',
             'number',
             'outdoorContaminants',
@@ -100,6 +101,11 @@ describe('Project v0 schemas', () => {
                 latitude: 40,
                 longitude: -75,
                 isDeleted: false,
+                metadata: {
+                    internalProjectId: 'project-123',
+                    syncVersion: 2,
+                    imported: true,
+                },
                 pendingPayment: false,
             }).success
         ).toBe(true)
@@ -154,6 +160,35 @@ describe('Project v0 schemas', () => {
         expect(ProjectDataSchema_v0.shape.latitude.meta()).toMatchObject({
             disableUserWrite: true,
         })
+    })
+
+    it('accepts flat user-writable project metadata', () => {
+        const metadata = {
+            internalProjectId: 'project-123',
+            syncVersion: 2,
+            imported: true,
+        }
+
+        expect(ProjectPostSchema_v0.safeParse({ metadata }).success).toBe(true)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                metadata: { ...metadata, obsoleteKey: null },
+            }).success
+        ).toBe(true)
+        expect(WritableProjectDataSchema_v0.shape).toHaveProperty('metadata')
+        expect(
+            ProjectPostSchema_v0.safeParse({
+                metadata: { nested: { id: 'project-123' } },
+            }).success
+        ).toBe(false)
+        expect(
+            ProjectPostSchema_v0.safeParse({ metadata: { tags: ['linked'] } })
+                .success
+        ).toBe(false)
+        expect(
+            ProjectPostSchema_v0.safeParse({ metadata: { '': 'value' } })
+                .success
+        ).toBe(false)
     })
 
     it('applies write restrictions recursively', () => {

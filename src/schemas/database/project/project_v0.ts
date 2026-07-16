@@ -41,6 +41,23 @@ export const MapDataSchema_v0 = z.object({
     zoom: z.number().optional(),
 })
 
+/** JSON-safe primitive values stored as user-defined project metadata. */
+export const ProjectMetadataValueSchema_v0 = z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+])
+export type ProjectMetadataValue_v0 = z.infer<
+    typeof ProjectMetadataValueSchema_v0
+>
+
+/** Flat user-defined data for linking a project to external systems. */
+export const ProjectMetadataSchema_v0 = z.record(
+    z.string().min(1),
+    ProjectMetadataValueSchema_v0
+)
+export type ProjectMetadata_v0 = z.infer<typeof ProjectMetadataSchema_v0>
+
 export const LevelDataSchema_v0 = z.object({ height: z.number().optional() })
 
 export const OutsideAirSpecSchema_v0 = z.object({
@@ -349,6 +366,7 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     levels: z.record(z.coerce.number(), LevelDataSchema_v0).optional(),
     longitude: disableUserWrite(z.number().optional()),
     maps: z.record(z.string(), MapDataSchema_v0).optional(),
+    metadata: ProjectMetadataSchema_v0.optional(),
     name: z.string(),
     number: z.string().optional(),
     outdoorContaminants: z

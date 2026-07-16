@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   organization, analytics, automation, coordinate, deletion, and payment state.
 - Project schemas carry `disableUserWrite: true` Zod metadata for server-owned
   root and nested fields. Omitted metadata means the field is normally writable.
+- Projects support flat, user-writable `metadata` with string, number, or
+  boolean values for external IDs and other application-specific context.
 - `SheetFileData_v0.name`, PDF metadata, and processing error fields now match
   the canonical sheet-file response.
 

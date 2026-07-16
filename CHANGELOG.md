@@ -9,7 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.6.2] - 2026-07-16
+## [0.7.0] - 2026-07-16
+
+### Breaking Changes
+
+- Project create and patch schemas are now strict: unknown keys are rejected
+  instead of being silently stripped. Payloads carrying fields outside the
+  writable schema (including server-owned fields) will no longer validate.
+- Project create no longer accepts `sheetFiles`; sheet-file creation stays in
+  the dedicated upload flow. `sheetFiles[id].name` remains writable through
+  project patches.
+- The `PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0` and
+  `PROJECT_RESTRICTED_WRITE_FIELDS_V0` exports are now identical compatibility
+  views derived from schema metadata, `PROJECT_PRIVATE_READ_FIELDS_V0` is now
+  empty, and `WritableProjectSubcollectionsSchema_v0` is derived from the
+  canonical subcollections schema. Their shapes and contents have changed.
 
 ### Added
 
@@ -27,8 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project create and patch schemas recursively reject server-owned fields such
   as coordinates, trigger timestamps, processing state, reports, and sheet-file
   upload metadata instead of maintaining separate field registries.
-- `sheetFiles[id].name` remains writable through project patches while direct
-  sheet-file creation stays in the upload flow.
 - Existing project-field-list exports remain available as compatibility views
   derived from the schema metadata rather than independent policy definitions.
 

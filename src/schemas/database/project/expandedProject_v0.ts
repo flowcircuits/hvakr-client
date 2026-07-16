@@ -51,7 +51,6 @@ export const ProjectSubcollectionsSchema_v0 = z.object({
 /** User-writable view derived from canonical Zod metadata. */
 export const WritableProjectSubcollectionsSchema_v0 = getUserWritableSchema(
     ProjectSubcollectionsSchema_v0,
-    undefined,
     { strict: true }
 )
 
@@ -75,7 +74,6 @@ export type ExpandedProject_v0 = z.infer<typeof ExpandedProjectSchema_v0> & {
 
 export const ProjectSubcollectionsPostSchema_v0 = getUserWritableSchema(
     ProjectSubcollectionsSchema_v0.omit({ sheetFiles: true }),
-    undefined,
     { strict: true }
 )
 export type ProjectSubcollectionsPost_v0 = z.infer<
@@ -94,7 +92,7 @@ export type ExpandedProjectPost_v0 = z.infer<
 
 /** Patch schema for normal user-controlled project updates. */
 export const ExpandedProjectPatchSchema_v0 = getPatchSchema(
-    getUserWritableSchema(ExpandedProjectSchema_v0),
+    getUserWritableSchema(ExpandedProjectSchema_v0, { strict: true }),
     { strict: true }
 )
 export type ExpandedProjectPatch_v0 = z.infer<

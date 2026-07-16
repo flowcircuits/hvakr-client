@@ -432,7 +432,6 @@ export const PROJECT_RESTRICTED_WRITE_FIELDS_V0 = disabledUserWriteFields
 /** Project fields writable through create/update requests. */
 export const WritableProjectDataSchema_v0 = getUserWritableSchema(
     ProjectDataSchema_v0,
-    undefined,
     { strict: true }
 )
 

@@ -141,6 +141,14 @@ breaking changes ship in minor bumps (see [Versioning & stability](#versioning--
 | `deleteProject(id)`                                                 | Delete a project                                                                                                                                                                   |
 | `getProjectCalculations(id, { include? })`                          | Run the calculator and return the requested sections (`loads`, `register_schedule`, `dryside_graph`, `ventilation`, `equipment`, `checksums`, `airflows`). Omit `include` for all. |
 
+Project reads include every canonical project field, including server-owned
+state. The exported Zod schemas mark fields that normal project writes cannot
+change with `disableUserWrite: true`; fields without that metadata are writable
+by default. Create and patch schemas apply that policy recursively, including
+inside spaces, type collections, weather data, and sheet files. Reports remain
+job-created, and uploaded sheet-file data is read-only except for
+`sheetFiles[id].name` in project patches.
+
 ### Jobs
 
 | Method                       | Description                                                                                                                           |

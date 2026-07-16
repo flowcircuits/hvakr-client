@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.6.2] - 2026-07-16
+
+### Added
+
+- Project reads now expose all canonical project fields, including computed,
+  organization, analytics, automation, coordinate, deletion, and payment state.
+- Project schemas carry `disableUserWrite: true` Zod metadata for server-owned
+  root and nested fields. Omitted metadata means the field is normally writable.
+- `SheetFileData_v0.name`, PDF metadata, and processing error fields now match
+  the canonical sheet-file response.
+
+### Fixed
+
+- Project create and patch schemas recursively reject server-owned fields such
+  as coordinates, trigger timestamps, processing state, reports, and sheet-file
+  upload metadata instead of maintaining separate field registries.
+- `sheetFiles[id].name` remains writable through project patches while direct
+  sheet-file creation stays in the upload flow.
+- Existing project-field-list exports remain available as compatibility views
+  derived from the schema metadata rather than independent policy definitions.
+
 ## [0.6.1] - 2026-07-14
 
 ### Added

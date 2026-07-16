@@ -5,7 +5,7 @@ export const DoorTypeDataSchema_v0 = z.object({
     openFraction: z.number().optional(),
     seals: z.boolean().optional(),
     surfaceAbsorptance: z.number().optional(),
-    timestamp: z.number().optional(),
+    timestamp: z.number().optional().meta({ disableUserWrite: true }),
     uValue: z.number().optional(),
 })
 

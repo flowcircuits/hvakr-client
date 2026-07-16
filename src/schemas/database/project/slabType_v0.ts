@@ -4,7 +4,7 @@ export const SlabTypeDataSchema_v0 = z.object({
     color: z.string().optional(),
     fFactor: z.number().optional(),
     name: z.string().optional(),
-    timestamp: z.number().optional(),
+    timestamp: z.number().optional().meta({ disableUserWrite: true }),
     uValue: z.number().optional(),
     unconditionedCoolingTempF: z.number().optional(),
     unconditionedHeatingTempF: z.number().optional(),

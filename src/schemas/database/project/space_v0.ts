@@ -145,7 +145,7 @@ export const SpaceDataSchema_v0 = z.object({
     name: z.string().optional(),
     number: z.string().optional(),
     occupancy: z.number().optional(),
-    processed: z.boolean().optional(),
+    processed: z.boolean().optional().meta({ disableUserWrite: true }),
     revitId: z.string().optional(),
     roofAzimuth: z.number().optional(),
     roofPitch: z.number().optional(),
@@ -153,11 +153,17 @@ export const SpaceDataSchema_v0 = z.object({
     skylights: z.record(z.string(), SkylightDataSchema_v0).optional(),
     slabHeight: z.number().optional(),
     slabTypeId: z.string().optional(),
-    spaceNameAndNumberInputHash: z.string().optional(),
+    spaceNameAndNumberInputHash: z
+        .string()
+        .optional()
+        .meta({ disableUserWrite: true }),
     spaceTypeId: z.string().optional(),
-    suggested: z.boolean().optional(),
-    suggestedSpaceName: z.string().optional(),
-    suggestedSpaceNumber: z.string().optional(),
+    suggested: z.boolean().optional().meta({ disableUserWrite: true }),
+    suggestedSpaceName: z.string().optional().meta({ disableUserWrite: true }),
+    suggestedSpaceNumber: z
+        .string()
+        .optional()
+        .meta({ disableUserWrite: true }),
     zoneId: z.string().optional(),
 })
 export type SpaceData_v0 = z.infer<typeof SpaceDataSchema_v0>

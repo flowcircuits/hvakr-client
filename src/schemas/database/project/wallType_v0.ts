@@ -7,7 +7,7 @@ export const WallTypeDataSchema_v0 = z.object({
     color: z.string().optional(),
     name: z.string().optional(),
     surfaceAbsorptance: z.number().optional(),
-    timestamp: z.number().optional(),
+    timestamp: z.number().optional().meta({ disableUserWrite: true }),
     uValue: z.number().optional(),
 })
 export type WallTypeData_v0 = z.infer<typeof WallTypeDataSchema_v0>

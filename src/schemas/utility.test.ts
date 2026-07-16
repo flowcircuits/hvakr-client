@@ -1,6 +1,71 @@
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { getPatchSchema } from './utility'
+import { getPatchSchema, getUserWritableSchema } from './utility'
+
+describe('getUserWritableSchema', () => {
+    it('removes disabled fields recursively', () => {
+        const schema = getUserWritableSchema(
+            z.object({
+                name: z.string(),
+                elevation: z
+                    .number()
+                    .optional()
+                    .meta({ disableUserWrite: true }),
+                items: z.record(
+                    z.string(),
+                    z.object({
+                        value: z.number(),
+                        timestamp: z.number().meta({ disableUserWrite: true }),
+                    })
+                ),
+            }),
+            undefined,
+            { strict: true }
+        )
+
+        expect(
+            schema.safeParse({ name: 'Project', items: { item: { value: 1 } } })
+                .success
+        ).toBe(true)
+        expect(
+            schema.safeParse({
+                name: 'Project',
+                elevation: 120,
+                items: { item: { value: 1 } },
+            }).success
+        ).toBe(false)
+        expect(
+            schema.safeParse({
+                name: 'Project',
+                items: { item: { value: 1, timestamp: 1 } },
+            }).success
+        ).toBe(false)
+    })
+
+    it('uses a separate policy schema for transport projection', () => {
+        const schema = getUserWritableSchema(
+            z.object({
+                name: z.string().describe('Project name'),
+                serverValue: z.number(),
+                legacyValue: z.boolean(),
+            }),
+            z.object({
+                name: z.string(),
+                serverValue: z.number().meta({ disableUserWrite: true }),
+            }),
+            { strict: true }
+        )
+
+        expect(schema.safeParse({ name: 'Project' }).success).toBe(true)
+        expect(
+            schema.safeParse({ name: 'Project', serverValue: 1 }).success
+        ).toBe(false)
+        expect(
+            schema.safeParse({ name: 'Project', legacyValue: true }).success
+        ).toBe(false)
+        expect(schema.shape.name.meta()?.description).toBe('Project name')
+    })
+})
 
 describe('getUpdateSchema', () => {
     it('should make required properties optional', () => {

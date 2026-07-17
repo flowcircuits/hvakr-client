@@ -8,6 +8,10 @@ const isZodRecord = (schema: z.ZodType): schema is z.ZodRecord => {
     return schema instanceof z.ZodRecord
 }
 
+const isZodArray = (schema: z.ZodType): schema is z.ZodArray => {
+    return schema instanceof z.ZodArray
+}
+
 const isOptional = (schema: z.ZodType): schema is z.ZodOptional<z.ZodType> => {
     return schema instanceof z.ZodOptional
 }
@@ -56,15 +60,21 @@ export type UserWriteDisabledKeys<Schema extends z.ZodObject> = {
         : never
 }[keyof Schema['shape']]
 
-type UserWritableShape<Shape extends z.ZodRawShape> = {
-    [Key in keyof Shape as IsUserWriteDisabledSchema<Shape[Key]> extends true
-        ? never
-        : Key]: Shape[Key]
+const cloneSchema = <Schema extends z.ZodType>(
+    schema: Schema,
+    definition: Schema['_zod']['def']
+): Schema => {
+    const clone = schema.clone(definition)
+    const meta = schema.meta()
+    return meta ? clone.meta(meta) : clone
 }
 
-interface UserWritableSchemaOptions {
-    /** Reject unknown keys at every projected object boundary. */
-    strict?: boolean
+type UserWritableShape<Shape extends z.ZodRawShape> = {
+    [
+        Key in keyof Shape as IsUserWriteDisabledSchema<Shape[Key]> extends true
+            ? never
+            : Key
+    ]: Shape[Key]
 }
 
 const isUserWriteDisabled = (schema: z.ZodType): boolean => {
@@ -82,36 +92,26 @@ const isUserWriteDisabled = (schema: z.ZodType): boolean => {
     }
 }
 
-const projectUserWritableField = (
-    schema: z.ZodType,
-    options: UserWritableSchemaOptions
-): z.ZodType | undefined => {
+const projectUserWritableField = (schema: z.ZodType): z.ZodType | undefined => {
     if (isUserWriteDisabled(schema)) return undefined
 
     if (schema instanceof z.ZodOptional) {
-        const inner = projectUserWritableField(
-            schema.unwrap() as z.ZodType,
-            options
-        )
+        const inner = projectUserWritableField(schema.unwrap() as z.ZodType)
         return inner?.optional()
     }
 
     if (schema instanceof z.ZodNullable) {
-        const inner = projectUserWritableField(
-            schema.unwrap() as z.ZodType,
-            options
-        )
+        const inner = projectUserWritableField(schema.unwrap() as z.ZodType)
         return inner?.nullable()
     }
 
     if (isZodObject(schema)) {
-        return getUserWritableSchema(schema, options)
+        return getUserWritableSchema(schema)
     }
 
     if (isZodRecord(schema)) {
         const valueType = projectUserWritableField(
-            schema.valueType as z.ZodType,
-            options
+            schema.valueType as z.ZodType
         )
         if (!valueType) return undefined
         return z.record(schema.keyType as z.ZodType, valueType)
@@ -122,44 +122,30 @@ const projectUserWritableField = (
 
 /** Omits fields marked with `disableUserWrite` metadata, recursively. */
 export const getUserWritableSchema = <Shape extends z.ZodRawShape>(
-    schema: z.ZodObject<Shape>,
-    options: UserWritableSchemaOptions = {}
+    schema: z.ZodObject<Shape>
 ): z.ZodObject<UserWritableShape<Shape>> => {
     const shape = Object.fromEntries(
         Object.entries(schema.shape).flatMap(([key, child]) => {
-            const projected = projectUserWritableField(
-                child as z.ZodType,
-                options
-            )
+            const projected = projectUserWritableField(child as z.ZodType)
             return projected ? [[key, projected]] : []
         })
     ) as UserWritableShape<Shape>
 
-    return (
-        options.strict ? z.strictObject(shape) : z.object(shape)
-    ) as z.ZodObject<UserWritableShape<Shape>>
+    return z.object(shape) as z.ZodObject<UserWritableShape<Shape>>
 }
 
-interface PatchSchemaOptions {
-    /** Reject unknown keys at every transformed object boundary. */
-    strict?: boolean
-}
-
-const transformField = (
-    schema: z.ZodType,
-    options: PatchSchemaOptions
-): z.ZodType => {
+const transformField = (schema: z.ZodType): z.ZodType => {
     const unwrapped = unwrapOptional(schema)
 
     if (isZodObject(unwrapped)) {
-        return getPatchSchema(unwrapped, options)
+        return getPatchSchema(unwrapped)
     }
 
     if (isZodRecord(unwrapped)) {
         const keySchema = unwrapped.keyType as z.ZodString
         const valueSchema = unwrapped.valueType as z.ZodType
         // Transform the value schema and make it nullish so entries can be deleted
-        const transformedValue = transformField(valueSchema, options).nullish()
+        const transformedValue = transformField(valueSchema).nullish()
         return z.record(keySchema, transformedValue)
     }
 
@@ -173,20 +159,14 @@ const transformField = (
  *
  * Nested objects are transformed recursively.
  */
-export const getPatchSchema = (
-    schema: z.ZodObject,
-    options: PatchSchemaOptions = {}
-): z.ZodObject => {
+export const getPatchSchema = (schema: z.ZodObject): z.ZodObject => {
     const newShape: Record<string, z.ZodType> = {}
 
     Object.entries(schema.shape).forEach(([key, fieldSchema]) => {
         if (!fieldSchema) return
 
         const wasOptional = isOptional(fieldSchema as z.ZodType)
-        const transformedField = transformField(
-            fieldSchema as z.ZodType,
-            options
-        )
+        const transformedField = transformField(fieldSchema as z.ZodType)
 
         if (wasOptional) {
             // Optional -> nullish
@@ -197,5 +177,68 @@ export const getPatchSchema = (
         }
     })
 
-    return options.strict ? z.strictObject(newShape) : z.object(newShape)
+    return z.object(newShape)
 }
+
+const strictifySchema = (schema: z.ZodType): z.ZodType => {
+    if (schema instanceof z.ZodOptional) {
+        return cloneSchema(schema, {
+            ...schema._zod.def,
+            innerType: strictifySchema(schema.unwrap() as z.ZodType),
+        })
+    }
+
+    if (schema instanceof z.ZodNullable) {
+        return cloneSchema(schema, {
+            ...schema._zod.def,
+            innerType: strictifySchema(schema.unwrap() as z.ZodType),
+        })
+    }
+
+    if (isZodObject(schema)) {
+        const shape = Object.fromEntries(
+            Object.entries(schema.shape).map(([key, child]) => [
+                key,
+                strictifySchema(child as z.ZodType),
+            ])
+        )
+        return cloneSchema(schema, { ...schema._zod.def, shape }).strict()
+    }
+
+    if (isZodRecord(schema)) {
+        return cloneSchema(schema, {
+            ...schema._zod.def,
+            valueType: strictifySchema(schema.valueType as z.ZodType),
+        })
+    }
+
+    if (isZodArray(schema)) {
+        return cloneSchema(schema, {
+            ...schema._zod.def,
+            element: strictifySchema(schema.element as z.ZodType),
+        })
+    }
+
+    if (schema instanceof z.ZodUnion) {
+        const options = schema.options.map((option) =>
+            strictifySchema(option as z.ZodType)
+        ) as [z.ZodType, z.ZodType, ...z.ZodType[]]
+        return cloneSchema(schema, { ...schema._zod.def, options })
+    }
+
+    if (schema instanceof z.ZodIntersection) {
+        const { left, right } = schema._zod.def
+        return cloneSchema(schema, {
+            ...schema._zod.def,
+            left: strictifySchema(left as z.ZodType),
+            right: strictifySchema(right as z.ZodType),
+        })
+    }
+
+    return schema
+}
+
+/** Applies strict unknown-key handling recursively to object schemas. */
+export const getStrictSchema = <Schema extends z.ZodType>(
+    schema: Schema
+): Schema => strictifySchema(schema) as Schema

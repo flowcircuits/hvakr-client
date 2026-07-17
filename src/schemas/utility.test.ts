@@ -3,6 +3,7 @@ import { z } from 'zod'
 import {
     disableUserWrite,
     getPatchSchema,
+    getStrictSchema,
     getUserWritableSchema,
 } from './utility'
 
@@ -19,23 +20,33 @@ describe('getUserWritableSchema', () => {
                         timestamp: disableUserWrite(z.number()),
                     })
                 ),
-            }),
-            { strict: true }
+            })
         )
 
         expect(
             schema.safeParse({ name: 'Project', items: { item: { value: 1 } } })
                 .success
         ).toBe(true)
+        const projected = schema.parse({
+            name: 'Project',
+            elevation: 120,
+            items: { item: { value: 1, timestamp: 1 } },
+        })
+        expect(projected).toEqual({
+            name: 'Project',
+            items: { item: { value: 1 } },
+        })
+
+        const strictSchema = getStrictSchema(schema)
         expect(
-            schema.safeParse({
+            strictSchema.safeParse({
                 name: 'Project',
                 elevation: 120,
                 items: { item: { value: 1 } },
             }).success
         ).toBe(false)
         expect(
-            schema.safeParse({
+            strictSchema.safeParse({
                 name: 'Project',
                 items: { item: { value: 1, timestamp: 1 } },
             }).success
@@ -167,11 +178,78 @@ describe('getUpdateSchema', () => {
 
     it('should reject unknown keys when strict', () => {
         const schema = z.object({ name: z.string() })
-        const updateSchema = getPatchSchema(schema, { strict: true })
+        const updateSchema = getStrictSchema(getPatchSchema(schema))
 
         expect(updateSchema.safeParse({ name: 'Project' }).success).toBe(true)
         expect(
             updateSchema.safeParse({ name: 'Project', extra: true }).success
         ).toBe(false)
+    })
+})
+
+describe('getStrictSchema', () => {
+    it('makes objects nested in records, arrays, unions, and intersections strict', () => {
+        const schema = getStrictSchema(
+            z.object({
+                records: z.record(z.string(), z.object({ value: z.number() })),
+                arrays: z.array(z.object({ value: z.number() })),
+                unions: z.union([
+                    z.object({ kind: z.literal('a'), value: z.number() }),
+                    z.object({ kind: z.literal('b'), value: z.string() }),
+                ]),
+                intersections: z.intersection(
+                    z.object({ name: z.string() }),
+                    z.object({ value: z.number() })
+                ),
+            })
+        )
+
+        expect(
+            schema.safeParse({
+                records: { item: { value: 1 } },
+                arrays: [{ value: 1 }],
+                unions: { kind: 'a', value: 1 },
+                intersections: { name: 'item', value: 1 },
+            }).success
+        ).toBe(true)
+        expect(
+            schema.safeParse({
+                records: { item: { value: 1, extra: true } },
+                arrays: [{ value: 1 }],
+                unions: { kind: 'a', value: 1 },
+                intersections: { name: 'item', value: 1 },
+            }).success
+        ).toBe(false)
+        expect(
+            schema.safeParse({
+                records: { item: { value: 1 } },
+                arrays: [{ value: 1, extra: true }],
+                unions: { kind: 'a', value: 1 },
+                intersections: { name: 'item', value: 1 },
+            }).success
+        ).toBe(false)
+        expect(
+            schema.safeParse({
+                records: { item: { value: 1 } },
+                arrays: [{ value: 1 }],
+                unions: { kind: 'a', value: 1, extra: true },
+                intersections: { name: 'item', value: 1 },
+            }).success
+        ).toBe(false)
+        expect(
+            schema.safeParse({
+                records: { item: { value: 1 } },
+                arrays: [{ value: 1 }],
+                unions: { kind: 'a', value: 1 },
+                intersections: { name: 'item', value: 1, extra: true },
+            }).success
+        ).toBe(false)
+    })
+
+    it('preserves array constraints', () => {
+        const schema = getStrictSchema(z.array(z.number()).length(2))
+
+        expect(schema.safeParse([1, 2]).success).toBe(true)
+        expect(schema.safeParse([1]).success).toBe(false)
     })
 })

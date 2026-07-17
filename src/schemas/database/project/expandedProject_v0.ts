@@ -3,6 +3,7 @@ import { APIReportSchema_v0 } from '../../api/reports_v0'
 import {
     disableUserWrite,
     getPatchSchema,
+    getStrictSchema,
     getUserWritableSchema,
 } from '../../utility'
 import { BranchTypeDataSchema_v0 } from './branchType_v0'
@@ -49,9 +50,8 @@ export const ProjectSubcollectionsSchema_v0 = z.object({
 })
 
 /** User-writable view derived from canonical Zod metadata. */
-export const WritableProjectSubcollectionsSchema_v0 = getUserWritableSchema(
-    ProjectSubcollectionsSchema_v0,
-    { strict: true }
+export const WritableProjectSubcollectionsSchema_v0 = getStrictSchema(
+    getUserWritableSchema(ProjectSubcollectionsSchema_v0)
 )
 
 export type ProjectSubcollections_v0 = z.infer<
@@ -72,28 +72,26 @@ export type ExpandedProject_v0 = z.infer<typeof ExpandedProjectSchema_v0> & {
 
 /* BEGIN API ENDPOINT SCHEMAS */
 
-export const ProjectSubcollectionsPostSchema_v0 = getUserWritableSchema(
-    ProjectSubcollectionsSchema_v0.omit({ sheetFiles: true }),
-    { strict: true }
+export const ProjectSubcollectionsPostSchema_v0 = getStrictSchema(
+    getUserWritableSchema(
+        ProjectSubcollectionsSchema_v0.omit({ sheetFiles: true })
+    )
 )
 export type ProjectSubcollectionsPost_v0 = z.infer<
     typeof ProjectSubcollectionsPostSchema_v0
 >
 
-export const ExpandedProjectPostSchema_v0 = z
-    .object({
-        ...ProjectPostSchema_v0.shape,
-        ...ProjectSubcollectionsPostSchema_v0.shape,
-    })
-    .strict()
+export const ExpandedProjectPostSchema_v0 = z.strictObject({
+    ...ProjectPostSchema_v0.shape,
+    ...ProjectSubcollectionsPostSchema_v0.shape,
+})
 export type ExpandedProjectPost_v0 = z.infer<
     typeof ExpandedProjectPostSchema_v0
 >
 
 /** Patch schema for normal user-controlled project updates. */
-export const ExpandedProjectPatchSchema_v0 = getPatchSchema(
-    getUserWritableSchema(ExpandedProjectSchema_v0, { strict: true }),
-    { strict: true }
+export const ExpandedProjectPatchSchema_v0 = getStrictSchema(
+    getPatchSchema(getUserWritableSchema(ExpandedProjectSchema_v0))
 )
 export type ExpandedProjectPatch_v0 = z.infer<
     typeof ExpandedProjectPatchSchema_v0

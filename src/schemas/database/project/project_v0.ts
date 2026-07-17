@@ -11,6 +11,7 @@ import {
 } from '../weatherStation'
 import {
     disableUserWrite,
+    getStrictSchema,
     getUserWritableSchema,
     type UserWriteDisabledKeys,
 } from '../../utility'
@@ -430,20 +431,17 @@ export const PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0 = disabledUserWriteFields
 export const PROJECT_RESTRICTED_WRITE_FIELDS_V0 = disabledUserWriteFields
 
 /** Project fields writable through create/update requests. */
-export const WritableProjectDataSchema_v0 = getUserWritableSchema(
-    ProjectDataSchema_v0,
-    { strict: true }
+export const WritableProjectDataSchema_v0 = getStrictSchema(
+    getUserWritableSchema(ProjectDataSchema_v0)
 )
 
-export const ProjectPostSchema_v0 = z
-    .object({
-        ...WritableProjectDataSchema_v0.shape,
-        /** Optional because creation seeds the default cooling/heating modes. */
-        equipmentModes: EquipmentModesSchema_v0.optional(),
-        /** Optional because the project can be created with a default name */
-        name: z.string().optional(),
-    })
-    .strict()
+export const ProjectPostSchema_v0 = z.strictObject({
+    ...WritableProjectDataSchema_v0.shape,
+    /** Optional because creation seeds the default cooling/heating modes. */
+    equipmentModes: getStrictSchema(EquipmentModesSchema_v0).optional(),
+    /** Optional because the project can be created with a default name */
+    name: z.string().optional(),
+})
 export type ProjectPost_v0 = z.infer<typeof ProjectPostSchema_v0>
 
 /** Summary fields returned for each project by the list endpoint. */

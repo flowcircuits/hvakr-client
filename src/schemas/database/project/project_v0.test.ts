@@ -239,6 +239,31 @@ describe('Project v0 schemas', () => {
                 sheetFiles: {},
             }).success
         ).toBe(false)
+        expect(
+            ExpandedProjectPostSchema_v0.safeParse({
+                graph: {
+                    node: {
+                        adjacencies: [],
+                        extra: true,
+                        id: 'node-1',
+                        level: 1,
+                        nodeType: 'FITTING',
+                        point: { x: 0, y: 0 },
+                    },
+                },
+            }).success
+        ).toBe(false)
+        expect(
+            ProjectPostSchema_v0.safeParse({
+                equipmentModes: {
+                    ...DEFAULT_EQUIPMENT_MODES_v0,
+                    cooling_mode: {
+                        ...DEFAULT_EQUIPMENT_MODES_v0.cooling_mode,
+                        extra: true,
+                    },
+                },
+            }).success
+        ).toBe(false)
     })
 
     it('requires equipment modes on reads and defaults them on create', () => {

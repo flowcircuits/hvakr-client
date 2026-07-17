@@ -22,6 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `{ exportId, export? }` instead of `{ reportId, report? }`.
 - Renamed the job-result schema and type to `APIExportJobResultSchema_v0` and
   `APIExportJobResult_v0`.
+- Renamed database export schemas and types: `ReportDataSchema_v0` →
+  `ExportDataSchema_v0`, `ReportFileTypeSchema_v0` → `ExportFileTypeSchema_v0`,
+  `ReportTemplateSchema_v0` → `ExportDefinitionSchema_v0`,
+  `ReportTemplateOptionSchema_v0` → `ExportDefinitionOptionSchema_v0`, and the
+  matching inferred types. The export definition field is now `definition`
+  instead of `template`.
+- `APIJobCreateTypes_v0.report` is now `APIJobCreateTypes_v0.export` (the
+  constant object remains exported for create-only job kinds).
 
 ### Added
 
@@ -30,6 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ventilation-csv`, and `hourly-loads-csv`.
 - The public export schema includes export identity, name, generation status,
   creation date, optional signed download URL, output file type, and progress.
+
+### Notes
+
+- Project analytics still expose `hasReports` on the wire; that field name is
+  unchanged in this release.
 
 ## [0.7.0] - 2026-07-16
 

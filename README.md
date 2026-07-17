@@ -135,7 +135,7 @@ breaking changes ship in minor bumps (see [Versioning & stability](#versioning--
 | Method                                                              | Description                                                                                                                                                                        |
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `listProjects({ limit?, cursor?, search?, status?, projectType? })` | List a page of projects accessible to the authenticated user. Page with `nextCursor` while `hasMore`. Optional `search` (name/number/address), `status`, and `projectType` filters |
-| `getProject(id, expand?)`                                           | Get a project by ID. Set `expand: true` for full project data, or pass an array of subcollection keys (e.g. `['spaces', 'zones']`) to expand only those                            |
+| `getProject(id, expand?)`                                           | Get a project by ID. Set `expand: true` for full project data, or pass an array of subcollection keys (e.g. `['spaces', 'zones', 'exports']`) to expand only those                |
 | `createProject(data, opts?)`                                        | Create a new project                                                                                                                                                               |
 | `updateProject(id, data, opts?)`                                    | Update an existing project                                                                                                                                                         |
 | `deleteProject(id)`                                                 | Delete a project                                                                                                                                                                   |
@@ -169,7 +169,7 @@ Create PDF/CSV/ZIP output with an export job. `definition` accepts
 let job = await hvakr.createJob(projectId, {
     type: 'export',
     definition: 'load-calculation',
-    name: 'Issued Loads Report',
+    name: 'Issued Loads Export',
 })
 
 while (job.status === 'queued' || job.status === 'running') {

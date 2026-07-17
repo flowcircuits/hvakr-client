@@ -31,12 +31,12 @@ export const ProjectSubcollectionsSchema_v0 = z.object({
     deadlines: z.record(z.string(), DeadlineDataSchema_v0).optional(),
     doorTypes: z.record(z.string(), DoorTypeDataSchema_v0).optional(),
     ductTypes: z.record(z.string(), DuctTypeDataSchema_v0).optional(),
-    graph: GraphSchema_v0.optional(),
-    pipeTypes: z.record(z.string(), PipeTypeDataSchema_v0).optional(),
-    registerTypes: z.record(z.string(), RegisterTypeDataSchema_v0).optional(),
     exports: disableUserWrite(
         z.record(z.string(), APIExportSchema_v0).optional()
     ),
+    graph: GraphSchema_v0.optional(),
+    pipeTypes: z.record(z.string(), PipeTypeDataSchema_v0).optional(),
+    registerTypes: z.record(z.string(), RegisterTypeDataSchema_v0).optional(),
     roofTypes: z.record(z.string(), RoofTypeDataSchema_v0).optional(),
     sheetFiles: z.record(z.string(), SheetFileDataSchema_v0).optional(),
     sheets: z.record(z.string(), SheetDataSchema_v0).optional(),

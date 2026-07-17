@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ReportFileTypeSchema_v0 } from '../database/project/report_v0'
+import { ExportFileTypeSchema_v0 } from '../database/project/export_v0'
 
 /** Export definition slugs accepted by the v0 API. */
 export const APIExportDefinitionIds_v0 = {
@@ -39,7 +39,7 @@ export const APIExportSchema_v0 = z
                 'Signed download URL. Present only when status is "completed".'
             ),
         date: z.number().describe('Creation timestamp (Unix milliseconds).'),
-        outputFileType: ReportFileTypeSchema_v0.optional().describe(
+        outputFileType: ExportFileTypeSchema_v0.optional().describe(
             'File type of the generated export (PDF, CSV, DOCX, or ZIP).'
         ),
         progress: z

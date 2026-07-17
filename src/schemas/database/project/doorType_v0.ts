@@ -1,11 +1,12 @@
 import { z } from 'zod'
+import { disableUserWrite } from '../../utility'
 
 export const DoorTypeDataSchema_v0 = z.object({
     name: z.string().optional(),
     openFraction: z.number().optional(),
     seals: z.boolean().optional(),
     surfaceAbsorptance: z.number().optional(),
-    timestamp: z.number().optional(),
+    timestamp: disableUserWrite(z.number().optional()),
     uValue: z.number().optional(),
 })
 

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { disableUserWrite } from '../../utility'
 
 export const WindowTypeDataSchema_v0 = z.object({
     ashraeWindowTypeId: z.string().optional(),
@@ -9,7 +10,7 @@ export const WindowTypeDataSchema_v0 = z.object({
     infiltrationWinterLfReq: z.number().optional(),
     name: z.string().optional(),
     shgc: z.number().optional(),
-    timestamp: z.number().optional(),
+    timestamp: disableUserWrite(z.number().optional()),
     uValue: z.number().optional(),
 })
 

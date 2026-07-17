@@ -9,6 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.7.0] - 2026-07-16
+
+### Breaking Changes
+
+- Project create and patch schemas are now strict: unknown keys are rejected
+  instead of being silently stripped. Payloads carrying fields outside the
+  writable schema (including server-owned fields) will no longer validate.
+- Project create no longer accepts `sheetFiles`; sheet-file creation stays in
+  the dedicated upload flow. `sheetFiles[id].name` remains writable through
+  project patches.
+- The `PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0` and
+  `PROJECT_RESTRICTED_WRITE_FIELDS_V0` exports are now identical compatibility
+  views derived from schema metadata, `PROJECT_PRIVATE_READ_FIELDS_V0` is now
+  empty, and `WritableProjectSubcollectionsSchema_v0` is derived from the
+  canonical subcollections schema. Their shapes and contents have changed.
+
+### Added
+
+- Project reads now expose all canonical project fields, including computed,
+  organization, analytics, automation, coordinate, deletion, and payment state.
+- Project schemas carry `disableUserWrite: true` Zod metadata for server-owned
+  root and nested fields. Omitted metadata means the field is normally writable.
+- Projects support flat, user-writable `metadata` with string, number, or
+  boolean values for external IDs and other application-specific context.
+- `SheetFileData_v0.name`, PDF metadata, and processing error fields now match
+  the canonical sheet-file response.
+
+### Fixed
+
+- Project create and patch schemas recursively reject server-owned fields such
+  as coordinates, trigger timestamps, processing state, reports, and sheet-file
+  upload metadata instead of maintaining separate field registries.
+- Existing project-field-list exports remain available as compatibility views
+  derived from the schema metadata rather than independent policy definitions.
+
 ## [0.6.1] - 2026-07-14
 
 ### Added

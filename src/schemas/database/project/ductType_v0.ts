@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { disableUserWrite } from '../../utility'
 
 export const DuctTypeDataSchema_v0 = z.object({
     color: z.string().optional(),
@@ -7,7 +8,7 @@ export const DuctTypeDataSchema_v0 = z.object({
     maxPressureDropRate: z.number().optional(),
     maxVelocity: z.number().optional(),
     name: z.string().optional(),
-    timestamp: z.number().optional(),
+    timestamp: disableUserWrite(z.number().optional()),
 })
 
 export type DuctTypeData_v0 = z.infer<typeof DuctTypeDataSchema_v0>

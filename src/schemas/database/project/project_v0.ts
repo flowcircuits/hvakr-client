@@ -9,6 +9,12 @@ import {
     CoolingPercentSchema_v0,
     HeatingPercentSchema_v0,
 } from '../weatherStation'
+import {
+    disableUserWrite,
+    getStrictSchema,
+    getUserWritableSchema,
+    type UserWriteDisabledKeys,
+} from '../../utility'
 import * as DrySide_v0 from './graph_v0'
 import { ModeIdSchema_v0, ModeSchema_v0 } from './equipment_v0'
 import { SpaceDataSchema_v0 } from './space_v0'
@@ -19,8 +25,8 @@ export const WeatherSpecSchema_v0 = z.object({
     coolWb: z.number().optional(),
     heatDb: z.number().optional(),
     heatPercent: HeatingPercentSchema_v0.optional(),
-    loading: z.boolean().optional(),
-    nearestWeatherStationIds: z.array(z.string()).optional(),
+    loading: disableUserWrite(z.boolean().optional()),
+    nearestWeatherStationIds: disableUserWrite(z.array(z.string()).optional()),
     selectedStationId: z.string().optional(),
 })
 
@@ -35,6 +41,23 @@ export const MapDataSchema_v0 = z.object({
     yOffset: z.number().optional(),
     zoom: z.number().optional(),
 })
+
+/** JSON-safe primitive values stored as user-defined project metadata. */
+export const ProjectMetadataValueSchema_v0 = z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+])
+export type ProjectMetadataValue_v0 = z.infer<
+    typeof ProjectMetadataValueSchema_v0
+>
+
+/** Flat user-defined data for linking a project to external systems. */
+export const ProjectMetadataSchema_v0 = z.record(
+    z.string().min(1),
+    ProjectMetadataValueSchema_v0
+)
+export type ProjectMetadata_v0 = z.infer<typeof ProjectMetadataSchema_v0>
 
 export const LevelDataSchema_v0 = z.object({ height: z.number().optional() })
 
@@ -104,7 +127,7 @@ export const OutdoorContaminantDataSchema_v0 = z.object({
 export const ConstraintSchema_v0 = z.object({
     description: z.string().optional(),
     name: z.string().optional(),
-    timestamp: z.number(),
+    timestamp: disableUserWrite(z.number()),
 })
 
 export const ContactSchema_v0 = z.object({
@@ -114,14 +137,14 @@ export const ContactSchema_v0 = z.object({
     name: z.string().optional(),
     phone: z.string().optional(),
     role: z.string().optional(),
-    timestamp: z.number(),
+    timestamp: disableUserWrite(z.number()),
     trade: z.string().optional(),
 })
 
 export const StandardSchema_v0 = z.object({
     description: z.string().optional(),
     name: z.string().optional(),
-    timestamp: z.number(),
+    timestamp: disableUserWrite(z.number()),
 })
 
 export const BuildingDataSchema_v0 = z.object({
@@ -271,11 +294,56 @@ export const ProjectStatuses_v0 = {
 export const ProjectStatusSchema_v0 = z.enum(Object.values(ProjectStatuses_v0))
 export type ProjectStatus_v0 = z.infer<typeof ProjectStatusSchema_v0>
 
-export const ProjectDataSchema_v0 = z.object({
+export const ProjectAnalyticsSchema_v0 = z.object({
+    hasDrySideDesignSized: z.boolean().optional(),
+    hasDrySideDesignStarted: z.boolean().optional(),
+    hasEquipmentConfigured: z.boolean().optional(),
+    hasProjectComments: z.boolean().optional(),
+    hasReports: z.boolean().optional(),
+    hasSheets: z.boolean().optional(),
+    hasSpaceTypes: z.boolean().optional(),
+    hasSpaces: z.boolean().optional(),
+    hasSystems: z.boolean().optional(),
+    hasWallTypes: z.boolean().optional(),
+    hasZones: z.boolean().optional(),
+    numUsers: z.number().optional(),
+    updatedAt: z.number(),
+})
+export type ProjectAnalytics_v0 = z.infer<typeof ProjectAnalyticsSchema_v0>
+
+export const AutomationStatusSchema_v0 = z.enum(['requested', 'inProgress'])
+
+export const ImportCZMinimumEnvelopesAutomationSchema_v0 = z.object({
+    status: AutomationStatusSchema_v0,
+})
+
+export const ImportSpaceTypesAutomationSchema_v0 = z.object({
+    status: AutomationStatusSchema_v0,
+    templateProjectIds: z.array(z.string()).optional(),
+})
+
+export const AutomationsSchema_v0 = z.object({
+    importCZMinimumEnvelopes:
+        ImportCZMinimumEnvelopesAutomationSchema_v0.optional(),
+    importSpaceTypes: ImportSpaceTypesAutomationSchema_v0.optional(),
+})
+export type Automations_v0 = z.infer<typeof AutomationsSchema_v0>
+
+export const ComputedProjectDataSchema_v0 = z.object({
+    _owner: disableUserWrite(z.string().optional()),
+    _userEmails: disableUserWrite(z.array(z.string()).optional()),
+    _userIds: disableUserWrite(z.array(z.string()).optional()),
+    _nameLowercase: disableUserWrite(z.string().optional()),
+})
+
+export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     address: z.string().optional(),
+    organizationId: disableUserWrite(z.string().optional()),
     airflowIncrement: z.number().int().min(1).optional(),
+    analytics: disableUserWrite(ProjectAnalyticsSchema_v0.optional()),
     annotations: z.record(z.string(), AnnotationDataSchema_v0).optional(),
-    apiCreated: z.boolean().optional(),
+    apiCreated: disableUserWrite(z.boolean().optional()),
+    automations: disableUserWrite(AutomationsSchema_v0.optional()),
     building: BuildingDataSchema_v0.optional(),
     climateZone: z.string().optional(),
     constraints: z.record(z.string(), ConstraintSchema_v0).optional(),
@@ -283,20 +351,23 @@ export const ProjectDataSchema_v0 = z.object({
     contacts: z.record(z.string(), ContactSchema_v0).optional(),
     description: z.string().optional(),
     drySide: DrySideDataSchema_v0.optional(),
-    duplicatedFrom: z.string().optional(),
-    elevation: z.number().optional(),
+    duplicatedFrom: disableUserWrite(z.string().optional()),
+    elevation: disableUserWrite(z.number().optional()),
     equipmentModes: EquipmentModesSchema_v0,
-    fromExample: z.string().optional(),
-    isExample: z.boolean().optional(),
+    fromExample: disableUserWrite(z.string().optional()),
+    iaqpOutdoorAirMerv: z.number().int().min(8).max(15).optional(),
+    isDeleted: disableUserWrite(z.boolean().optional()),
+    isExample: disableUserWrite(z.boolean().optional()),
     isHealthcare: z.boolean().optional(),
-    isHVAKRTemplate: z.boolean().optional(),
-    isOpen: z.boolean().optional(),
+    isHVAKRTemplate: disableUserWrite(z.boolean().optional()),
+    isOpen: disableUserWrite(z.boolean().optional()),
     isTemplate: z.boolean().optional(),
-    lastOpenTime: z.number().optional(),
-    latitude: z.number().optional(),
+    lastOpenTime: disableUserWrite(z.number().optional()),
+    latitude: disableUserWrite(z.number().optional()),
     levels: z.record(z.coerce.number(), LevelDataSchema_v0).optional(),
-    longitude: z.number().optional(),
+    longitude: disableUserWrite(z.number().optional()),
     maps: z.record(z.string(), MapDataSchema_v0).optional(),
+    metadata: ProjectMetadataSchema_v0.optional(),
     name: z.string(),
     number: z.string().optional(),
     outdoorContaminants: z
@@ -305,27 +376,32 @@ export const ProjectDataSchema_v0 = z.object({
             OutdoorContaminantDataSchema_v0
         )
         .optional(),
-    outsideAirSpec: OutsideAirSpecSchema_v0.optional(),
+    outsideAirSpec: disableUserWrite(OutsideAirSpecSchema_v0.optional()),
+    pendingPayment: disableUserWrite(z.boolean().optional()),
     pictureThumbnailURL: z.string().optional(),
     pictureURL: z.string().optional(),
     pictureVerticalPosition: z.number().optional(),
     presentMode: PresentModeConfigSchema_v0.optional(),
     projectType: ProjectTypeSchema_v0.optional(),
-    revision: z.string().optional(),
-    revisions: z.record(z.string(), RevisionSchema_v0).optional(),
+    revision: disableUserWrite(z.string().optional()),
+    revisions: disableUserWrite(
+        z.record(z.string(), RevisionSchema_v0).optional()
+    ),
     sheetMarkers: z.record(z.string(), PointSchema).optional(),
-    slackChannelId: z.string().optional(),
+    slackChannelId: disableUserWrite(z.string().optional()),
     source: TemplateSourceSchema_v0.optional(),
     spaceTypeAutoAssignment: SpaceTypeAutoAssignmentSourcesSchema_v0.optional(),
     standardNumber: z.string().optional(),
     standardYear: z.number().int().optional(),
     standards: z.record(z.string(), StandardSchema_v0).optional(),
     status: ProjectStatusSchema_v0.optional(),
-    suggestedSpaces: z.record(z.string(), SpaceDataSchema_v0).optional(),
+    suggestedSpaces: disableUserWrite(
+        z.record(z.string(), SpaceDataSchema_v0).optional()
+    ),
     takeoffModel: TakeoffModelSchema_v0.optional(),
-    timestamp: z.number().optional(),
+    timestamp: disableUserWrite(z.number().optional()),
     unitSystem: DisplayUnitSystemIdSchema.optional(),
-    users: z.record(z.string(), ProjectUserDataSchema_v0),
+    users: disableUserWrite(z.record(z.string(), ProjectUserDataSchema_v0)),
     utilityRates: UtilityRatesSchema_v0.optional(),
     ventilationStandard: VentilationStandardSchema_v0.optional(),
     weatherSpec: WeatherSpecSchema_v0.optional(),
@@ -339,72 +415,30 @@ export interface Project_v0 extends ProjectData_v0 {
 
 /* BEGIN API ENDPOINT SCHEMAS */
 
-/**
- * Private, internal, and stale project fields that are not part of the public
- * v0 project response shape.
- */
-export const PROJECT_PRIVATE_READ_FIELDS_V0 = {
-    _nameLowercase: true,
-    _userIds: true,
-    _owner: true,
-    _userEmails: true,
-    analytics: true,
-    automations: true,
-    isArchived: true,
-    isDeleted: true,
-    mapSpec: true,
-    openAIThreadId: true,
-    organizationId: true,
-    pendingPayment: true,
-    wetSide: true,
-} as const
+/** All canonical project fields are readable through the v0 API. */
+export const PROJECT_PRIVATE_READ_FIELDS_V0 = {} as const
 
-/**
- * Public fields the server owns and returns, but clients cannot write through
- * project create/update requests.
- */
-export const PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0 = {
-    duplicatedFrom: true,
-    fromExample: true,
-    isExample: true,
-    isHVAKRTemplate: true,
-    isOpen: true,
-    lastOpenTime: true,
-    revision: true,
-    revisions: true,
-    suggestedSpaces: true,
-    timestamp: true,
-} as const
+const disabledUserWriteFields = Object.fromEntries(
+    Object.entries(ProjectDataSchema_v0.shape)
+        .filter(([, schema]) => schema.meta()?.disableUserWrite)
+        .map(([field]) => [field, true])
+) as Record<UserWriteDisabledKeys<typeof ProjectDataSchema_v0>, true>
 
-export const PROJECT_RESTRICTED_WRITE_FIELDS_V0 = {
-    ...PROJECT_PRIVATE_READ_FIELDS_V0,
-    ...PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0,
-    users: true,
-} as const
+/** Compatibility view derived from canonical Zod metadata. */
+export const PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0 = disabledUserWriteFields
 
-const PROJECT_DATA_RESTRICTED_WRITE_FIELDS_V0 = {
-    duplicatedFrom: true,
-    fromExample: true,
-    isExample: true,
-    isHVAKRTemplate: true,
-    isOpen: true,
-    lastOpenTime: true,
-    revision: true,
-    revisions: true,
-    suggestedSpaces: true,
-    timestamp: true,
-    users: true,
-} as const
+/** Compatibility view derived from canonical Zod metadata. */
+export const PROJECT_RESTRICTED_WRITE_FIELDS_V0 = disabledUserWriteFields
 
 /** Project fields writable through create/update requests. */
-export const WritableProjectDataSchema_v0 = ProjectDataSchema_v0.omit(
-    PROJECT_DATA_RESTRICTED_WRITE_FIELDS_V0
+export const WritableProjectDataSchema_v0 = getStrictSchema(
+    getUserWritableSchema(ProjectDataSchema_v0)
 )
 
-export const ProjectPostSchema_v0 = z.object({
+export const ProjectPostSchema_v0 = z.strictObject({
     ...WritableProjectDataSchema_v0.shape,
     /** Optional because creation seeds the default cooling/heating modes. */
-    equipmentModes: EquipmentModesSchema_v0.optional(),
+    equipmentModes: getStrictSchema(EquipmentModesSchema_v0).optional(),
     /** Optional because the project can be created with a default name */
     name: z.string().optional(),
 })

@@ -438,9 +438,9 @@ export class HVAKRClient {
 
     /**
      * Creates a job. One uniform resource covers every job kind (set `body.type`
-     * to `report`, `auto-group`, `check`, or `auto-takeoff`). Sync jobs
+     * to `export`, `auto-group`, `check`, or `auto-takeoff`). Sync jobs
      * (`auto-group`, `check`) return `status:"completed"` with `result`
-     * populated; async jobs (`report`, `auto-takeoff`) return `status:"queued"`
+     * populated; async jobs (`export`, `auto-takeoff`) return `status:"queued"`
      * — poll {@link getJob} with the returned `jobId` until the status settles.
      * @param projectId - The ID of the project
      * @param body - The job request (`type` + the fields that kind consumes)
@@ -466,7 +466,7 @@ export class HVAKRClient {
     }
 
     /**
-     * Retrieves the current state of a job. For `report`/`auto-takeoff` jobs,
+     * Retrieves the current state of a job. For `export`/`auto-takeoff` jobs,
      * poll this until `status` leaves `queued`/`running`; the settled `result`
      * (or `error`) is then populated.
      * @param projectId - The ID of the project

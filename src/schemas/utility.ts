@@ -114,7 +114,7 @@ const projectUserWritableField = (schema: z.ZodType): z.ZodType | undefined => {
             schema.valueType as z.ZodType
         )
         if (!valueType) return undefined
-        return z.record(schema.keyType as z.ZodType, valueType)
+        return z.record(schema.keyType, valueType)
     }
 
     return schema
@@ -129,7 +129,7 @@ export const getUserWritableSchema = <Shape extends z.ZodRawShape>(
             const projected = projectUserWritableField(child as z.ZodType)
             return projected ? [[key, projected]] : []
         })
-    ) as UserWritableShape<Shape>
+    ) as unknown as UserWritableShape<Shape>
 
     return z.object(shape) as z.ZodObject<UserWritableShape<Shape>>
 }

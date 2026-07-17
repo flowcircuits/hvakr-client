@@ -108,12 +108,16 @@ describe('HVAKRClient request building', () => {
             .intercept({ path: /.*/, method: /.*/ })
             .reply((request) => {
                 requests.push(request)
-                const reply = replies.shift() ?? { statusCode: 200, data: {} }
+                const reply = replies.shift() ?? {
+                    statusCode: 200,
+                    data: {},
+                    headers: undefined,
+                }
                 return mockResponse(reply.statusCode, reply.data, reply.headers)
             })
             .persist()
         setGlobalDispatcher(agent)
-        globalThis.fetch = undiciFetch as typeof globalThis.fetch
+        globalThis.fetch = undiciFetch as unknown as typeof globalThis.fetch
     })
 
     afterEach(async () => {
@@ -325,15 +329,15 @@ describe('HVAKRClient request building', () => {
     })
 
     it('createJob POSTs to the jobs route and sends the idempotency key', async () => {
-        enqueue(202, { jobId: 'job_1', type: 'report', status: 'queued' })
+        enqueue(202, { jobId: 'job_1', type: 'export', status: 'queued' })
         const res = await requestClient.createJob(
             'p1',
-            { type: 'report', template: 'load-calculation' },
+            { type: 'export', definition: 'load-calculation' },
             { idempotencyKey: 'idem-123' }
         )
         expect(res).toEqual({
             jobId: 'job_1',
-            type: 'report',
+            type: 'export',
             status: 'queued',
         })
         const request = requests.at(-1)!
@@ -341,8 +345,8 @@ describe('HVAKRClient request building', () => {
         expect(request.method).toBe('POST')
         expect(headerValue(request.headers, 'idempotency-key')).toBe('idem-123')
         expect(JSON.parse(bodyAsString(request.body))).toEqual({
-            type: 'report',
-            template: 'load-calculation',
+            type: 'export',
+            definition: 'load-calculation',
         })
     })
 
@@ -543,16 +547,16 @@ describeApi('HVAKR Client', () => {
         expect(check.type).toBe('check')
         expect(check.status).toBe('completed')
 
-        const reportJob = await hvakrClient.createJob(id!, {
-            type: 'report',
-            template: 'load-calculation',
+        const exportJob = await hvakrClient.createJob(id!, {
+            type: 'export',
+            definition: 'load-calculation',
         })
-        expect(reportJob.status).toBe('queued')
+        expect(exportJob.status).toBe('queued')
 
-        const polled = await hvakrClient.getJob(id!, reportJob.jobId)
+        const polled = await hvakrClient.getJob(id!, exportJob.jobId)
         expect(polled.status).toBe('completed')
-        assert(polled.result && 'reportId' in polled.result)
-        expect(polled.result.report?.downloadUrl).toBeTruthy()
+        assert(polled.result && 'exportId' in polled.result)
+        expect(polled.result.export?.downloadUrl).toBeTruthy()
     }, 40000)
 
     it('should update HVAKR Project with valid project data', async () => {

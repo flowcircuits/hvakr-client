@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { DisplayUnitSystemIdSchema } from '../misc'
-import { APIReportSchema_v0, APIReportTemplateIdSchema_v0 } from './reports_v0'
+import {
+    APIExportDefinitionIdSchema_v0,
+    APIExportSchema_v0,
+} from './exports_v0'
 
 // --------------------------------------------------------------------
 // -- Job status ------------------------------------------------------
@@ -18,7 +21,7 @@ export type APIJobStatus_v0 = z.infer<typeof APIJobStatusSchema_v0>
 
 /** Job kinds that JSON callers can create through `POST /projects/{id}/jobs`. */
 export const APIJobCreateTypes_v0 = {
-    report: 'report',
+    export: 'export',
     'auto-group': 'auto-group',
     check: 'check',
     'auto-takeoff': 'auto-takeoff',
@@ -27,7 +30,7 @@ export const APIJobCreateTypes_v0 = {
 export const APIJobCreateTypeSchema_v0 = z
     .enum(Object.values(APIJobCreateTypes_v0))
     .describe(
-        'Job kind: report (async PDF/CSV/ZIP generation), auto-group (sync zoning/system grouping), check (sync validation), auto-takeoff (async floor-plan extraction).'
+        'Job kind: export (async PDF/CSV/ZIP generation), auto-group (sync zoning/system grouping), check (sync validation), auto-takeoff (async floor-plan extraction).'
     )
 export type APIJobCreateType_v0 = z.infer<typeof APIJobCreateTypeSchema_v0>
 
@@ -53,7 +56,7 @@ export type APIJobType_v0 = z.infer<typeof APIJobTypeSchema_v0>
  * `type` selects the job kind and the variant fields it consumes; every other
  * field is ignored. Variant requirements are enforced server-side:
  *
- * - `report` → requires `template`; accepts `name`, `displayUnitSystemId`.
+ * - `export` → requires `definition`; accepts `name`, `displayUnitSystemId`.
  * - `auto-group` → requires `scope`; accepts `entityIds`.
  * - `check` → no parameters.
  * - `auto-takeoff` → all parameters optional (`confidence`, `levels`,
@@ -62,18 +65,18 @@ export type APIJobType_v0 = z.infer<typeof APIJobTypeSchema_v0>
 export const APIJobCreateSchema_v0 = z
     .object({
         type: APIJobCreateTypeSchema_v0,
-        // report
-        template: APIReportTemplateIdSchema_v0.optional().describe(
-            'Report template slug. Required when type is "report".'
+        // export
+        definition: APIExportDefinitionIdSchema_v0.optional().describe(
+            'Export definition slug. Required when type is "export".'
         ),
         name: z
             .string()
             .optional()
             .describe(
-                'Report name (report jobs); defaults to the template name.'
+                'Export name (export jobs); defaults to the definition name.'
             ),
         displayUnitSystemId: DisplayUnitSystemIdSchema.optional().describe(
-            'Unit system for report jobs; defaults to IMPERIAL.'
+            'Unit system for export jobs; defaults to IMPERIAL.'
         ),
         // auto-group
         scope: z
@@ -211,22 +214,22 @@ export type APIAutoTakeoffResult_v0 = z.infer<
 >
 
 // --------------------------------------------------------------------
-// -- Report job result -----------------------------------------------
+// -- Export job result -----------------------------------------------
 
 /**
- * Result of a `report` job. `reportId` links to the created report doc; the
- * polished report (with `downloadUrl` once complete) is embedded as `report`
- * on GET and is also visible via `GET /projects/{id}?expand=reports`.
+ * Result of an `export` job. `exportId` links to the created export doc; the
+ * generated export (with `downloadUrl` once complete) is embedded as `export`
+ * on GET and is also visible via `GET /projects/{id}?expand=exports`.
  */
-export const APIReportJobResultSchema_v0 = z
+export const APIExportJobResultSchema_v0 = z
     .object({
-        reportId: z.string().describe('ID of the created report.'),
-        report: APIReportSchema_v0.optional().describe(
-            'The linked report; present on GET once the doc exists.'
+        exportId: z.string().describe('ID of the created export.'),
+        export: APIExportSchema_v0.optional().describe(
+            'The linked export; present on GET once the doc exists.'
         ),
     })
-    .describe('Result of a report job.')
-export type APIReportJobResult_v0 = z.infer<typeof APIReportJobResultSchema_v0>
+    .describe('Result of an export job.')
+export type APIExportJobResult_v0 = z.infer<typeof APIExportJobResultSchema_v0>
 
 // --------------------------------------------------------------------
 // -- Sheet-upload job result -----------------------------------------
@@ -309,7 +312,7 @@ export type APISheetUploadJobResult_v0 = z.infer<
 /** Union of every job result payload, discriminated by the job's `type`. */
 export const APIJobResultSchema_v0 = z
     .union([
-        APIReportJobResultSchema_v0,
+        APIExportJobResultSchema_v0,
         APIAutoGroupResultSchema_v0,
         APICheckReportSchema_v0,
         APIAutoTakeoffResultSchema_v0,
@@ -321,7 +324,7 @@ export type APIJobResult_v0 = z.infer<typeof APIJobResultSchema_v0>
 /**
  * A job as returned by `POST /projects/{id}/jobs` and
  * `GET /projects/{id}/jobs/{jobId}`. Sync jobs (`auto-group`, `check`) come
- * back `completed` with `result` populated; async jobs (`report`,
+ * back `completed` with `result` populated; async jobs (`export`,
  * `auto-takeoff`) come back `queued` — poll GET until the status settles.
  */
 const APIJobBaseSchema_v0 = z.object({
@@ -340,8 +343,8 @@ const APIJobBaseSchema_v0 = z.object({
 export const APIJobSchema_v0 = z
     .discriminatedUnion('type', [
         APIJobBaseSchema_v0.extend({
-            type: z.literal(APIJobTypes_v0.report),
-            result: APIReportJobResultSchema_v0.optional(),
+            type: z.literal(APIJobTypes_v0.export),
+            result: APIExportJobResultSchema_v0.optional(),
         }),
         APIJobBaseSchema_v0.extend({
             type: z.literal(APIJobTypes_v0['auto-group']),

@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.8.0] - 2026-07-16
+
+### Breaking Changes
+
+- Replaced the v0 API report resource with the export resource. Project
+  expansion now uses `exports` instead of `reports`, and the public schemas and
+  types are `APIExportSchema_v0`, `APIExport_v0`, and `APIExportStatusSchema_v0`.
+  The removed report-named exports have no aliases or compatibility shims.
+- Export-generation jobs now use `type: "export"` and `definition` instead of
+  `type: "report"` and `template`. The job result is now
+  `{ exportId, export? }` instead of `{ reportId, report? }`.
+- Renamed the job-result schema and type to `APIExportJobResultSchema_v0` and
+  `APIExportJobResult_v0`.
+
+### Added
+
+- `APIExportDefinitionIdSchema_v0`, `APIExportDefinitionId_v0`, and
+  `APIExportDefinitionIds_v0`, covering `load-calculation`, `basis-of-design`,
+  `ventilation-csv`, and `hourly-loads-csv`.
+- The public export schema includes export identity, name, generation status,
+  creation date, optional signed download URL, output file type, and progress.
+
 ## [0.7.0] - 2026-07-16
 
 ### Breaking Changes

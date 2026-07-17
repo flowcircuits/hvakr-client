@@ -6,7 +6,12 @@ import {
     MockProdService,
 } from './mockProd'
 
-export const createClientTestTarget = () => {
+interface ClientTestTarget {
+    createClient: () => HVAKRClient
+    describeApi: (name: string, factory: () => void) => unknown
+}
+
+export const createClientTestTarget = (): ClientTestTarget => {
     const {
         HVAKR_ACCESS_TOKEN,
         HVAKR_CLIENT_API_URL,

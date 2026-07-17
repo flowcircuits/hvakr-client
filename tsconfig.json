@@ -5,6 +5,7 @@
         "composite": true,
         "declaration": true,
         "esModuleInterop": true,
+        "ignoreDeprecations": "6.0",
         "isolatedModules": true,
         "lib": ["ESNext", "DOM"],
         "module": "ES6",

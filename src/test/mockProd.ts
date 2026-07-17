@@ -27,7 +27,7 @@ type MockJob = {
     jobId: string
     type: string
     status: string
-    reportId?: string
+    exportId?: string
     result?: Record<string, any>
 }
 
@@ -91,7 +91,7 @@ export class MockProdService {
             .reply((request) => this.handle(request))
             .persist()
         setGlobalDispatcher(this.agent)
-        globalThis.fetch = undiciFetch as typeof globalThis.fetch
+        globalThis.fetch = undiciFetch as unknown as typeof globalThis.fetch
     }
 
     async uninstall() {
@@ -344,14 +344,14 @@ export class MockProdService {
             this.jobs.set(jobId, job)
             return response(200, job)
         }
-        if (type === 'report') {
-            const reportId = `mock-report-${jobId}`
-            this.jobs.set(jobId, { jobId, type, status: 'queued', reportId })
+        if (type === 'export') {
+            const exportId = `mock-export-${jobId}`
+            this.jobs.set(jobId, { jobId, type, status: 'queued', exportId })
             return response(202, {
                 jobId,
                 type,
                 status: 'queued',
-                result: { reportId },
+                result: { exportId },
             })
         }
         if (type === 'auto-takeoff') {
@@ -366,20 +366,20 @@ export class MockProdService {
         if (!job) {
             return response(404, { error: 'Not found' })
         }
-        // Async jobs settle to `completed` once polled; the report job bridges
-        // to its linked report doc (with a download URL).
-        if (job.type === 'report') {
+        // Async jobs settle to `completed` once polled; the export job bridges
+        // to its linked export doc (with a download URL).
+        if (job.type === 'export') {
             return response(200, {
                 jobId,
-                type: 'report',
+                type: 'export',
                 status: 'completed',
                 result: {
-                    reportId: job.reportId,
-                    report: {
-                        id: job.reportId,
-                        name: 'Mock Report',
+                    exportId: job.exportId,
+                    export: {
+                        id: job.exportId,
+                        name: 'Mock Export',
                         status: 'completed',
-                        downloadUrl: 'https://mock-prod.test/report.pdf',
+                        downloadUrl: 'https://mock-prod.test/export.pdf',
                         date: 0,
                         outputFileType: 'PDF',
                     },

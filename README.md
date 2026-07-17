@@ -145,7 +145,7 @@ Project reads include every canonical project field, including server-owned
 state. The exported Zod schemas mark fields that normal project writes cannot
 change with `disableUserWrite: true`; fields without that metadata are writable
 by default. Create and patch schemas apply that policy recursively, including
-inside spaces, type collections, weather data, and sheet files. Reports remain
+inside spaces, type collections, weather data, and sheet files. Exports remain
 job-created, and uploaded sheet-file data is read-only except for
 `sheetFiles[id].name` in project patches.
 
@@ -158,8 +158,29 @@ Set an individual metadata key to `null` in `updateProject` to delete it.
 
 | Method                       | Description                                                                                                                           |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `createJob(id, body, opts?)` | Create a job (`report`, `auto-group`, `check`, or `auto-takeoff`). Sync jobs return `status: "completed"`; async jobs return `queued` |
+| `createJob(id, body, opts?)` | Create a job (`export`, `auto-group`, `check`, or `auto-takeoff`). Sync jobs return `status: "completed"`; async jobs return `queued` |
 | `getJob(id, jobId)`          | Get a job's current state. Poll async jobs until `status` leaves `queued`/`running`                                                   |
+
+Create PDF/CSV/ZIP output with an export job. `definition` accepts
+`load-calculation`, `basis-of-design`, `ventilation-csv`, or
+`hourly-loads-csv`:
+
+```ts
+let job = await hvakr.createJob(projectId, {
+    type: 'export',
+    definition: 'load-calculation',
+    name: 'Issued Loads Report',
+})
+
+while (job.status === 'queued' || job.status === 'running') {
+    await new Promise((resolve) => setTimeout(resolve, 1_000))
+    job = await hvakr.getJob(projectId, job.jobId)
+}
+
+if (job.type === 'export' && job.status === 'completed') {
+    console.log(job.result?.export?.downloadUrl)
+}
+```
 
 ### Sheet files
 

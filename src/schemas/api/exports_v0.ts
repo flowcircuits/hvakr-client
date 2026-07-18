@@ -40,7 +40,7 @@ export const APIExportSchema_v0 = z
             ),
         date: z.number().describe('Creation timestamp (Unix milliseconds).'),
         outputFileType: ExportFileTypeSchema_v0.optional().describe(
-            'File type of the generated export (PDF, CSV, DOCX, or ZIP).'
+            'File type of the generated export (PDF, CSV, DOCX, ZIP, XML, or JSON).'
         ),
         progress: z
             .number()

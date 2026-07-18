@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ventilation-csv`, and `hourly-loads-csv`.
 - The public export schema includes export identity, name, generation status,
   creation date, optional signed download URL, output file type, and progress.
+- Export file types include XML and JSON, and export definitions preserve
+  optional P.E. and preliminary cover-stamp settings.
 
 ### Notes
 

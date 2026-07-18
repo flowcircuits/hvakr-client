@@ -6,6 +6,8 @@ const EXPORT_FILE_TYPES = {
     CSV: 'CSV',
     DOCX: 'DOCX',
     ZIP: 'ZIP',
+    XML: 'XML',
+    JSON: 'JSON',
 } as const
 
 export const ExportFileTypeSchema_v0 = z.enum(Object.values(EXPORT_FILE_TYPES))
@@ -18,6 +20,12 @@ export const ExportDefinitionOptionSchema_v0 = z.object({
     options: z.record(z.string(), z.string()).optional(),
 })
 
+export const CoverStampsSchema_v0 = z.object({
+    peStampUrl: z.string().optional(),
+    preliminary: z.boolean().optional(),
+})
+export type CoverStamps_v0 = z.infer<typeof CoverStampsSchema_v0>
+
 export const ExportDefinitionSchema_v0 = z.object({
     fileType: ExportFileTypeSchema_v0,
     id: z.string(),
@@ -25,6 +33,7 @@ export const ExportDefinitionSchema_v0 = z.object({
     options: z.record(z.string(), ExportDefinitionOptionSchema_v0).optional(),
     /** Actual generated file type for the export definition */
     outputFileType: ExportFileTypeSchema_v0.optional(),
+    stamps: CoverStampsSchema_v0.optional(),
 })
 
 export const ExportDataSchema_v0 = z.object({

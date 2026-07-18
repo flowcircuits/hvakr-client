@@ -1,6 +1,11 @@
 import { assert, describe, expect, it } from 'vitest'
 import { getJSONSchema } from '../getJSONSchema'
-import { EquipmentDataSchema_v0, SpaceDataSchema_v0 } from '../database/project'
+import {
+    EquipmentDataSchema_v0,
+    ExportDefinitionSchema_v0,
+    ExportFileTypeSchema_v0,
+    SpaceDataSchema_v0,
+} from '../database/project'
 import {
     APIProjectCalculationsSchema_v0,
     CalculatorFlagsSchema_v0,
@@ -212,6 +217,33 @@ describe('export schema', () => {
         })
         expect(parsed.status).toBe('completed')
         expect(parsed.progress).toBe(1)
+    })
+
+    it('accepts every canonical export file type', () => {
+        expect(
+            ['PDF', 'CSV', 'DOCX', 'ZIP', 'XML', 'JSON'].every(
+                (fileType) =>
+                    ExportFileTypeSchema_v0.safeParse(fileType).success
+            )
+        ).toBe(true)
+    })
+
+    it('preserves cover stamps in export definitions', () => {
+        const parsed = ExportDefinitionSchema_v0.parse({
+            fileType: 'PDF',
+            id: 'LOADS_REPORT',
+            name: 'Loads Report',
+            outputFileType: 'PDF',
+            stamps: {
+                peStampUrl: 'https://example.test/pe-stamp.png',
+                preliminary: true,
+            },
+        })
+
+        expect(parsed.stamps).toEqual({
+            peStampUrl: 'https://example.test/pe-stamp.png',
+            preliminary: true,
+        })
     })
 
     it('accepts every public export definition id', () => {

@@ -116,11 +116,20 @@ export function constructWebhookEvent({
         throw new HVAKRWebhookError('Webhook payload is not valid JSON')
     }
 
+    if (!parsed || typeof parsed !== 'object') {
+        throw new HVAKRWebhookError(
+            'Webhook payload is missing required fields'
+        )
+    }
+
+    const candidate = parsed as {
+        data?: unknown
+        event?: unknown
+        timestamp?: unknown
+    }
     if (
-        !parsed ||
-        typeof parsed !== 'object' ||
-        typeof (parsed as { event?: unknown }).event !== 'string' ||
-        typeof (parsed as { timestamp?: unknown }).timestamp !== 'string' ||
+        typeof candidate.event !== 'string' ||
+        typeof candidate.timestamp !== 'string' ||
         !('data' in parsed)
     ) {
         throw new HVAKRWebhookError(
@@ -128,11 +137,7 @@ export function constructWebhookEvent({
         )
     }
 
-    if (
-        !WebhookTimestampSchema_v0.safeParse(
-            (parsed as { timestamp: string }).timestamp
-        ).success
-    ) {
+    if (!WebhookTimestampSchema_v0.safeParse(candidate.timestamp).success) {
         throw new HVAKRWebhookError('Webhook timestamp is not a valid date')
     }
 

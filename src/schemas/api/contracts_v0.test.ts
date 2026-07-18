@@ -1,6 +1,11 @@
 import { assert, describe, expect, it } from 'vitest'
 import { getJSONSchema } from '../getJSONSchema'
-import { EquipmentDataSchema_v0, SpaceDataSchema_v0 } from '../database/project'
+import {
+    EquipmentDataSchema_v0,
+    ExportDefinitionSchema_v0,
+    ExportFileTypeSchema_v0,
+    SpaceDataSchema_v0,
+} from '../database/project'
 import {
     APIProjectCalculationsSchema_v0,
     CalculatorFlagsSchema_v0,
@@ -10,6 +15,10 @@ import {
 } from '../outputs'
 import { APIErrorSchema_v0 } from './error_v0'
 import {
+    APIExportDefinitionIdSchema_v0,
+    APIExportSchema_v0,
+} from './exports_v0'
+import {
     APIAutoGroupResultSchema_v0,
     APICheckReportSchema_v0,
     APIJobCreateSchema_v0,
@@ -17,7 +26,6 @@ import {
     APISheetUploadJobResultSchema_v0,
 } from './jobs_v0'
 import { APIProductSchema_v0 } from './products_v0'
-import { APIReportSchema_v0 } from './reports_v0'
 
 const airflows = {
     exhaust: 10,
@@ -196,33 +204,76 @@ describe('calculations contract', () => {
     })
 })
 
-describe('report schema', () => {
-    it('parses a completed report with a download URL', () => {
-        const parsed = APIReportSchema_v0.parse({
-            id: 'rep_1',
-            name: 'Loads Report',
+describe('export schema', () => {
+    it('parses a completed export with a download URL and progress', () => {
+        const parsed = APIExportSchema_v0.parse({
+            id: 'exp_1',
+            name: 'Loads Export',
             status: 'completed',
-            downloadUrl: 'https://example.test/report.pdf',
+            downloadUrl: 'https://example.test/export.pdf',
             date: 1,
             outputFileType: 'PDF',
+            progress: 1,
         })
         expect(parsed.status).toBe('completed')
+        expect(parsed.progress).toBe(1)
+    })
+
+    it('accepts every canonical export file type', () => {
+        expect(
+            ['PDF', 'CSV', 'DOCX', 'ZIP', 'XML', 'JSON'].every(
+                (fileType) =>
+                    ExportFileTypeSchema_v0.safeParse(fileType).success
+            )
+        ).toBe(true)
+    })
+
+    it('preserves cover stamps in export definitions', () => {
+        const parsed = ExportDefinitionSchema_v0.parse({
+            fileType: 'PDF',
+            id: 'LOADS_REPORT',
+            name: 'Loads Report',
+            outputFileType: 'PDF',
+            stamps: {
+                peStampUrl: 'https://example.test/pe-stamp.png',
+                preliminary: true,
+            },
+        })
+
+        expect(parsed.stamps).toEqual({
+            peStampUrl: 'https://example.test/pe-stamp.png',
+            preliminary: true,
+        })
+    })
+
+    it('accepts every public export definition id', () => {
+        expect(
+            [
+                'load-calculation',
+                'basis-of-design',
+                'ventilation-csv',
+                'hourly-loads-csv',
+            ].every(
+                (definition) =>
+                    APIExportDefinitionIdSchema_v0.safeParse(definition).success
+            )
+        ).toBe(true)
     })
 })
 
 describe('job schemas', () => {
-    it('requires a job type on create and a known report template', () => {
+    it('requires a job type on create and a known export definition', () => {
         expect(APIJobCreateSchema_v0.safeParse({}).success).toBe(false)
         expect(
             APIJobCreateSchema_v0.safeParse({
-                type: 'report',
-                template: 'nope',
+                type: 'export',
+                definition: 'nope',
             }).success
         ).toBe(false)
         expect(
             APIJobCreateSchema_v0.safeParse({
-                type: 'report',
-                template: 'load-calculation',
+                type: 'export',
+                definition: 'load-calculation',
             }).success
         ).toBe(true)
         expect(
@@ -254,7 +305,7 @@ describe('job schemas', () => {
                 },
             ],
         })
-        expect(parsed.tiers[0].findings[0].severity).toBe('error')
+        expect(parsed.tiers[0]!.findings[0]!.severity).toBe('error')
     })
 
     it('parses a completed sync job with a result', () => {
@@ -277,28 +328,28 @@ describe('job schemas', () => {
         expect(parsed.error).toBe('boom')
     })
 
-    it('parses a report job bridged to its report doc', () => {
+    it('parses an export job bridged to its export doc', () => {
         const parsed = APIJobSchema_v0.parse({
             jobId: 'job_3',
-            type: 'report',
+            type: 'export',
             status: 'completed',
             result: {
-                reportId: 'rep_1',
-                report: {
-                    id: 'rep_1',
-                    name: 'Loads Report',
+                exportId: 'exp_1',
+                export: {
+                    id: 'exp_1',
+                    name: 'Loads Export',
                     status: 'completed',
-                    downloadUrl: 'https://example.test/report.pdf',
+                    downloadUrl: 'https://example.test/export.pdf',
                     date: 1,
                     outputFileType: 'PDF',
                 },
             },
         })
         const { result } = parsed
-        assert(result && 'reportId' in result)
-        expect(result.reportId).toBe('rep_1')
-        expect(result.report?.downloadUrl).toBe(
-            'https://example.test/report.pdf'
+        assert(result && 'exportId' in result)
+        expect(result.exportId).toBe('exp_1')
+        expect(result.export?.downloadUrl).toBe(
+            'https://example.test/export.pdf'
         )
     })
 

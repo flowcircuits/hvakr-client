@@ -195,10 +195,10 @@ describe('Project v0 schemas', () => {
         type WritableSubcollections = z.input<
             typeof WritableProjectSubcollectionsSchema_v0
         >
-        const includesReports: 'reports' extends keyof WritableSubcollections
+        const includesExports: 'exports' extends keyof WritableSubcollections
             ? true
             : false = false
-        expect(includesReports).toBe(false)
+        expect(includesExports).toBe(false)
 
         expect(
             ExpandedProjectPatchSchema_v0.safeParse({ latitude: 40 }).success
@@ -230,7 +230,7 @@ describe('Project v0 schemas', () => {
         ).toBe(false)
         expect(
             ExpandedProjectPatchSchema_v0.safeParse({
-                reports: { report: { name: 'Loads' } },
+                exports: { export: { name: 'Loads' } },
             }).success
         ).toBe(false)
         expect(

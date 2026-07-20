@@ -483,14 +483,24 @@ describeApi('HVAKR Client', () => {
     }, 40000)
 
     it('should get HVAKR Project', async () => {
-        const fetchedProjectData = await hvakrClient.getProject(id!, true)
-        expect(fetchedProjectData).toBeTruthy()
-        expect(fetchedProjectData.latitude).toBeTruthy()
-        expect(fetchedProjectData.longitude).toBeTruthy()
+        const expandedProject = await hvakrClient.getProject(id!, true)
+        expect(expandedProject).toBeTruthy()
+        expect(expandedProject.latitude).toBeTruthy()
+        expect(expandedProject.longitude).toBeTruthy()
         expect(
-            fetchedProjectData.weatherSpec?.nearestWeatherStationIds?.length
+            expandedProject.weatherSpec?.nearestWeatherStationIds?.length
         ).toBe(5)
-        expect(fetchedProjectData.weatherSpec?.selectedStationId).toBeTruthy()
+        expect(expandedProject.weatherSpec?.selectedStationId).toBeTruthy()
+
+        const project = await hvakrClient.getProject(id!, false)
+        for (const response of [project, expandedProject]) {
+            const members = Object.entries(response.users)
+            expect(members.length).toBeGreaterThan(0)
+            for (const [userId, member] of members) {
+                expect(userId).not.toBe(member.email)
+                expect(member.email).toBe(member.email.toLowerCase())
+            }
+        }
     }, 10000)
 
     it('should list catalog products', async () => {

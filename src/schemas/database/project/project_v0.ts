@@ -264,16 +264,20 @@ export const ProjectUserRoles_v0 = {
 export const ProjectUserRoleSchema_v0 = z.union(
     Object.values(ProjectUserRoles_v0).map((role) => z.literal(role))
 )
+export type ProjectUserRole_v0 = z.infer<typeof ProjectUserRoleSchema_v0>
 
 export const ProjectUserDataSchema_v0 = z.object({
     active: z.boolean().optional(),
+    email: z
+        .string()
+        .describe("User's lowercase email, denormalized for display."),
     firstName: z.string().optional(),
     lastActive: z.number().optional(),
     lastName: z.string().optional(),
-    pendingSignUp: z.boolean().optional(),
     profilePicture: z.string().nullish(),
     role: ProjectUserRoleSchema_v0,
 })
+export type ProjectUserData_v0 = z.infer<typeof ProjectUserDataSchema_v0>
 
 export const ProjectTypes_v0 = {
     residential: 'residential',
@@ -394,7 +398,12 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     takeoffModel: TakeoffModelSchema_v0.optional(),
     timestamp: disableUserWrite(z.number().optional()),
     unitSystem: DisplayUnitSystemIdSchema.optional(),
-    users: disableUserWrite(z.record(z.string(), ProjectUserDataSchema_v0)),
+    /** Project members keyed by Firebase UID. Read `entry.email` for display. */
+    users: disableUserWrite(
+        z
+            .record(z.string(), ProjectUserDataSchema_v0)
+            .describe('Project members keyed by Firebase UID.')
+    ),
     utilityRates: UtilityRatesSchema_v0.optional(),
     ventilationStandard: VentilationStandardSchema_v0.optional(),
     weatherSpec: WeatherSpecSchema_v0.optional(),

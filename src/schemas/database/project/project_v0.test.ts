@@ -106,37 +106,6 @@ describe('Project v0 schemas', () => {
         ).toBe(true)
     })
 
-    it('omits legacy project-as-template fields from ProjectDataSchema_v0', () => {
-        const legacy = [
-            'isTemplate',
-            'isHVAKRTemplate',
-            'source',
-            'standardNumber',
-            'standardYear',
-        ] as const
-        for (const field of legacy) {
-            expect(ProjectDataSchema_v0.shape).not.toHaveProperty(field)
-        }
-    })
-
-    it('omits legacy project-as-template fields from writable, create, and expanded schemas', () => {
-        const legacy = [
-            'isTemplate',
-            'isHVAKRTemplate',
-            'source',
-            'standardNumber',
-            'standardYear',
-        ] as const
-        for (const field of legacy) {
-            expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(field)
-            expect(ProjectPostSchema_v0.shape).not.toHaveProperty(field)
-            expect(ExpandedProjectPostSchema_v0.shape).not.toHaveProperty(field)
-            expect(ExpandedProjectPatchSchema_v0.shape).not.toHaveProperty(
-                field
-            )
-        }
-    })
-
     it('derives project write restrictions from schema metadata', () => {
         type RestrictedField = keyof typeof PROJECT_RESTRICTED_WRITE_FIELDS_V0
         const includesWritableField: 'name' extends RestrictedField

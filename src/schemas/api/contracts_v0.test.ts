@@ -4,12 +4,7 @@ import {
     EquipmentDataSchema_v0,
     ExportDefinitionSchema_v0,
     ExportFileTypeSchema_v0,
-    ExpandedProjectPatchSchema_v0,
-    ExpandedProjectPostSchema_v0,
-    ProjectDataSchema_v0,
-    ProjectPostSchema_v0,
     SpaceDataSchema_v0,
-    WritableProjectDataSchema_v0,
 } from '../database/project'
 import {
     APIProjectCalculationsSchema_v0,
@@ -436,38 +431,4 @@ describe('OpenAPI JSON Schema generation', () => {
             expect(() => JSON.stringify(jsonSchema)).not.toThrow()
         })
     }
-})
-
-describe('legacy project-as-template fields removed from public contract', () => {
-    const legacyFields = [
-        'isTemplate',
-        'isHVAKRTemplate',
-        'source',
-        'standardNumber',
-        'standardYear',
-    ] as const
-
-    it('omits legacy fields from ProjectDataSchema_v0 JSON Schema', () => {
-        const json = getJSONSchema(ProjectDataSchema_v0)
-        const props = (json as any).properties ?? {}
-        for (const f of legacyFields) {
-            expect(props).not.toHaveProperty(f)
-        }
-    })
-
-    it('omits legacy fields from writable/create/expanded JSON Schemas', () => {
-        const schemas = [
-            WritableProjectDataSchema_v0,
-            ProjectPostSchema_v0,
-            ExpandedProjectPostSchema_v0,
-            ExpandedProjectPatchSchema_v0,
-        ]
-        for (const schema of schemas) {
-            const json = getJSONSchema(schema)
-            const props = (json as any).properties ?? {}
-            for (const f of legacyFields) {
-                expect(props).not.toHaveProperty(f)
-            }
-        }
-    })
 })

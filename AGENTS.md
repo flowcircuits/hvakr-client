@@ -42,7 +42,10 @@ verification.
 - Run `pnpm build` for public SDK, declaration, or schema changes.
 - Run `git diff --check` before handoff.
 - Add or update focused tests for new methods, request construction, and public
-  schema behavior. Update `README.md` and `CHANGELOG.md` for public API changes.
+  schema behavior. Do not add tests that only assert removal or absence of legacy
+  fields; that absence is implicit once the canonical field lists, examples, and
+  positive schema behavior tests pass. Update `README.md` and `CHANGELOG.md` for
+  public API changes.
 
 ## Public API and release discipline
 

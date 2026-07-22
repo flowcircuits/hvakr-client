@@ -176,6 +176,15 @@ export class MockProdService {
             id,
             name: data.name ?? 'Mock Project',
             spaces: data.spaces,
+            users: {
+                'mock-user-1': {
+                    active: true,
+                    email: 'mock@hvakr.test',
+                    firstName: 'Mock',
+                    lastName: 'User',
+                    role: 10,
+                },
+            },
         })
         this.projects.set(id, project)
         return project

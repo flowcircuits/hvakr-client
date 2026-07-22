@@ -5,9 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-> **Pre-1.0 / unstable.** While this project is on `0.x`, breaking changes ship in
-> **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
-> bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
+Breaking changes are listed under a **Breaking Changes** heading. See
+[Versioning & stability](./README.md#versioning--stability).
+
+## [1.0.0] - Unreleased
+
+### Breaking Changes
+
+- `ProjectData_v0.users` and `ExpandedProject_v0.users` are now keyed by
+  Firebase UID instead of email address. Each `ProjectUserData_v0` entry now
+  requires a lowercase, denormalized `email` field; the legacy
+  `pendingSignUp` entry field is removed. The users map remains read-only and
+  project create/patch types are unchanged.
+
+### Migration
+
+- Replace email-key lookups such as `project.users[email]` with UID-key lookups
+  when the Firebase UID is known. To find or display members by email, iterate
+  `Object.entries(project.users)` and read each entry's `email` field.
+- This release is staged for the coordinated API migration cutover and must not
+  be published before the v0 API serves UID-keyed membership maps.
 
 ## [0.9.0] - 2026-07-21
 

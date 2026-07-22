@@ -12,6 +12,7 @@ import {
     PROJECT_RESTRICTED_WRITE_FIELDS_V0,
     ProjectDataSchema_v0,
     ProjectPostSchema_v0,
+    ProjectUserDataSchema_v0,
     WritableProjectDataSchema_v0,
 } from './project_v0'
 
@@ -104,6 +105,30 @@ describe('Project v0 schemas', () => {
                 pendingPayment: false,
             }).success
         ).toBe(true)
+    })
+
+    it('models project users as UID-keyed entries with required emails', () => {
+        const uid = 'firebase-uid-7RKz3m'
+        const users = {
+            [uid]: {
+                active: true,
+                email: 'engineer@example.com',
+                firstName: 'Ada',
+                role: 10,
+            },
+        }
+
+        const parsed = ProjectDataSchema_v0.shape.users.parse(users)
+        expect(parsed[uid]).toEqual(users[uid])
+        expect(
+            Object.entries(parsed).map(([userId, entry]) => ({
+                userId,
+                email: entry.email,
+            }))
+        ).toEqual([{ userId: uid, email: 'engineer@example.com' }])
+        expect(ProjectUserDataSchema_v0.safeParse({ role: 10 }).success).toBe(
+            false
+        )
     })
 
     it('derives project write restrictions from schema metadata', () => {

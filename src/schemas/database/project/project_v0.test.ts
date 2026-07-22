@@ -45,9 +45,7 @@ describe('Project v0 schemas', () => {
             'isDeleted',
             'isExample',
             'isHealthcare',
-            'isHVAKRTemplate',
             'isOpen',
-            'isTemplate',
             'lastOpenTime',
             'latitude',
             'levels',
@@ -68,10 +66,7 @@ describe('Project v0 schemas', () => {
             'revisions',
             'sheetMarkers',
             'slackChannelId',
-            'source',
             'spaceTypeAutoAssignment',
-            'standardNumber',
-            'standardYear',
             'standards',
             'status',
             'suggestedSpaces',
@@ -111,24 +106,35 @@ describe('Project v0 schemas', () => {
         ).toBe(true)
     })
 
-    it('accepts both ASHRAE and NCC template sources', () => {
-        expect(
-            ProjectDataSchema_v0.safeParse({
-                equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
-                name: 'ASHRAE template',
-                users: {},
-                source: 'ASHRAE',
-            }).success
-        ).toBe(true)
+    it('omits legacy project-as-template fields from ProjectDataSchema_v0', () => {
+        const legacy = [
+            'isTemplate',
+            'isHVAKRTemplate',
+            'source',
+            'standardNumber',
+            'standardYear',
+        ] as const
+        for (const field of legacy) {
+            expect(ProjectDataSchema_v0.shape).not.toHaveProperty(field)
+        }
+    })
 
-        expect(
-            ProjectDataSchema_v0.safeParse({
-                equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
-                name: 'NCC template',
-                users: {},
-                source: 'NCC',
-            }).success
-        ).toBe(true)
+    it('omits legacy project-as-template fields from writable, create, and expanded schemas', () => {
+        const legacy = [
+            'isTemplate',
+            'isHVAKRTemplate',
+            'source',
+            'standardNumber',
+            'standardYear',
+        ] as const
+        for (const field of legacy) {
+            expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(field)
+            expect(ProjectPostSchema_v0.shape).not.toHaveProperty(field)
+            expect(ExpandedProjectPostSchema_v0.shape).not.toHaveProperty(field)
+            expect(ExpandedProjectPatchSchema_v0.shape).not.toHaveProperty(
+                field
+            )
+        }
     })
 
     it('derives project write restrictions from schema metadata', () => {

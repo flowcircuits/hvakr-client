@@ -91,8 +91,6 @@ export const SpaceTypeAutoAssignmentSourcesSchema_v0 = z.object({
     myTemplates: z.boolean().optional(),
 })
 
-export const TemplateSourceSchema_v0 = z.enum(['ASHRAE', 'NCC'])
-
 export const TakeoffModelSchema_v0 = z.enum(['V1', 'V2'])
 
 /**
@@ -359,9 +357,7 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     isDeleted: disableUserWrite(z.boolean().optional()),
     isExample: disableUserWrite(z.boolean().optional()),
     isHealthcare: z.boolean().optional(),
-    isHVAKRTemplate: disableUserWrite(z.boolean().optional()),
     isOpen: disableUserWrite(z.boolean().optional()),
-    isTemplate: z.boolean().optional(),
     lastOpenTime: disableUserWrite(z.number().optional()),
     latitude: disableUserWrite(z.number().optional()),
     levels: z.record(z.coerce.number(), LevelDataSchema_v0).optional(),
@@ -389,10 +385,7 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     ),
     sheetMarkers: z.record(z.string(), PointSchema).optional(),
     slackChannelId: disableUserWrite(z.string().optional()),
-    source: TemplateSourceSchema_v0.optional(),
     spaceTypeAutoAssignment: SpaceTypeAutoAssignmentSourcesSchema_v0.optional(),
-    standardNumber: z.string().optional(),
-    standardYear: z.number().int().optional(),
     standards: z.record(z.string(), StandardSchema_v0).optional(),
     status: ProjectStatusSchema_v0.optional(),
     suggestedSpaces: disableUserWrite(

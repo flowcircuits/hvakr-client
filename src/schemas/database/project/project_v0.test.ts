@@ -45,9 +45,7 @@ describe('Project v0 schemas', () => {
             'isDeleted',
             'isExample',
             'isHealthcare',
-            'isHVAKRTemplate',
             'isOpen',
-            'isTemplate',
             'lastOpenTime',
             'latitude',
             'levels',
@@ -68,10 +66,7 @@ describe('Project v0 schemas', () => {
             'revisions',
             'sheetMarkers',
             'slackChannelId',
-            'source',
             'spaceTypeAutoAssignment',
-            'standardNumber',
-            'standardYear',
             'standards',
             'status',
             'suggestedSpaces',
@@ -107,26 +102,6 @@ describe('Project v0 schemas', () => {
                     imported: true,
                 },
                 pendingPayment: false,
-            }).success
-        ).toBe(true)
-    })
-
-    it('accepts both ASHRAE and NCC template sources', () => {
-        expect(
-            ProjectDataSchema_v0.safeParse({
-                equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
-                name: 'ASHRAE template',
-                users: {},
-                source: 'ASHRAE',
-            }).success
-        ).toBe(true)
-
-        expect(
-            ProjectDataSchema_v0.safeParse({
-                equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
-                name: 'NCC template',
-                users: {},
-                source: 'NCC',
             }).success
         ).toBe(true)
     })

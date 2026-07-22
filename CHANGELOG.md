@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.9.0] - 2026-07-21
+
+### Breaking Changes
+
+- Removed legacy project-as-template fields from the public contract: `isTemplate`,
+  `isHVAKRTemplate`, `source`, `standardNumber`, and `standardYear` are no longer
+  present on `ProjectDataSchema_v0`, `WritableProjectDataSchema_v0`,
+  `ProjectPostSchema_v0`, `ExpandedProjectPostSchema_v0`,
+  `ExpandedProjectPatchSchema_v0`, or their generated JSON Schemas/declarations.
+- `TemplateSourceSchema_v0` and its inferred `TemplateSource_v0` export have been
+  removed (no longer referenced after `source` removal).
+- No template collection endpoints, `listTemplates`, `getTemplate`, or new template
+  functionality is added. `climateZone` and unrelated template references (e.g.
+  `templateProjectIds`, space-type auto-assignment template flags, report/export
+  definitions) remain unchanged.
+
 ## [0.8.0] - 2026-07-16
 
 ### Breaking Changes

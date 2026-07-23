@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { ProjectSubcollectionKey_v0 } from '../../../HVAKRClient'
 import {
     ComponentSchema_v0,
     ComponentTypes_v0,
@@ -10,11 +11,16 @@ import {
     SystemDataSchema_v0,
     ZoneDataSchema_v0,
 } from '.'
-import { ExpandedProjectPatchSchema_v0 } from './expandedProject_v0'
+import {
+    ExpandedProjectPatchSchema_v0,
+    ExpandedProjectPostSchema_v0,
+    PROJECT_SUBCOLLECTION_KEYS_V0,
+} from './expandedProject_v0'
 
 describe('canonical v0 equipment schemas', () => {
     it('parses mode-keyed component configurations', () => {
         const parsed = EquipmentDataSchema_v0.parse({
+            projectScope: { type: 'system', id: 'ahu-1' },
             components: [
                 { id: 'oa', type: ComponentTypes_v0.OUTSIDE_AIR_INTAKE },
                 { id: 'cc', type: ComponentTypes_v0.COOLING_COIL },
@@ -68,15 +74,51 @@ describe('canonical v0 equipment schemas', () => {
         ).toBe(false)
     })
 
-    it('uses canonical system and zone equipmentConfig fields only', () => {
-        expect(SystemDataSchema_v0.shape).toHaveProperty('equipmentConfig')
-        expect(SystemDataSchema_v0.shape).not.toHaveProperty(
-            'centralUnitConfiguration'
-        )
-        expect(ZoneDataSchema_v0.shape).toHaveProperty('equipmentConfig')
-        expect(ZoneDataSchema_v0.shape).not.toHaveProperty(
-            'terminalUnitConfiguration'
-        )
+    it('scopes equipment to a system or zone via projectScope', () => {
+        const system = EquipmentDataSchema_v0.parse({
+            projectScope: { type: 'system', id: 'ahu-1' },
+            dimensionData: { length: 60, width: 30 },
+            energyConfiguration: {
+                schedule: { warmupHours: 2, warmupMultiplier: 1.5 },
+                efficiency: { heatingType: 'gasFurnace', coolingSeer: 14 },
+            },
+        })
+        expect(system.projectScope).toEqual({ type: 'system', id: 'ahu-1' })
+        expect(system.dimensionData).toEqual({ length: 60, width: 30 })
+
+        const zone = EquipmentDataSchema_v0.parse({
+            projectScope: { type: 'zone', id: 'vav-1' },
+            dimensionData: { inletSize: '8' },
+        })
+        expect(zone.projectScope).toEqual({ type: 'zone', id: 'vav-1' })
+        expect(zone.dimensionData?.inletSize).toBe('8')
+    })
+
+    it('requires projectScope on every equipment document', () => {
+        expect(
+            EquipmentDataSchema_v0.safeParse({
+                dimensionData: { inletSize: '8' },
+            }).success
+        ).toBe(false)
+        expect(
+            EquipmentDataSchema_v0.safeParse({
+                projectScope: { type: 'floor', id: 'level-1' },
+            }).success
+        ).toBe(false)
+    })
+
+    it('keeps a single canonical equipment shape on systems and zones', () => {
+        expect(SystemDataSchema_v0.shape).not.toHaveProperty('equipmentConfig')
+        expect(ZoneDataSchema_v0.shape).not.toHaveProperty('equipmentConfig')
+        expect(SystemDataSchema_v0.shape).toHaveProperty('name')
+        expect(ZoneDataSchema_v0.shape).toHaveProperty('systemId')
+    })
+
+    it('exposes equipment as a requestable subcollection', () => {
+        expect(PROJECT_SUBCOLLECTION_KEYS_V0).toContain('equipment')
+
+        const expand: ProjectSubcollectionKey_v0[] = ['equipment', 'systems']
+        expect(expand).toContain('equipment')
     })
 
     it('uses mode/load-condition scoped space airflow inputs only', () => {
@@ -105,29 +147,79 @@ describe('canonical v0 equipment schemas', () => {
         })
     })
 
-    it('supports deep partial equipment config patches', () => {
+    it('accepts a top-level equipment record on create', () => {
         expect(
-            ExpandedProjectPatchSchema_v0.parse({
-                systems: {
-                    'ahu-1': {
-                        equipmentConfig: {
-                            componentConfigsByMode: {
-                                cooling_mode: { cc: { enabled: false } },
-                            },
-                        },
+            ExpandedProjectPostSchema_v0.safeParse({
+                systems: { 'system-1': { name: 'AHU-1', configured: true } },
+                zones: {
+                    'zone-1': {
+                        name: 'VAV-1',
+                        configured: true,
+                        systemId: 'system-1',
                     },
                 },
-            })
-        ).toMatchObject({
-            systems: {
-                'ahu-1': {
-                    equipmentConfig: {
+                equipment: {
+                    'equipment-ahu-1': {
+                        projectScope: { type: 'system', id: 'system-1' },
+                        dimensionData: { length: 60, width: 30 },
+                        energyConfiguration: {
+                            efficiency: { coolingSeer: 14 },
+                        },
+                    },
+                    'equipment-vav-1': {
+                        projectScope: { type: 'zone', id: 'zone-1' },
+                        dimensionData: { inletSize: '8' },
+                    },
+                },
+            }).success
+        ).toBe(true)
+    })
+
+    it('supports granular equipment patches and whole-document deletion', () => {
+        expect(
+            ExpandedProjectPatchSchema_v0.parse({
+                equipment: {
+                    'equipment-ahu-1': {
                         componentConfigsByMode: {
                             cooling_mode: { cc: { enabled: false } },
                         },
+                        energyConfiguration: { schedule: null },
                     },
+                    'equipment-vav-1': null,
                 },
+            })
+        ).toMatchObject({
+            equipment: {
+                'equipment-ahu-1': {
+                    componentConfigsByMode: {
+                        cooling_mode: { cc: { enabled: false } },
+                    },
+                    energyConfiguration: { schedule: null },
+                },
+                'equipment-vav-1': null,
             },
         })
+    })
+
+    it('rejects legacy nested equipmentConfig on create and patch', () => {
+        expect(
+            ExpandedProjectPostSchema_v0.safeParse({
+                systems: {
+                    'system-1': {
+                        name: 'AHU-1',
+                        equipmentConfig: { components: [] },
+                    },
+                },
+            }).success
+        ).toBe(false)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                zones: {
+                    'zone-1': {
+                        equipmentConfig: { componentConfigsByMode: {} },
+                    },
+                },
+            }).success
+        ).toBe(false)
     })
 })

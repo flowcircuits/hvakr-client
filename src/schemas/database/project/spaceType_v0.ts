@@ -1,10 +1,7 @@
 import { z } from 'zod'
+import { UsageScheduleSchema_v0 } from '../../misc'
 import { FlowTypeSchema_v0 } from '../../outputs'
 import { disableUserWrite } from '../../utility'
-
-export const UsageScheduleSchema_v0 = z
-    .array(z.number())
-    .length(24, { error: 'Usage schedule must be an array of 24 numbers' })
 
 export const RegisterSpecConstraintsSchema_v0 = z.object({
     maxCFM: z.number().optional(),

@@ -225,9 +225,12 @@ Like `listProjects`, `listProducts` is paginated — it returns
 
 ### Equipment modes and calculations
 
-Since `0.6.0`, projects use a shared `equipmentModes` registry. System and zone
-equipment configuration is stored under `equipmentConfig`, with an ordered
-component list and per-mode component configuration:
+Since `0.6.0`, projects use a shared `equipmentModes` registry. As of `0.10.0`,
+central and terminal equipment live in a top-level `equipment` subcollection
+rather than under `systems[id].equipmentConfig` / `zones[id].equipmentConfig`.
+Each equipment document carries a required `projectScope` binding it to the
+system or zone it configures; the equipment document id is independent of the
+referenced system/zone id:
 
 ```ts
 import {
@@ -236,31 +239,53 @@ import {
     OutsideAirMethods_v0,
 } from '@hvakr/client'
 
-const system = {
-    equipmentConfig: {
-        components: [{ id: 'oa', type: ComponentTypes_v0.OUTSIDE_AIR_INTAKE }],
-        componentConfigsByMode: {
-            [DEFAULT_COOLING_MODE_ID_v0]: {
-                oa: {
-                    enabled: true,
-                    configuration: {
-                        componentType: ComponentTypes_v0.OUTSIDE_AIR_INTAKE,
-                        method: OutsideAirMethods_v0.SUM_OF_SPACES,
+const project = {
+    systems: { 'system-1': { name: 'AHU-1', configured: true } },
+    zones: {
+        'zone-1': { name: 'VAV-1', configured: true, systemId: 'system-1' },
+    },
+    equipment: {
+        'equipment-ahu-1': {
+            projectScope: { type: 'system', id: 'system-1' },
+            components: [
+                { id: 'oa', type: ComponentTypes_v0.OUTSIDE_AIR_INTAKE },
+            ],
+            componentConfigsByMode: {
+                [DEFAULT_COOLING_MODE_ID_v0]: {
+                    oa: {
+                        enabled: true,
+                        configuration: {
+                            componentType: ComponentTypes_v0.OUTSIDE_AIR_INTAKE,
+                            method: OutsideAirMethods_v0.SUM_OF_SPACES,
+                        },
                     },
                 },
             },
+            // Central dimensions (length/width) and terminal inlet size share
+            // one `dimensionData` shape; energy config is optional.
+            dimensionData: { length: 60, width: 30 },
+            energyConfiguration: { efficiency: { coolingSeer: 14 } },
+        },
+        'equipment-vav-1': {
+            projectScope: { type: 'zone', id: 'zone-1' },
+            dimensionData: { inletSize: '8' },
         },
     },
 }
 ```
+
+Patch semantics apply to equipment documents: send a partial document to update
+fields, set a nested optional field to `null` to clear it, and set
+`equipment[id] = null` to delete an entire document. Requesting `equipment`
+through `getProject(id, ['equipment'])` expands the subcollection.
 
 Space design overrides live under `designAirflowsByMode`; ventilation and
 infiltration requirements live under `airflowRequirementsByLoadCondition`.
 Calculation sections remain selectable with `include`, while airflow,
 checksum, and equipment results are keyed by the project's mode ids.
 
-See the [`0.6.0` migration table](./CHANGELOG.md#060---2026-07-13) for the
-complete field mapping. The API path remains `/v0`.
+See the [`0.10.0` migration notes](./CHANGELOG.md#0100---2026-07-23) for the
+`equipmentConfig` → `equipment` mapping. The API path remains `/v0`.
 
 ### Account
 

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { LoadConditionSchema_v0 } from '../../misc'
+import { LoadConditionSchema_v0, UsageScheduleSchema_v0 } from '../../misc'
 
 export const ComponentTypes_v0 = {
     OUTSIDE_AIR_INTAKE: 'OUTSIDE_AIR_INTAKE',
@@ -215,7 +215,87 @@ export const EquipmentComponentSchema_v0 = z.object({
 })
 export type EquipmentComponent_v0 = z.infer<typeof EquipmentComponentSchema_v0>
 
+/**
+ * The project entity an equipment document configures. The equipment document
+ * id is independent of the referenced system/zone id.
+ */
+export const EquipmentProjectScopeTypes_v0 = ['system', 'zone'] as const
+export const EquipmentProjectScopeTypeSchema_v0 = z.enum(
+    EquipmentProjectScopeTypes_v0
+)
+export type EquipmentProjectScopeType_v0 = z.infer<
+    typeof EquipmentProjectScopeTypeSchema_v0
+>
+
+export const EquipmentProjectScopeSchema_v0 = z.object({
+    type: EquipmentProjectScopeTypeSchema_v0,
+    id: z.string(),
+})
+export type EquipmentProjectScope_v0 = z.infer<
+    typeof EquipmentProjectScopeSchema_v0
+>
+
+export const TERMINAL_UNIT_INLET_SIZES_v0 = [
+    '6',
+    '8',
+    '10',
+    '12',
+    '14',
+    '16',
+    '24x16',
+] as const satisfies Readonly<string[]>
+export const TerminalUnitInletSizeSchema_v0 = z.enum(
+    TERMINAL_UNIT_INLET_SIZES_v0
+)
+export type TerminalUnitInletSize_v0 = z.infer<
+    typeof TerminalUnitInletSizeSchema_v0
+>
+
+/** Consolidated central (length/width) and terminal (inletSize) dimensions. */
+export const EquipmentDimensionDataSchema_v0 = z.object({
+    inletSize: TerminalUnitInletSizeSchema_v0.optional(),
+    length: z.number().optional(),
+    width: z.number().optional(),
+})
+export type EquipmentDimensionData_v0 = z.infer<
+    typeof EquipmentDimensionDataSchema_v0
+>
+
+export const HeatingEquipmentTypes_v0 = ['heatPump', 'gasFurnace'] as const
+export type HeatingEquipmentType_v0 = (typeof HeatingEquipmentTypes_v0)[number]
+
+export const EnergyScheduleSchema_v0 = z.object({
+    occupiedHours: UsageScheduleSchema_v0.optional(),
+    warmupHours: z.number().optional(),
+    warmupMultiplier: z.number().optional(),
+})
+export type EnergySchedule_v0 = z.infer<typeof EnergyScheduleSchema_v0>
+
+export const EquipmentEfficiencySchema_v0 = z.object({
+    heatingType: z.enum(HeatingEquipmentTypes_v0).optional(),
+    coolingSeer: z.number().optional(),
+    heatingCop: z.number().optional(),
+    heatingAfue: z.number().optional(),
+})
+export type EquipmentEfficiency_v0 = z.infer<
+    typeof EquipmentEfficiencySchema_v0
+>
+
+export const EnergyConfigurationSchema_v0 = z.object({
+    schedule: EnergyScheduleSchema_v0.optional(),
+    efficiency: EquipmentEfficiencySchema_v0.optional(),
+})
+export type EnergyConfiguration_v0 = z.infer<
+    typeof EnergyConfigurationSchema_v0
+>
+
+/**
+ * Canonical equipment document. Projects store central and terminal equipment
+ * in a top-level `equipment` subcollection; `projectScope` binds each document
+ * to the system or zone it configures.
+ */
 export const EquipmentDataSchema_v0 = z.object({
+    projectScope: EquipmentProjectScopeSchema_v0,
     components: z.array(EquipmentComponentSchema_v0).optional(),
     componentConfigsByMode: z
         .record(ModeIdSchema_v0, ComponentConfigurationsSchema_v0)
@@ -230,5 +310,7 @@ export const EquipmentDataSchema_v0 = z.object({
             configuration: EquipmentInletSchema_v0,
         })
         .optional(),
+    dimensionData: EquipmentDimensionDataSchema_v0.optional(),
+    energyConfiguration: EnergyConfigurationSchema_v0.optional(),
 })
 export type EquipmentData_v0 = z.infer<typeof EquipmentDataSchema_v0>

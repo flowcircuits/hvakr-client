@@ -9,6 +9,92 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.10.0] - 2026-07-23
+
+### Breaking Changes
+
+- Central and terminal equipment now live in a top-level `equipment`
+  subcollection instead of under `systems[id].equipmentConfig` and
+  `zones[id].equipmentConfig`. `equipmentConfig` has been removed from
+  `SystemDataSchema_v0` and `ZoneDataSchema_v0`; system/zone names, colors,
+  `configured` flags, diversity data, and `zone.systemId` are unchanged.
+- Each equipment document requires a `projectScope: { type: 'system' | 'zone';
+id: string }` binding it to the system or zone it configures. The equipment
+  document id is independent of the referenced system/zone id.
+- There is now one canonical equipment shape. The
+  `CentralUnitConfigurationSchema_v0` / `CentralUnitConfiguration_v0` and
+  `TerminalUnitConfigurationSchema_v0` / `TerminalUnitConfiguration_v0` schemas
+  and types are removed with no deprecated aliases. Their `dimensionData` and
+  energy schemas are consolidated on `EquipmentDataSchema_v0`:
+    - `dimensionData` merges central `length`/`width` and terminal `inletSize`
+      into `EquipmentDimensionDataSchema_v0`.
+    - `energyConfiguration` (`EnergyConfigurationSchema_v0`, with
+      `EnergyScheduleSchema_v0` and `EquipmentEfficiencySchema_v0`) moves from
+      `system_v0.ts` to `equipment_v0.ts`.
+    - `TerminalUnitInletSizeSchema_v0` / `TERMINAL_UNIT_INLET_SIZES_v0` move from
+      `zone_v0.ts` to `equipment_v0.ts`.
+- `equipment` is added to `ProjectSubcollectionsSchema_v0` and flows through the
+  writable, post, patch, and expanded project schemas,
+  `PROJECT_SUBCOLLECTION_KEYS_V0`, `ProjectSubcollectionKey_v0`, and the
+  generated JSON/OpenAPI schemas and declarations. Create and patch write
+  schemas now reject nested legacy `systems.*.equipmentConfig` and
+  `zones.*.equipmentConfig` rather than stripping them silently.
+
+New exports: `EquipmentProjectScopeTypeSchema_v0` / `EquipmentProjectScopeType_v0`,
+`EquipmentProjectScopeSchema_v0` / `EquipmentProjectScope_v0`, and
+`EquipmentDimensionDataSchema_v0` / `EquipmentDimensionData_v0`.
+
+- `UsageScheduleSchema_v0` is now an internal shared primitive
+  (`misc/time_v0.ts`), consumed by both space types and equipment energy
+  configuration, and is no longer a top-level package export. Its structure is
+  unchanged and still reachable through `SpaceTypeData_v0['usageSchedule']` and
+  `EnergySchedule_v0['occupiedHours']`.
+
+#### Migration
+
+```ts
+// Before (0.9.0): equipment nested on systems/zones
+const project = {
+    systems: {
+        'system-1': {
+            name: 'AHU-1',
+            equipmentConfig: {
+                components: [...],
+                dimensionData: { length: 60, width: 30 },
+                energyConfiguration: { efficiency: { coolingSeer: 14 } },
+            },
+        },
+    },
+    zones: {
+        'zone-1': {
+            name: 'VAV-1',
+            systemId: 'system-1',
+            equipmentConfig: { dimensionData: { inletSize: '8' } },
+        },
+    },
+}
+
+// After (0.10.0): a top-level equipment record scoped by projectScope
+const project = {
+    systems: { 'system-1': { name: 'AHU-1', configured: true } },
+    zones: {
+        'zone-1': { name: 'VAV-1', configured: true, systemId: 'system-1' },
+    },
+    equipment: {
+        'equipment-ahu-1': {
+            projectScope: { type: 'system', id: 'system-1' },
+            components: [...],
+            dimensionData: { length: 60, width: 30 },
+            energyConfiguration: { efficiency: { coolingSeer: 14 } },
+        },
+        'equipment-vav-1': {
+            projectScope: { type: 'zone', id: 'zone-1' },
+            dimensionData: { inletSize: '8' },
+        },
+    },
+}
+```
+
 ## [0.9.0] - 2026-07-21
 
 ### Breaking Changes

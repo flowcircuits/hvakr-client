@@ -1,16 +1,36 @@
 import {
-    CentralUnitConfiguration_v0,
     ComponentTypes_v0,
     DEFAULT_COOLING_MODE_ID_v0,
     DEFAULT_EQUIPMENT_MODES_v0,
     DEFAULT_HEATING_MODE_ID_v0,
+    EquipmentData_v0,
     EquipmentInletMethods_v0,
     ExpandedProjectPost_v0,
     OutsideAirMethods_v0,
-    TerminalUnitConfiguration_v0,
 } from '../schemas'
 
-const centralUnitEquipmentConfig: CentralUnitConfiguration_v0 = {
+const SYSTEM_CU_01_ID = 'E76ZWMo8hMDwybbgwzX6'
+const ZONE_FCU_3_ID = 'MLHdYTDgLmxzwtzyvoeg'
+const ZONE_FCU_1_ID = 'nAU4ubzKE34QRN1YA9nl'
+
+const centralUnitEquipment: EquipmentData_v0 = {
+    projectScope: { type: 'system', id: SYSTEM_CU_01_ID },
+    dimensionData: { length: 60, width: 30 },
+    energyConfiguration: {
+        schedule: {
+            occupiedHours: [
+                0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+                0, 0, 0,
+            ],
+            warmupHours: 2,
+            warmupMultiplier: 1.5,
+        },
+        efficiency: {
+            heatingType: 'gasFurnace',
+            coolingSeer: 14,
+            heatingAfue: 0.8,
+        },
+    },
     components: [
         { id: 'OA', type: ComponentTypes_v0.OUTSIDE_AIR_INTAKE },
         { id: 'CC', type: ComponentTypes_v0.COOLING_COIL },
@@ -68,7 +88,10 @@ const centralUnitEquipmentConfig: CentralUnitConfiguration_v0 = {
     },
 }
 
-const terminalUnitEquipmentConfig: TerminalUnitConfiguration_v0 = {
+const terminalUnitComponents: Pick<
+    EquipmentData_v0,
+    'components' | 'componentConfigsByMode' | 'inletData'
+> = {
     components: [
         { id: 'RA', type: ComponentTypes_v0.RETURN_AIR_INTAKE },
         { id: 'CC', type: ComponentTypes_v0.COOLING_COIL },
@@ -132,6 +155,18 @@ const terminalUnitEquipmentConfig: TerminalUnitConfiguration_v0 = {
             method: EquipmentInletMethods_v0.SUM_OF_SPACES_OA,
         },
     },
+}
+
+const terminalUnitEquipmentFcu3: EquipmentData_v0 = {
+    projectScope: { type: 'zone', id: ZONE_FCU_3_ID },
+    dimensionData: { inletSize: '8' },
+    ...terminalUnitComponents,
+}
+
+const terminalUnitEquipmentFcu1: EquipmentData_v0 = {
+    projectScope: { type: 'zone', id: ZONE_FCU_1_ID },
+    dimensionData: { inletSize: '10' },
+    ...terminalUnitComponents,
 }
 
 export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
@@ -219,12 +254,16 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
         },
     },
     systems: {
-        E76ZWMo8hMDwybbgwzX6: {
+        [SYSTEM_CU_01_ID]: {
             name: 'CU-01',
             color: '#8a8a8a',
             configured: true,
-            equipmentConfig: centralUnitEquipmentConfig,
         },
+    },
+    equipment: {
+        'equipment-cu-01': centralUnitEquipment,
+        'equipment-fcu-3': terminalUnitEquipmentFcu3,
+        'equipment-fcu-1': terminalUnitEquipmentFcu1,
     },
     slabTypes: {
         EezT7YhHdgbaVKkCmziN: {
@@ -586,19 +625,17 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
         },
     },
     zones: {
-        MLHdYTDgLmxzwtzyvoeg: {
+        [ZONE_FCU_3_ID]: {
             name: 'FCU-3',
             color: '#6a040f',
-            systemId: 'E76ZWMo8hMDwybbgwzX6',
+            systemId: SYSTEM_CU_01_ID,
             configured: true,
-            equipmentConfig: terminalUnitEquipmentConfig,
         },
-        nAU4ubzKE34QRN1YA9nl: {
+        [ZONE_FCU_1_ID]: {
             name: 'FCU-1',
             color: '#6a040f',
-            systemId: 'E76ZWMo8hMDwybbgwzX6',
+            systemId: SYSTEM_CU_01_ID,
             configured: true,
-            equipmentConfig: terminalUnitEquipmentConfig,
         },
     },
     spaces: {

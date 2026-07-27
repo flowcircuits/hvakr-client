@@ -1,5 +1,7 @@
 import {
     APICalculationSection_v0,
+    APIErrorCode_v0,
+    APIErrorSchema_v0,
     APIJob_v0,
     APIJobCreate_v0,
     APIMe_v0,
@@ -63,12 +65,34 @@ export class HVAKRClientError extends Error {
     metadata?: unknown
     /** HTTP status code of the response, when available. */
     status?: number
+    /**
+     * Stable machine-readable error code from the v0 error envelope
+     * (`error.code`), when the response body matched {@link APIErrorSchema_v0}.
+     * Prefer this over `status` for branching and analytics: it distinguishes,
+     * for example, an `internal` server failure from a `rate_limited` one that
+     * share a status class, so callers can tag failures without parsing
+     * `metadata` by hand.
+     */
+    code?: APIErrorCode_v0
+    /**
+     * Request correlation id from the v0 error envelope, mirroring the
+     * `X-Request-Id` response header. Useful for correlating a captured
+     * failure with server-side logs.
+     */
+    requestId?: string
 
-    constructor(message?: string, metadata?: unknown, status?: number) {
+    constructor(
+        message?: string,
+        metadata?: unknown,
+        status?: number,
+        envelope?: { code?: APIErrorCode_v0; requestId?: string }
+    ) {
         super(message)
         this.name = 'HVAKRClientError'
         this.metadata = metadata
         this.status = status
+        this.code = envelope?.code
+        this.requestId = envelope?.requestId
     }
 }
 
@@ -191,7 +215,22 @@ export class HVAKRClient {
         this.warnIfOutdated(res)
         const data = await res.json()
         if (!res.ok) {
-            throw new HVAKRClientError(`Error ${res.status}`, data, res.status)
+            // Surface the standard v0 error envelope's machine-readable `code`
+            // (and `requestId`) as first-class fields when the body matches, so
+            // callers can branch on and instrument failures — e.g. tag an
+            // `internal` server error — without reaching into `metadata`.
+            const parsed = APIErrorSchema_v0.safeParse(data)
+            throw new HVAKRClientError(
+                `Error ${res.status}`,
+                data,
+                res.status,
+                parsed.success
+                    ? {
+                          code: parsed.data.error.code,
+                          requestId: parsed.data.requestId,
+                      }
+                    : undefined
+            )
         }
         return data as T
     }

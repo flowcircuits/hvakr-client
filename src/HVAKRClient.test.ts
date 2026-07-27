@@ -9,7 +9,11 @@ import type { MockInterceptor } from 'undici/types/mock-interceptor'
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ExpandedProjectPatch_v0 } from './schemas'
 import { ExpandedProjectPostDataExample_v0 } from './fixtures'
-import { HVAKRClient, MAX_API_SHEET_UPLOAD_BYTES } from './HVAKRClient'
+import {
+    HVAKRClient,
+    HVAKRClientError,
+    MAX_API_SHEET_UPLOAD_BYTES,
+} from './HVAKRClient'
 import { createClientTestTarget } from './test/clientTestTarget'
 
 const { createClient, describeApi } = createClientTestTarget()
@@ -203,6 +207,30 @@ describe('HVAKRClient request building', () => {
             status: 403,
             metadata: { message: 'nope' },
         })
+    })
+
+    it('surfaces the v0 error envelope code and requestId on the thrown error', async () => {
+        enqueue(500, {
+            error: { code: 'internal', message: 'Something broke' },
+            requestId: 'req_abc123',
+        })
+        await expect(requestClient.getProject('p1')).rejects.toMatchObject({
+            name: 'HVAKRClientError',
+            status: 500,
+            code: 'internal',
+            requestId: 'req_abc123',
+        })
+    })
+
+    it('leaves code and requestId undefined when the body is not a v0 error envelope', async () => {
+        enqueue(500, { message: 'plain error' })
+        const error = await requestClient
+            .getProject('p1')
+            .catch((e: unknown) => e)
+        assert(error instanceof HVAKRClientError)
+        expect(error.status).toBe(500)
+        expect(error.code).toBeUndefined()
+        expect(error.requestId).toBeUndefined()
     })
 
     it('getProject expands specific subcollections when given an array', async () => {

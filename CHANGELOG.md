@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.10.1] - 2026-07-27
+
+### Added
+
+- `HVAKRClientError` now exposes the standard v0 error envelope's stable,
+  machine-readable `code` (an `APIErrorCode_v0`, e.g. `internal`) and its
+  `requestId` as first-class fields, populated whenever the error response body
+  matches `APIErrorSchema_v0`. Callers can branch on and instrument failures —
+  for example tagging an analytics event with the returned error code so
+  `internal` server errors become measurable and alertable — without parsing
+  `metadata` by hand. `message`, `status`, and `metadata` are unchanged, so
+  existing error handling keeps working.
+
 ## [0.10.0] - 2026-07-23
 
 ### Breaking Changes

@@ -89,7 +89,7 @@ while (true) {
 
 If the API returns an unsuccessful response, the returned `Promise` rejects with a `HVAKRClientError`.
 
-The error contains a `message` with the HTTP status code and optional `metadata` with additional details from the response.
+The error contains a `message` with the HTTP status code and optional `metadata` with additional details from the response. When the response body matches the standard v0 error envelope, the error also exposes the stable machine-readable `code` (an `APIErrorCode_v0` value, e.g. `"internal"` or `"rate_limited"`) and the `requestId` for correlating with server-side logs — so you can branch on and instrument failures without parsing `metadata` by hand.
 
 ```ts
 import { HVAKRClient, HVAKRClientError } from '@hvakr/client'
@@ -102,11 +102,33 @@ try {
 } catch (error) {
     if (error instanceof HVAKRClientError) {
         console.error('API Error:', error.message)
+        console.error('Code:', error.code) // e.g. "internal"
+        console.error('Request ID:', error.requestId)
         console.error('Details:', error.metadata)
     } else {
         // Other error handling code
         console.error(error)
     }
+}
+```
+
+Because `code` is stable and machine-readable, it is the right value to attach to analytics or monitoring. For example, an app can make otherwise-invisible server failures measurable by tagging the code it caught:
+
+```ts
+try {
+    const reply = await sendAssistantChat(message)
+    analytics.capture('ai_chat_sent', { ok: true })
+    return reply
+} catch (error) {
+    if (error instanceof HVAKRClientError) {
+        // `internal` server errors are now measurable and alertable.
+        analytics.capture('ai_chat_failed', {
+            code: error.code,
+            status: error.status,
+            requestId: error.requestId,
+        })
+    }
+    throw error
 }
 ```
 

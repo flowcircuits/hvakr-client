@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.11.0] - 2026-08-04
+
+### Breaking Changes
+
+- `SpaceDataSchema_v0.edges` is now optional. Real space documents can predate
+  the field, so declaring it as a required `z.record(...)` let the type system
+  hide a gap that consumers hit at runtime (`Object.values(space.edges)` throws
+  on an edge-less document). `SpaceData_v0['edges']` is now
+  `Record<string, Edge_v0> | undefined`; dereference it defensively (e.g.
+  `Object.values(space.edges ?? {})`), matching the sibling geometry records
+  `windows`, `doors`, and `skylights`, which were already optional.
+
 ## [0.10.0] - 2026-07-23
 
 ### Breaking Changes

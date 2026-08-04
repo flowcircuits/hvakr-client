@@ -136,7 +136,12 @@ export const SpaceDataSchema_v0 = z.object({
     applyRoofLoadToCeiling: z.boolean().optional(),
     ceilingHeight: z.number().optional(),
     creationSource: SpaceCreationSourceSchema_v0,
-    edges: z.record(z.string(), EdgeSchema_v0),
+    // Optional because legacy/seeded space documents predate the field and can
+    // omit it entirely. Keeping it required let the type system hide that gap,
+    // so consumers dereferenced `space.edges` unguarded and crashed on such
+    // documents. Matches the sibling geometry records (`windows`, `doors`,
+    // `skylights`), which are likewise optional.
+    edges: z.record(z.string(), EdgeSchema_v0).optional(),
     exhaustUnits: z.number().optional(),
     infiltrationUseSeparateWinterReqs: z.boolean().optional(),
     level: z.number(),

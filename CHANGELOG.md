@@ -9,13 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.11.0] - 2026-08-08
-
-### Breaking Changes
-
-- Removed the unused `BuildingDataSchema_v0.stories` field. Use the project's
-  `levels` collection for floor-level data.
-
 ## [0.10.0] - 2026-07-23
 
 ### Breaking Changes

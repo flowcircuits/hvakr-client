@@ -152,7 +152,6 @@ export const BuildingDataSchema_v0 = z.object({
     name: z.string().optional(),
     occupancy: z.number().optional(),
     planRotation: z.number().optional(),
-    stories: z.number().optional(),
 })
 
 export const DuctSizingDataSchema_v0 = z.object({

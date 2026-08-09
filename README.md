@@ -154,6 +154,9 @@ linking and application-specific context. Metadata values may be strings,
 numbers, or booleans; nested objects and arrays are intentionally excluded.
 Set an individual metadata key to `null` in `updateProject` to delete it.
 
+Building floor-level data is represented by the project's `levels` collection;
+the `building` object does not include a floor count.
+
 ### Jobs
 
 | Method                       | Description                                                                                                                           |

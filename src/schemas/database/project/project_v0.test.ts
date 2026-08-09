@@ -8,6 +8,7 @@ import {
 } from './expandedProject_v0'
 import {
     DEFAULT_EQUIPMENT_MODES_v0,
+    BuildingDataSchema_v0,
     PROJECT_PRIVATE_READ_FIELDS_V0,
     PROJECT_RESTRICTED_WRITE_FIELDS_V0,
     ProjectDataSchema_v0,
@@ -16,6 +17,13 @@ import {
 } from './project_v0'
 
 describe('Project v0 schemas', () => {
+    it('removes the unused building stories field', () => {
+        expect(BuildingDataSchema_v0.shape).not.toHaveProperty('stories')
+        expect(BuildingDataSchema_v0.parse({ area: 3000, stories: 2 })).toEqual(
+            { area: 3000 }
+        )
+    })
+
     it('exposes every canonical project field on reads', () => {
         expect(PROJECT_PRIVATE_READ_FIELDS_V0).toEqual({})
         expect(Object.keys(ProjectDataSchema_v0.shape)).toEqual([

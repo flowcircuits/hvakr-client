@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.11.0] - 2026-08-21
+
+### Breaking Changes
+
+- Creation times on project data are now `createdAt` (Unix milliseconds), not
+  `timestamp`. This matches the canonical HVAKR schemas. Affected shapes:
+  `ProjectData_v0`, `ProjectListItem_v0`, annotations, constraints, contacts,
+  standards, revisions, deadlines, sheet files, and envelope types
+  (wall/window/roof/slab/door/space/duct/register). Webhook envelope
+  `timestamp` is unchanged.
+
+#### Migration
+
+```ts
+// Before (0.10.x)
+project.timestamp
+project.constraints?.[id]?.timestamp
+
+// After (0.11.0)
+project.createdAt
+project.constraints?.[id]?.createdAt
+```
+
 ## [0.10.1] - 2026-08-08
 
 ### Changed

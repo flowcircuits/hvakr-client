@@ -42,7 +42,7 @@ export const SpaceTypeDataSchema_v0 = z.object({
     supplyAreaReq: z.number().optional(),
     supplyReq: z.number().optional(),
     temperatureRange: z.number().optional(),
-    timestamp: disableUserWrite(z.number().optional()),
+    createdAt: disableUserWrite(z.number().optional()),
     unitExhaustRate: z.number().optional(),
     usageSchedule: UsageScheduleSchema_v0.optional(),
     ventilationAchReq: z.number().optional(),

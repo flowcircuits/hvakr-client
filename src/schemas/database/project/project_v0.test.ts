@@ -79,7 +79,7 @@ describe('Project v0 schemas', () => {
             'status',
             'suggestedSpaces',
             'takeoffModel',
-            'timestamp',
+            'createdAt',
             'unitSystem',
             'users',
             'utilityRates',

@@ -25,7 +25,7 @@ export const SheetFileDataSchema_v0 = z.object({
     processingStartTime: disableUserWrite(z.number().optional()),
     sheetNumberBox: disableUserWrite(z.array(PointSchema).optional()),
     sourceFileName: disableUserWrite(z.string()),
-    timestamp: disableUserWrite(z.number()),
+    createdAt: disableUserWrite(z.number()),
     uploadFinishTime: disableUserWrite(z.number().optional()),
     uploadStartTime: disableUserWrite(z.number()),
     url: disableUserWrite(z.string()),

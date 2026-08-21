@@ -63,7 +63,7 @@ console.log(projects)
         address: 'Mansfield, TX, USA',
         status: 'inProgress',
         projectType: 'commercial',
-        timestamp: 1714405200000,
+        createdAt: 1714405200000,
         lastOpenTime: 1717084800000,
     },
     // ...

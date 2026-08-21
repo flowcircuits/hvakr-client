@@ -51,6 +51,9 @@ verification.
 
 - Public methods, exported types, Zod schemas, and generated declarations are
   part of the SDK contract; keep naming and behavior aligned across all of them.
+- Keep v0 field names aligned with the HVAKR monorepo canonical schemas. Do not
+  keep old public names as aliases. A stored-field rename is a breaking `0.x.0`
+  bump in this package.
 - This package is pre-1.0. Breaking changes use a minor `0.x.0` bump; compatible
   fixes and additions use a patch `0.x.y` bump. Follow `PUBLISH.md` for an
   explicitly requested release.

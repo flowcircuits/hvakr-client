@@ -16,6 +16,6 @@ export const RegisterTypeDataSchema_v0 = z.object({
     ...RegisterSpecificDataSchema_v0.shape,
     defaultType: DefaultRegisterTypeSchema_v0.optional(),
     name: z.string().optional(),
-    timestamp: disableUserWrite(z.number().optional()),
+    createdAt: disableUserWrite(z.number().optional()),
 })
 export type RegisterTypeData_v0 = z.infer<typeof RegisterTypeDataSchema_v0>

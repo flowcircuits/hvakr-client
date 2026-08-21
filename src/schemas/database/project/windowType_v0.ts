@@ -10,7 +10,7 @@ export const WindowTypeDataSchema_v0 = z.object({
     infiltrationWinterLfReq: z.number().optional(),
     name: z.string().optional(),
     shgc: z.number().optional(),
-    timestamp: disableUserWrite(z.number().optional()),
+    createdAt: disableUserWrite(z.number().optional()),
     uValue: z.number().optional(),
 })
 

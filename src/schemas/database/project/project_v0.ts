@@ -77,7 +77,7 @@ export const AnnotationDataSchema_v0 = z.object({
     color: z.string().optional(),
     level: z.number(),
     text: z.string(),
-    timestamp: z.number(),
+    createdAt: z.number(),
     x: z.number(),
     y: z.number(),
 })
@@ -125,7 +125,7 @@ export const OutdoorContaminantDataSchema_v0 = z.object({
 export const ConstraintSchema_v0 = z.object({
     description: z.string().optional(),
     name: z.string().optional(),
-    timestamp: disableUserWrite(z.number()),
+    createdAt: disableUserWrite(z.number()),
 })
 
 export const ContactSchema_v0 = z.object({
@@ -135,14 +135,14 @@ export const ContactSchema_v0 = z.object({
     name: z.string().optional(),
     phone: z.string().optional(),
     role: z.string().optional(),
-    timestamp: disableUserWrite(z.number()),
+    createdAt: disableUserWrite(z.number()),
     trade: z.string().optional(),
 })
 
 export const StandardSchema_v0 = z.object({
     description: z.string().optional(),
     name: z.string().optional(),
-    timestamp: disableUserWrite(z.number()),
+    createdAt: disableUserWrite(z.number()),
 })
 
 export const BuildingDataSchema_v0 = z.object({
@@ -221,7 +221,7 @@ export const RevisionSchema_v0 = z.object({
     id: z.string(),
     log: z.string().optional(),
     savedBy: z.string(),
-    timestamp: z.number(),
+    createdAt: z.number(),
 })
 
 const VentilationStandards_v0 = {
@@ -391,7 +391,7 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
         z.record(z.string(), SpaceDataSchema_v0).optional()
     ),
     takeoffModel: TakeoffModelSchema_v0.optional(),
-    timestamp: disableUserWrite(z.number().optional()),
+    createdAt: disableUserWrite(z.number().optional()),
     unitSystem: DisplayUnitSystemIdSchema.optional(),
     users: disableUserWrite(z.record(z.string(), ProjectUserDataSchema_v0)),
     utilityRates: UtilityRatesSchema_v0.optional(),
@@ -444,7 +444,7 @@ export const ProjectListItemSchema_v0 = z.object({
     address: z.string().optional(),
     status: ProjectStatusSchema_v0.optional(),
     projectType: ProjectTypeSchema_v0.optional(),
-    timestamp: z.number().optional(),
+    createdAt: z.number().optional(),
     lastOpenTime: z.number().optional(),
 })
 export type ProjectListItem_v0 = z.infer<typeof ProjectListItemSchema_v0>

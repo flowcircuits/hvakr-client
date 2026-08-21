@@ -8,7 +8,7 @@ export const DuctTypeDataSchema_v0 = z.object({
     maxPressureDropRate: z.number().optional(),
     maxVelocity: z.number().optional(),
     name: z.string().optional(),
-    timestamp: disableUserWrite(z.number().optional()),
+    createdAt: disableUserWrite(z.number().optional()),
 })
 
 export type DuctTypeData_v0 = z.infer<typeof DuctTypeDataSchema_v0>

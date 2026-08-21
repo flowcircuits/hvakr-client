@@ -6,7 +6,7 @@ export const RoofTypeDataSchema_v0 = z.object({
     color: z.string().optional(),
     name: z.string().optional(),
     surfaceAbsorptance: z.number().optional(),
-    timestamp: disableUserWrite(z.number().optional()),
+    createdAt: disableUserWrite(z.number().optional()),
     uValue: z.number().optional(),
     unconditionedCoolingTempF: z.number().optional(),
     unconditionedHeatingTempF: z.number().optional(),

@@ -99,6 +99,21 @@ export const EdgeSchema_v0 = z.object({
 })
 export type Edge_v0 = z.infer<typeof EdgeSchema_v0>
 
+/**
+ * A space outline is a closed polygon, so it needs at least three edges. A
+ * space with fewer edges cannot render and the building model drops it.
+ */
+export const MINIMUM_SPACE_EDGE_COUNT_V0 = 3
+
+export const SpaceEdgesSchema_v0 = z
+    .record(z.string(), EdgeSchema_v0)
+    .refine(
+        (edges) => Object.keys(edges).length >= MINIMUM_SPACE_EDGE_COUNT_V0,
+        {
+            error: `A space needs at least ${MINIMUM_SPACE_EDGE_COUNT_V0} edges.`,
+        }
+    )
+
 export const SpaceDesignAirflowsSchema_v0 = z.object({
     airTransferIn: z.number().optional(),
     airTransferOut: z.number().optional(),
@@ -136,7 +151,7 @@ export const SpaceDataSchema_v0 = z.object({
     applyRoofLoadToCeiling: z.boolean().optional(),
     ceilingHeight: z.number().optional(),
     creationSource: SpaceCreationSourceSchema_v0,
-    edges: z.record(z.string(), EdgeSchema_v0),
+    edges: SpaceEdgesSchema_v0,
     exhaustUnits: z.number().optional(),
     infiltrationUseSeparateWinterReqs: z.boolean().optional(),
     level: z.number(),

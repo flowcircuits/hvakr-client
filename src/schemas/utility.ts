@@ -114,7 +114,9 @@ const projectUserWritableField = (schema: z.ZodType): z.ZodType | undefined => {
             schema.valueType as z.ZodType
         )
         if (!valueType) return undefined
-        return z.record(schema.keyType, valueType)
+        // Clone rather than rebuild so record-level checks (e.g. a minimum
+        // entry count) survive into the writable schema.
+        return cloneSchema(schema, { ...schema._zod.def, valueType })
     }
 
     return schema
@@ -146,6 +148,8 @@ const transformField = (schema: z.ZodType): z.ZodType => {
         const valueSchema = unwrapped.valueType as z.ZodType
         // Transform the value schema and make it nullish so entries can be deleted
         const transformedValue = transformField(valueSchema).nullish()
+        // Rebuild rather than clone: a patch is partial, so whole-record checks
+        // (e.g. a minimum entry count) must not apply to it.
         return z.record(keySchema, transformedValue)
     }
 

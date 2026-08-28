@@ -282,6 +282,11 @@ fields, set a nested optional field to `null` to clear it, and set
 `equipment[id] = null` to delete an entire document. Requesting `equipment`
 through `getProject(id, ['equipment'])` expands the subcollection.
 
+A space outline is a closed polygon, so `edges` must hold at least three edges.
+Both the canonical `SpaceDataSchema_v0` and the create schema reject a space
+with fewer edges. Patches stay partial: send a single `edges` entry to update
+one edge, or set an entry to `null` to delete it.
+
 Space design overrides live under `designAirflowsByMode`; ventilation and
 infiltration requirements live under `airflowRequirementsByLoadCondition`.
 Calculation sections remain selectable with `include`, while airflow,

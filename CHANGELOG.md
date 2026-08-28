@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [Unreleased]
+
+### Changed
+
+- Space `edges` now require at least three entries, matching the closed-polygon
+  invariant the building model already enforces at render time. Both
+  `SpaceDataSchema_v0` and the create schema reject a space with fewer edges, so
+  invalid spaces fail at the write site instead of being silently dropped later.
+  Partial edge patches are unchanged.
+
 ## [0.11.0] - 2026-08-21
 
 ### Breaking Changes

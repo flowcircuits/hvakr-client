@@ -42,8 +42,6 @@ export const DuctSizeSchema_v0 = z.union([
     RectangleDuctSizeSchema_v0,
 ])
 
-export const PipeSizeSchema_v0 = z.object({ nominalDiameter: z.number() })
-
 export const RegisterPlacementTypes_v0 = {
     CEILING: 'CEILING',
     SIDEWALL: 'SIDEWALL',
@@ -168,7 +166,6 @@ export type CoordinateNodeData_v0 = z.infer<typeof CoordinateNodeDataSchema_v0>
 export const AdjacencyTypes_v0 = {
     DUCT: 'DUCT',
     LINK: 'LINK',
-    PIPE: 'PIPE',
 } as const
 
 export const DuctAdjacencyDataSchema_v0 = z.object({
@@ -178,13 +175,6 @@ export const DuctAdjacencyDataSchema_v0 = z.object({
 })
 export type DuctAdjacencyData_v0 = z.infer<typeof DuctAdjacencyDataSchema_v0>
 
-export const PipeAdjacencyDataSchema_v0 = z.object({
-    adjacencyType: z.literal(AdjacencyTypes_v0.PIPE),
-    pipeSize: PipeSizeSchema_v0.optional(),
-    pipeTypeId: z.string().optional(),
-})
-export type PipeAdjacencyData_v0 = z.infer<typeof PipeAdjacencyDataSchema_v0>
-
 export const LinkAdjacencyDataSchema_v0 = z.object({
     adjacencyType: z.literal(AdjacencyTypes_v0.LINK),
 })
@@ -192,7 +182,6 @@ export type LinkAdjacencyData_v0 = z.infer<typeof LinkAdjacencyDataSchema_v0>
 
 export const AssociatedAdjacencyDataSchema_v0 = z.union([
     DuctAdjacencyDataSchema_v0,
-    PipeAdjacencyDataSchema_v0,
     LinkAdjacencyDataSchema_v0,
 ])
 export type AssociatedAdjacencyData_v0 = z.infer<

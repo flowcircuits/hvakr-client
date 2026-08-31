@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.12.0] - Unreleased
+
+### Breaking Changes
+
+- Removed unused type-library and wet-side stubs from the public project
+  contract: `branchTypes`, `pipeTypes`, `BranchTypeData_v0`, `PipeTypeData_v0`,
+  `AdjacencyTypes_v0.PIPE`, `PipeAdjacencyData_v0`, and `PipeSizeSchema_v0`.
+
+#### Migration
+
+- Stop reading or writing `project.branchTypes` and `project.pipeTypes` on
+  expand / create / patch.
+- Graph adjacencies may only be `DUCT` or `LINK`.
+
 ## [0.11.0] - 2026-08-21
 
 ### Breaking Changes

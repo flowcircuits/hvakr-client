@@ -64,7 +64,6 @@ describe('Project v0 schemas', () => {
             'number',
             'outdoorContaminants',
             'outsideAirSpec',
-            'pendingPayment',
             'pictureThumbnailURL',
             'pictureURL',
             'pictureVerticalPosition',
@@ -109,7 +108,6 @@ describe('Project v0 schemas', () => {
                     syncVersion: 2,
                     imported: true,
                 },
-                pendingPayment: false,
             }).success
         ).toBe(true)
     })

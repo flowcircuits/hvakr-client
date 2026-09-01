@@ -6,7 +6,6 @@ import { z } from 'zod'
  */
 export const APILicenseTypes_v0 = {
     ENTERPRISE: 'enterprise',
-    PAY_PER_PROJECT: 'payPerProject',
     SOLO: 'solo',
     TEAM: 'team',
     UNIVERSITY: 'university',

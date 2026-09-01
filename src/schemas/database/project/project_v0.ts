@@ -372,7 +372,6 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
         )
         .optional(),
     outsideAirSpec: disableUserWrite(OutsideAirSpecSchema_v0.optional()),
-    pendingPayment: disableUserWrite(z.boolean().optional()),
     pictureThumbnailURL: z.string().optional(),
     pictureURL: z.string().optional(),
     pictureVerticalPosition: z.number().optional(),

@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.13.0] - 2026-09-05
+
+### Breaking Changes
+
+- Renamed the perimeter infiltration requirement fields to the canonical
+  `@hvakr/common` schema names. `infiltrationLfReq` is now
+  `infiltrationPerimeterReq`, and `infiltrationWinterLfReq` is now
+  `infiltrationWinterPerimeterReq`. Affected shapes: `SpaceTypeData_v0`,
+  `WindowTypeData_v0`, and `SpaceAirflowRequirements_v0` (which carries only the
+  non-winter field). The old names are not kept as aliases.
+
+#### Migration
+
+- Rename `infiltrationLfReq` to `infiltrationPerimeterReq` and
+  `infiltrationWinterLfReq` to `infiltrationWinterPerimeterReq` on every space
+  type, window type, and space airflow requirement you read or write.
+- Consumers that keep sending the old names must update. The old names were
+  never read by the load calculator, so a `PERIMETER` infiltration requirement
+  written under them was silently dropped from the heating load.
+
 ## [0.12.1] - 2026-08-31
 
 ### Changed

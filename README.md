@@ -287,8 +287,16 @@ infiltration requirements live under `airflowRequirementsByLoadCondition`.
 Calculation sections remain selectable with `include`, while airflow,
 checksum, and equipment results are keyed by the project's mode ids.
 
+Perimeter infiltration requirements are `infiltrationPerimeterReq` and
+`infiltrationWinterPerimeterReq` on space types and window types, and
+`infiltrationPerimeterReq` on a space airflow requirement. They pair with the
+`PERIMETER` value of `infiltrationReqMethod`.
+
 See the [`0.10.0` migration notes](./CHANGELOG.md#0100---2026-07-23) for the
-`equipmentConfig` → `equipment` mapping. The API path remains `/v0`.
+`equipmentConfig` → `equipment` mapping, and the
+[`0.13.0` migration notes](./CHANGELOG.md#0130---2026-09-05) for the
+`infiltrationLfReq` → `infiltrationPerimeterReq` rename. The API path remains
+`/v0`.
 
 ### Account
 

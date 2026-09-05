@@ -115,7 +115,7 @@ export const SpaceAirflowRequirementsSchema_v0 = z.object({
     infiltrationAchReq: z.number().optional(),
     infiltrationAreaReq: z.number().optional(),
     infiltrationFlowRateReq: z.number().optional(),
-    infiltrationLfReq: z.number().optional(),
+    infiltrationPerimeterReq: z.number().optional(),
     infiltrationReqMethod: InfiltrationRequirementMethodSchema_v0.optional(),
     ventilationReq: z.number().optional(),
 })

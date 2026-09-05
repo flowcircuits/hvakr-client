@@ -15,6 +15,9 @@ import {
     ProjectPostSchema_v0,
     WritableProjectDataSchema_v0,
 } from './project_v0'
+import { SpaceAirflowRequirementsSchema_v0 } from './space_v0'
+import { SpaceTypeDataSchema_v0 } from './spaceType_v0'
+import { WindowTypeDataSchema_v0 } from './windowType_v0'
 
 describe('Project v0 schemas', () => {
     it('removes the unused building stories field', () => {
@@ -269,6 +272,71 @@ describe('Project v0 schemas', () => {
             ExpandedProjectPostSchema_v0.safeParse(
                 ExpandedProjectPostDataExample_v0
             ).success
+        ).toBe(true)
+    })
+})
+
+describe('Perimeter infiltration requirement fields', () => {
+    it('keeps perimeter infiltration requirements on space types', () => {
+        expect(
+            SpaceTypeDataSchema_v0.parse({
+                name: 'Reception areas',
+                infiltrationPerimeterReq: 0.4,
+                infiltrationUseSeparateWinterReqs: true,
+                infiltrationWinterPerimeterReq: 0.6,
+            })
+        ).toMatchObject({
+            infiltrationPerimeterReq: 0.4,
+            infiltrationWinterPerimeterReq: 0.6,
+        })
+    })
+
+    it('keeps perimeter infiltration requirements on window types', () => {
+        expect(
+            WindowTypeDataSchema_v0.parse({
+                name: 'Operable Window',
+                infiltrationPerimeterReq: 0.37,
+                infiltrationUseSeparateWinterReqs: true,
+                infiltrationWinterPerimeterReq: 0.55,
+            })
+        ).toMatchObject({
+            infiltrationPerimeterReq: 0.37,
+            infiltrationWinterPerimeterReq: 0.55,
+        })
+    })
+
+    it('keeps the perimeter infiltration requirement on space airflows', () => {
+        expect(
+            SpaceAirflowRequirementsSchema_v0.parse({
+                infiltrationPerimeterReq: 0.25,
+                infiltrationReqMethod: 'PERIMETER',
+            })
+        ).toMatchObject({
+            infiltrationPerimeterReq: 0.25,
+            infiltrationReqMethod: 'PERIMETER',
+        })
+    })
+
+    it('accepts perimeter infiltration requirements on strict writes', () => {
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                spaceTypes: {
+                    'space-type-1': { infiltrationPerimeterReq: 0.4 },
+                },
+                windowTypes: {
+                    'window-type-1': { infiltrationWinterPerimeterReq: 0.55 },
+                },
+                spaces: {
+                    'space-1': {
+                        airflowRequirementsByLoadCondition: {
+                            HEATING: {
+                                infiltrationPerimeterReq: 0.25,
+                                infiltrationReqMethod: 'PERIMETER',
+                            },
+                        },
+                    },
+                },
+            }).success
         ).toBe(true)
     })
 })

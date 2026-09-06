@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.13.0] - 2026-09-06
+
+### Breaking Changes
+
+- Renamed the perimeter infiltration requirement fields to the canonical HVAKR
+  names. `infiltrationLfReq` is now `infiltrationPerimeterReq`, and
+  `infiltrationWinterLfReq` is now `infiltrationWinterPerimeterReq`. Affected
+  shapes: `WindowTypeData_v0`, `SpaceTypeData_v0`, and
+  `SpaceAirflowRequirements_v0`. `SpaceAirflowRequirements_v0` has no winter
+  variant, which also matches the canonical schema.
+
+    The HVAKR monorepo renamed the stored field, and the load calculator now
+    reads only the new name. The old SDK name never reached the calculator: on
+    window and space types it was stored verbatim under a key nothing reads, so
+    perimeter infiltration contributed zero and heating was undersized; on spaces
+    it was stripped by the strict write schema while
+    `infiltrationReqMethod: 'PERIMETER'` was kept.
+
+#### Migration
+
+```ts
+// Before (0.12.x)
+windowType.infiltrationLfReq
+windowType.infiltrationWinterLfReq
+space.airflowRequirementsByLoadCondition?.HEATING?.infiltrationLfReq
+
+// After (0.13.0)
+windowType.infiltrationPerimeterReq
+windowType.infiltrationWinterPerimeterReq
+space.airflowRequirementsByLoadCondition?.HEATING?.infiltrationPerimeterReq
+```
+
 ## [0.12.1] - 2026-08-31
 
 ### Changed

@@ -4,7 +4,6 @@ import {
     DisplayUnitSystemIdSchema,
     LoadConditions_v0,
 } from '../../misc'
-import { FlowTypeSchema_v0 } from '../../outputs/misc_v0'
 import {
     CoolingPercentSchema_v0,
     HeatingPercentSchema_v0,
@@ -212,7 +211,6 @@ export const FittingsConfigSchema_v0 = z.object({
 
 export const DrySideDataSchema_v0 = z.object({
     fittings: FittingsConfigSchema_v0.optional(),
-    flowColors: z.partialRecord(FlowTypeSchema_v0, z.string()).optional(),
     sizingData: DuctSizingDataSchema_v0.optional(),
 })
 

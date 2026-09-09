@@ -749,11 +749,6 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
                 branchLossCoefficient: 0.4,
             },
         },
-        flowColors: {
-            SUPPLY: '#2D72D2',
-            RETURN: '#AC2F33',
-            EXHAUST: '#238551',
-        },
     },
     ductTypes: {
         '52RhQU1pZeOc1e8FH1Wh': {

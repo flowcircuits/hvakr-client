@@ -9,17 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.15.0] - 2026-09-09
+## [0.14.1] - 2026-09-09
 
-### Breaking Changes
+### Changed
 
-- Removed `drySide.flowColors` from the public project contract. Register and
-  portal duct colors now come from the shared `FLOW_TYPE_COLORS` palette in
+- Removed unused `drySide.flowColors` from the public project schema. Register
+  and portal duct colors come from the shared `FLOW_TYPE_COLORS` palette in
   `@hvakr/common` and are not configurable per project.
-
-#### Migration
-
-- Stop reading or writing `project.drySide.flowColors` on expand / create / patch.
 
 ## [0.14.0] - 2026-09-09
 

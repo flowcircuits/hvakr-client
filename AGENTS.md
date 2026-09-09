@@ -52,11 +52,17 @@ verification.
 - Public methods, exported types, Zod schemas, and generated declarations are
   part of the SDK contract; keep naming and behavior aligned across all of them.
 - Keep v0 field names aligned with the HVAKR monorepo canonical schemas. Do not
-  keep old public names as aliases. A stored-field rename is a breaking `0.x.0`
-  bump in this package.
-- This package is pre-1.0. Breaking changes use a minor `0.x.0` bump; compatible
-  fixes and additions use a patch `0.x.y` bump. Follow `PUBLISH.md` for an
-  explicitly requested release.
+  keep old public names as aliases.
+- This package is pre-1.0. Use the smallest bump that matches the change.
+  Follow `PUBLISH.md` for an explicitly requested release.
+  - **Patch `0.x.y`:** backwards-compatible fixes, additions, and removal of
+    retired unused optional fields that consumers do not depend on
+    (display-only config, unused stubs, fields the product no longer stores).
+    Precedent: `0.12.1` (`pendingPayment`, pay-per-project license). Do not
+    treat every schema field deletion as breaking.
+  - **Minor `0.x.0`:** a real breaking change — stored-field **renames**,
+    required-shape or type changes, or method-signature changes that force
+    existing consumer code to update.
 - Do not commit generated `dist/` output or `tsconfig.tsbuildinfo` unless the
   task specifically changes the repository's generated-artifact policy.
 - Prefer the smallest compatible dependency or implementation change. Defer

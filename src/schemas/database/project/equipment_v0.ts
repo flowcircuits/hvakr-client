@@ -165,7 +165,10 @@ export const EquipmentInletSchema_v0 = z.discriminatedUnion('method', [
 export type EquipmentInlet_v0 = z.infer<typeof EquipmentInletSchema_v0>
 
 export const EquipmentOutletSchema_v0 = z.object({
-    componentType: z.literal(ComponentTypes_v0.EQUIPMENT_OUTLET),
+    /** Supply duct heat gain/loss in degrees Fahrenheit delta. */
+    ductHeatGain: z.number().optional(),
+    /** Supply duct leakage as a decimal fraction (0.01 = 1%). */
+    ductLeakagePercent: z.number().optional(),
 })
 export type EquipmentOutlet_v0 = z.infer<typeof EquipmentOutletSchema_v0>
 
@@ -300,8 +303,6 @@ export const EquipmentDataSchema_v0 = z.object({
     componentConfigsByMode: z
         .record(ModeIdSchema_v0, ComponentConfigurationsSchema_v0)
         .optional(),
-    ductHeatGain: z.number().optional(),
-    ductLeakagePercent: z.number().optional(),
     miscInefficiencies: z.number().optional(),
     pressureLoss: z.number().optional(),
     inletData: z
@@ -310,6 +311,7 @@ export const EquipmentDataSchema_v0 = z.object({
             configuration: EquipmentInletSchema_v0,
         })
         .optional(),
+    outlet: EquipmentOutletSchema_v0.optional(),
     dimensionData: EquipmentDimensionDataSchema_v0.optional(),
     energyConfiguration: EnergyConfigurationSchema_v0.optional(),
 })

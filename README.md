@@ -267,6 +267,7 @@ const project = {
             // Central dimensions (length/width) and terminal inlet size share
             // one `dimensionData` shape; energy config is optional.
             dimensionData: { length: 60, width: 30 },
+            outlet: { ductHeatGain: 2, ductLeakagePercent: 0.01 },
             energyConfiguration: { efficiency: { coolingSeer: 14 } },
         },
         'equipment-vav-1': {
@@ -282,6 +283,20 @@ fields, set a nested optional field to `null` to clear it, and set
 `equipment[id] = null` to delete an entire document. Requesting `equipment`
 through `getProject(id, ['equipment'])` expands the subcollection.
 
+Since `0.13.0`, supply duct settings live at `equipment[id].outlet` and apply
+across all modes. `ductHeatGain` is a Fahrenheit temperature delta;
+`ductLeakagePercent` is a decimal fraction (`0.01` = 1%). The former root-level
+fields are removed. `EquipmentOutletSchema_v0` / `EquipmentOutlet_v0` now
+describe these settings. Coil `targetTemperature` is the coil leaving-air
+temperature, before outlet duct heat gain/loss. Return duct settings remain on
+the return-air intake component.
+
+```ts
+await client.updateProject(projectId, {
+    equipment: { 'equipment-ahu-1': { outlet: { ductHeatGain: 2 } } },
+})
+```
+
 Space design overrides live under `designAirflowsByMode`; ventilation and
 infiltration requirements live under `airflowRequirementsByLoadCondition`.
 Calculation sections remain selectable with `include`, while airflow,
@@ -294,7 +309,7 @@ Perimeter infiltration requirements are `infiltrationPerimeterReq` and
 
 See the [`0.10.0` migration notes](./CHANGELOG.md#0100---2026-07-23) for the
 `equipmentConfig` → `equipment` mapping, and the
-[`0.13.0` migration notes](./CHANGELOG.md#0130---2026-09-05) for the
+[`0.14.0` migration notes](./CHANGELOG.md#0140---2026-09-09) for the
 `infiltrationLfReq` → `infiltrationPerimeterReq` rename. The API path remains
 `/v0`.
 

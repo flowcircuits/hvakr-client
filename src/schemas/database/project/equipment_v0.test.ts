@@ -15,9 +15,41 @@ import {
     ExpandedProjectPatchSchema_v0,
     ExpandedProjectPostSchema_v0,
     PROJECT_SUBCOLLECTION_KEYS_V0,
+    ProjectSubcollectionsSchema_v0,
 } from './expandedProject_v0'
 
 describe('canonical v0 equipment schemas', () => {
+    it.each(['system', 'zone'] as const)(
+        'preserves supply outlet settings on %s equipment reads and creates',
+        (type) => {
+            const project = {
+                equipment: {
+                    unit: {
+                        projectScope: { type, id: 'scope-1' },
+                        outlet: { ductHeatGain: 2, ductLeakagePercent: 0.01 },
+                    },
+                },
+            }
+
+            expect(ProjectSubcollectionsSchema_v0.parse(project)).toEqual(
+                project
+            )
+            expect(ExpandedProjectPostSchema_v0.parse(project)).toEqual(project)
+        }
+    )
+
+    it.each([
+        { ductHeatGain: 2 },
+        { ductLeakagePercent: 0.01 },
+        { ductHeatGain: null },
+        { ductLeakagePercent: null },
+        null,
+    ])('supports granular supply outlet patches and clearing: %j', (outlet) => {
+        const patch = { equipment: { unit: { outlet } } }
+
+        expect(ExpandedProjectPatchSchema_v0.parse(patch)).toEqual(patch)
+    })
+
     it('parses mode-keyed component configurations', () => {
         const parsed = EquipmentDataSchema_v0.parse({
             projectScope: { type: 'system', id: 'ahu-1' },

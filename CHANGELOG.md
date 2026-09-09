@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.13.0] - 2026-09-05
+## [0.14.0] - 2026-09-09
 
 ### Breaking Changes
 
@@ -28,6 +28,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Consumers that keep sending the old names must update. The old names were
   never read by the load calculator, so a `PERIMETER` infiltration requirement
   written under them was silently dropped from the heating load.
+
+## [0.13.0] - 2026-09-07
+
+### Breaking Changes
+
+- Supply duct `ductHeatGain` and `ductLeakagePercent` move from the equipment
+  document root to optional `outlet`, matching the canonical HVAKR schema.
+- `EquipmentOutletSchema_v0` / `EquipmentOutlet_v0` now describe optional
+  supply duct settings instead of the unused `componentType` placeholder.
+
+#### Migration
+
+- Read and write `equipment[id].outlet.ductHeatGain` and
+  `equipment[id].outlet.ductLeakagePercent`. No aliases for the old root fields
+  are retained. Values remain Fahrenheit delta and decimal fraction.
+- Coil `targetTemperature` is the coil leaving-air temperature before outlet
+  duct effects. Return-air intake duct settings keep their existing paths.
+- Project create requests accept `outlet`; patches can update or clear each
+  outlet field, or clear the whole outlet with `null`.
 
 ## [0.12.1] - 2026-08-31
 

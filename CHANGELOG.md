@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.14.2] - 2026-09-12
+
+### Changed
+
+- Removed unused `selections` from the air-cleaner node schema. `productId` is
+  the canonical product reference for air cleaners; nothing read or wrote the
+  selections record. Multi-product `selections` on central and terminal units
+  remain for the Cambridge form flow and are marked as such.
+
 ## [0.14.1] - 2026-09-09
 
 ### Changed

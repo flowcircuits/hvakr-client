@@ -16,9 +16,6 @@ export const NodeTypes_v0 = {
     PORTAL: 'PORTAL',
     FITTING: 'FITTING',
     AIR_CLEANER: 'AIR_CLEANER',
-    PUMP: 'PUMP',
-    VALVE: 'VALVE',
-    TERMINAL_EQUIPMENT: 'TERMINAL_EQUIPMENT',
 } as const
 
 export const DuctSizeTypes_v0 = {
@@ -119,31 +116,6 @@ export const AirCleanerNodeDataSchema_v0 = z.object({
     selections: z.record(z.string(), SelectionSchema_v0).optional(),
 })
 
-export const PumpNodeDataSchema_v0 = z.object({
-    ...HasPressureLossSchema_v0.shape,
-    ...HasRotationSchema_v0.shape,
-    nodeType: z.literal(NodeTypes_v0.PUMP),
-    ratedHead: z.number().optional(),
-    tag: z.string().optional(),
-})
-
-export const ValveNodeDataSchema_v0 = z.object({
-    ...HasPressureLossSchema_v0.shape,
-    ...HasRotationSchema_v0.shape,
-    nodeType: z.literal(NodeTypes_v0.VALVE),
-    tag: z.string().optional(),
-})
-
-export const TerminalEquipmentNodeDataSchema_v0 = z.object({
-    ...HasPressureLossSchema_v0.shape,
-    ...HasRotationSchema_v0.shape,
-    flowRate: z.number().optional(),
-    nodeType: z.literal(NodeTypes_v0.TERMINAL_EQUIPMENT),
-    selections: z.record(z.string(), SelectionSchema_v0).optional(),
-    tag: z.string().optional(),
-    zoneId: z.string().optional(),
-})
-
 export const AssociatedNodeDataSchema_v0 = z.union([
     RegisterNodeDataSchema_v0,
     TerminalUnitNodeDataSchema_v0,
@@ -151,9 +123,6 @@ export const AssociatedNodeDataSchema_v0 = z.union([
     FittingNodeDataSchema_v0,
     PortalNodeDataSchema_v0,
     AirCleanerNodeDataSchema_v0,
-    PumpNodeDataSchema_v0,
-    ValveNodeDataSchema_v0,
-    TerminalEquipmentNodeDataSchema_v0,
 ])
 export type AssociatedNodeData_v0 = z.infer<typeof AssociatedNodeDataSchema_v0>
 

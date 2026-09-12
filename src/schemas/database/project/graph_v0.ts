@@ -132,10 +132,7 @@ export const CoordinateNodeDataSchema_v0 = z.object({
 })
 export type CoordinateNodeData_v0 = z.infer<typeof CoordinateNodeDataSchema_v0>
 
-export const AdjacencyTypes_v0 = {
-    DUCT: 'DUCT',
-    LINK: 'LINK',
-} as const
+export const AdjacencyTypes_v0 = { DUCT: 'DUCT', LINK: 'LINK' } as const
 
 export const DuctAdjacencyDataSchema_v0 = z.object({
     adjacencyType: z.literal(AdjacencyTypes_v0.DUCT),

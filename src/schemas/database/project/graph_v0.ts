@@ -83,6 +83,8 @@ export const FittingNodeDataSchema_v0 = z.object({
     nodeType: z.literal(NodeTypes_v0.FITTING),
 })
 
+// Multi-product selection shape. Exists only for the Cambridge form flow;
+// the canonical selection is a single `productId` on the node.
 export const SelectionSchema_v0 = z.object({
     leavingAirTemp: z.number().optional(),
     productId: z.string(),
@@ -93,6 +95,7 @@ export const TerminalUnitNodeDataSchema_v0 = z.object({
     ...HasPressureLossSchema_v0.shape,
     ...HasRotationSchema_v0.shape,
     nodeType: z.literal(NodeTypes_v0.TERMINAL_UNIT),
+    // Cambridge-only multi-product selections; migrates to `productId`.
     selections: z.record(z.string(), SelectionSchema_v0).optional(),
     zoneId: z.string(),
 })
@@ -101,6 +104,7 @@ export const CentralUnitNodeDataSchema_v0 = z.object({
     ...HasPressureLossSchema_v0.shape,
     ...HasRotationSchema_v0.shape,
     nodeType: z.literal(NodeTypes_v0.CENTRAL_UNIT),
+    // Cambridge-only multi-product selections; migrates to `productId`.
     selections: z.record(z.string(), SelectionSchema_v0).optional(),
     systemId: z.string(),
 })
@@ -116,7 +120,6 @@ export const AirCleanerNodeDataSchema_v0 = z.object({
     ...HasRotationSchema_v0.shape,
     nodeType: z.literal(NodeTypes_v0.AIR_CLEANER),
     productId: z.string().optional(),
-    selections: z.record(z.string(), SelectionSchema_v0).optional(),
 })
 
 export const PumpNodeDataSchema_v0 = z.object({
@@ -139,7 +142,6 @@ export const TerminalEquipmentNodeDataSchema_v0 = z.object({
     ...HasRotationSchema_v0.shape,
     flowRate: z.number().optional(),
     nodeType: z.literal(NodeTypes_v0.TERMINAL_EQUIPMENT),
-    selections: z.record(z.string(), SelectionSchema_v0).optional(),
     tag: z.string().optional(),
     zoneId: z.string().optional(),
 })

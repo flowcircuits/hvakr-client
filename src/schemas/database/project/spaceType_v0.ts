@@ -7,7 +7,7 @@ export const RegisterSpecConstraintsSchema_v0 = z.object({
     maxCFM: z.number().optional(),
     maxFPM: z.number().optional(),
     maxNC: z.number().optional(),
-    registerModelId: z.string().optional(),
+    productId: z.string().optional(),
 })
 
 export const RegisterSpecSchema_v0 = z.partialRecord(

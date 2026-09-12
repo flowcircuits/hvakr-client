@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+- Renamed `registerModelId` to `productId` on register graph nodes and on
+  `RegisterSpecConstraintsSchema_v0` (`spaceType.registerSpec.<flowType>`).
+  Register models are now catalog products (`type: REGISTER`), referenced by
+  the catalog `productId` like other product selections.
+  `SpaceRegisterScheduleRowSchema_v0` gained the required `productId` field.
 - Removed the vestigial wet-side graph node types `PUMP`, `VALVE`, and
   `TERMINAL_EQUIPMENT` from `NodeTypes_v0`, along with their node data schemas
   (`PumpNodeDataSchema_v0`, `ValveNodeDataSchema_v0`,

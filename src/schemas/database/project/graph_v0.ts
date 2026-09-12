@@ -70,7 +70,7 @@ export const RegisterNodeDataSchema_v0 = z.object({
     ...HasRotationSchema_v0.shape,
     inletSize: z.string().optional(),
     nodeType: z.literal(NodeTypes_v0.REGISTER),
-    registerModelId: z.string().optional(),
+    productId: z.string().optional(),
     spaceIds: z.array(z.string()).optional(),
 })
 

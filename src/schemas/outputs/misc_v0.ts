@@ -111,6 +111,7 @@ export const SpaceRegisterScheduleRowSchema_v0 = z.object({
     manufacturer: z.string(),
     model: z.string(),
     modelType: RegisterModelTypeSchema_v0,
+    productId: z.string(),
     quantity: z.number(),
     registerCFM: z.number(),
     registerFPM: z.number(),

@@ -295,19 +295,19 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             ],
             registerSpec: {
                 SUPPLY: {
-                    registerModelId: 'SMX/AMX',
+                    productId: 'price-smx-amx',
                     maxFPM: 500,
                     maxCFM: 300,
                     maxNC: 30,
                 },
                 RETURN: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxCFM: 400,
                     maxFPM: 600,
                     maxNC: 30,
                 },
                 EXHAUST: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxFPM: 500,
                     maxCFM: 400,
                     maxNC: 30,
@@ -334,19 +334,19 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
 
             registerSpec: {
                 SUPPLY: {
-                    registerModelId: 'SMX/AMX',
+                    productId: 'price-smx-amx',
                     maxCFM: 300,
                     maxNC: 30,
                     maxFPM: 750,
                 },
                 RETURN: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxCFM: 400,
                     maxFPM: 600,
                     maxNC: 30,
                 },
                 EXHAUST: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxFPM: 500,
                     maxCFM: 400,
                     maxNC: 30,
@@ -373,19 +373,19 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
 
             registerSpec: {
                 SUPPLY: {
-                    registerModelId: 'SMX/AMX',
+                    productId: 'price-smx-amx',
                     maxFPM: 500,
                     maxNC: 25,
                     maxCFM: 250,
                 },
                 RETURN: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxNC: 25,
                     maxCFM: 400,
                     maxFPM: 600,
                 },
                 EXHAUST: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxFPM: 500,
                     maxNC: 25,
                     maxCFM: 400,
@@ -412,19 +412,19 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
 
             registerSpec: {
                 SUPPLY: {
-                    registerModelId: 'SMX/AMX',
+                    productId: 'price-smx-amx',
                     maxFPM: 500,
                     maxCFM: 300,
                     maxNC: 30,
                 },
                 RETURN: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxFPM: 500,
                     maxCFM: 400,
                     maxNC: 30,
                 },
                 EXHAUST: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxFPM: 500,
                     maxCFM: 400,
                     maxNC: 30,
@@ -450,19 +450,19 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             ],
             registerSpec: {
                 SUPPLY: {
-                    registerModelId: 'SMX/AMX',
+                    productId: 'price-smx-amx',
                     maxFPM: 500,
                     maxCFM: 300,
                     maxNC: 35,
                 },
                 RETURN: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxCFM: 500,
                     maxFPM: 750,
                     maxNC: 35,
                 },
                 EXHAUST: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxFPM: 500,
                     maxCFM: 500,
                     maxNC: 35,
@@ -488,19 +488,19 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             ],
             registerSpec: {
                 SUPPLY: {
-                    registerModelId: 'SMX/AMX',
+                    productId: 'price-smx-amx',
                     maxFPM: 500,
                     maxNC: 25,
                     maxCFM: 250,
                 },
                 RETURN: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxFPM: 500,
                     maxNC: 25,
                     maxCFM: 400,
                 },
                 EXHAUST: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxFPM: 500,
                     maxNC: 25,
                     maxCFM: 400,
@@ -527,19 +527,19 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             equipmentLoad: 0,
             registerSpec: {
                 SUPPLY: {
-                    registerModelId: 'SMX/AMX',
+                    productId: 'price-smx-amx',
                     maxFPM: 500,
                     maxCFM: 300,
                     maxNC: 35,
                 },
                 RETURN: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxCFM: 400,
                     maxFPM: 600,
                     maxNC: 35,
                 },
                 EXHAUST: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxFPM: 500,
                     maxCFM: 300,
                     maxNC: 35,
@@ -566,19 +566,19 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             unitExhaustRate: 100,
             registerSpec: {
                 SUPPLY: {
-                    registerModelId: 'SMX/AMX',
+                    productId: 'price-smx-amx',
                     maxFPM: 500,
                     maxNC: 35,
                     maxCFM: 250,
                 },
                 RETURN: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxCFM: 400,
                     maxFPM: 600,
                     maxNC: 35,
                 },
                 EXHAUST: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxFPM: 500,
                     maxCFM: 400,
                     maxNC: 35,
@@ -604,19 +604,19 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             equipmentLoad: 0,
             registerSpec: {
                 SUPPLY: {
-                    registerModelId: 'SMX/AMX',
+                    productId: 'price-smx-amx',
                     maxFPM: 500,
                     maxNC: 35,
                     maxCFM: 500,
                 },
                 RETURN: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxCFM: 400,
                     maxFPM: 600,
                     maxNC: 35,
                 },
                 EXHAUST: {
-                    registerModelId: 'SMD/AMD',
+                    productId: 'price-smd-amd',
                     maxFPM: 500,
                     maxCFM: 400,
                     maxNC: 35,

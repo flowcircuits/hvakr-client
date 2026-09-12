@@ -142,8 +142,6 @@ export const TerminalEquipmentNodeDataSchema_v0 = z.object({
     ...HasRotationSchema_v0.shape,
     flowRate: z.number().optional(),
     nodeType: z.literal(NodeTypes_v0.TERMINAL_EQUIPMENT),
-    // Unused: wet-side terminal equipment has no product-selection flow.
-    selections: z.record(z.string(), SelectionSchema_v0).optional(),
     tag: z.string().optional(),
     zoneId: z.string().optional(),
 })

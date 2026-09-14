@@ -46,6 +46,18 @@ export const APIExportSchema_v0 = z
             .number()
             .optional()
             .describe('Generation progress (0–1), when reported.'),
+        studyId: z
+            .string()
+            .optional()
+            .describe(
+                'Study whose diffs were applied when generating this export. Omitted for baseline exports.'
+            ),
+        studyName: z
+            .string()
+            .optional()
+            .describe(
+                'Study name captured when the export was created. Omitted for baseline exports.'
+            ),
     })
     .describe('A generated (or in-progress) project export.')
 export type APIExport_v0 = z.infer<typeof APIExportSchema_v0>

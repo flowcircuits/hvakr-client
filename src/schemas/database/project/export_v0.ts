@@ -52,5 +52,9 @@ export const ExportDataSchema_v0 = z.object({
     outputFileType: ExportFileTypeSchema_v0.optional(),
     pending: z.boolean(),
     definition: ExportDefinitionSchema_v0,
+    /** Study whose diffs were applied when generating this export */
+    studyId: z.string().optional(),
+    /** Study name captured when the export was created */
+    studyName: z.string().optional(),
 })
 export type ExportData_v0 = z.infer<typeof ExportDataSchema_v0>

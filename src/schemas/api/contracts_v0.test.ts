@@ -219,6 +219,19 @@ describe('export schema', () => {
         expect(parsed.progress).toBe(1)
     })
 
+    it('carries the study id and captured study name on a study export', () => {
+        const parsed = APIExportSchema_v0.parse({
+            id: 'exp_2',
+            name: 'Loads - Alt OA',
+            status: 'pending',
+            date: 1,
+            studyId: 'st-1',
+            studyName: 'Alt OA',
+        })
+        expect(parsed.studyId).toBe('st-1')
+        expect(parsed.studyName).toBe('Alt OA')
+    })
+
     it('accepts every canonical export file type', () => {
         expect(
             ['PDF', 'CSV', 'DOCX', 'ZIP', 'XML', 'JSON'].every(

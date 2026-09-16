@@ -147,6 +147,58 @@ describe('calculations contract', () => {
         ).toBe('not achievable')
     })
 
+    it('accepts mixture-controlled IAQP results without a controlling compound', () => {
+        const parsed = APIProjectCalculationsSchema_v0.parse({
+            errors: [],
+            flags: {},
+            ventilation: {
+                spaces: {
+                    sp_1: {
+                        iaqp: {
+                            airCleanerCount: 0,
+                            cleaningAirflow: 0,
+                            controllingMixtures: ['EYE'],
+                            minimumOutsideAirflow: 150,
+                        },
+                    },
+                },
+                systems: {},
+                zones: {},
+                equipment: {},
+            },
+        })
+        expect(
+            parsed.ventilation?.spaces.sp_1?.iaqp?.controllingMixtures
+        ).toEqual(['EYE'])
+        expect(
+            parsed.ventilation?.spaces.sp_1?.iaqp?.controllingCompoundId
+        ).toBeUndefined()
+    })
+
+    it('rejects unknown IAQP mixture effects', () => {
+        expect(
+            APIProjectCalculationsSchema_v0.safeParse({
+                errors: [],
+                flags: {},
+                ventilation: {
+                    spaces: {
+                        sp_1: {
+                            iaqp: {
+                                airCleanerCount: 0,
+                                cleaningAirflow: 0,
+                                controllingMixtures: ['SKIN'],
+                                minimumOutsideAirflow: 150,
+                            },
+                        },
+                    },
+                    systems: {},
+                    zones: {},
+                    equipment: {},
+                },
+            }).success
+        ).toBe(false)
+    })
+
     it('parses mode-keyed airflow sections without legacy condition wrappers', () => {
         const parsed = APIProjectCalculationsSchema_v0.parse({
             errors: [],

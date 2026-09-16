@@ -193,11 +193,24 @@ export type IAQPCO2Calculations_v0 = z.infer<
     typeof IAQPCO2CalculationsSchema_v0
 >
 
+/** ASHRAE 62.1 Table 6-6 additive-mixture target-organ effects. */
+export const IAQPMixtureEffects_v0 = {
+    URT: 'URT',
+    EYE: 'EYE',
+    CNS: 'CNS',
+} as const
+
+export const IAQPMixtureEffectSchema_v0 = z.enum(
+    Object.values(IAQPMixtureEffects_v0)
+)
+export type IAQPMixtureEffect_v0 = z.infer<typeof IAQPMixtureEffectSchema_v0>
+
 export const IAQPCalculationsSchema_v0 = z.object({
     airCleanerCount: z.number(),
     cleaningAirflow: z.number(),
     co2: IAQPCO2CalculationsSchema_v0.optional(),
     controllingCompoundId: z.string().optional(),
+    controllingMixtures: z.array(IAQPMixtureEffectSchema_v0).optional(),
     minimumOutsideAirflow: IAQPMinimumOutsideAirflowSchema_v0,
     minimumOutsideAirflowByCompound: z
         .record(z.string(), IAQPMinimumOutsideAirflowSchema_v0)

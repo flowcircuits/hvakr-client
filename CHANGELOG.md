@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.14.3] - 2026-09-16
+
+### Added
+
+- `IAQPCalculations_v0` now includes optional `controllingMixtures` (`URT`,
+  `EYE`, `CNS`) for ASHRAE 62.1 IAQP additive-mixture exposure. When a mixture
+  sets the minimum outdoor airflow, `controllingCompoundId` is omitted.
+
 ## [0.14.2] - 2026-09-14
 
 ### Added

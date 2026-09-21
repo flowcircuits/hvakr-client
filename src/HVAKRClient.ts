@@ -8,8 +8,9 @@ import {
     ExpandedProjectPatch_v0,
     ExpandedProjectPost_v0,
     ExpandedProject_v0,
-    ProductListResponse_v0,
+    NodeType_v0,
     ProjectListResponse_v0,
+    SearchProductsResponse_v0,
     ProjectStatus_v0,
     ProjectSubcollections_v0,
     ProjectType_v0,
@@ -484,25 +485,37 @@ export class HVAKRClient {
     }
 
     /**
-     * Lists products from the catalog accessible to the authenticated user
-     * (the organization's products plus public products).
+     * Searches the catalog of products accessible to the authenticated user
+     * (the organization's products plus public products) and returns a page of
+     * slim cards (`id`, `name`, `manufacturer`, `model`, `type`). Call
+     * {@link getProduct} with an id from the results to fetch full specs.
      *
-     * Results are paginated. When `hasMore` is true, pass the returned
-     * `nextCursor` back as `cursor` to fetch the next page.
+     * Results are paginated (default 20, max 100 per page). When `hasMore` is
+     * true, pass the returned `nextCursor` back as `cursor` to fetch the next
+     * page.
      *
      * @param params - Optional filter and pagination parameters
-     * @param params.search - Case-insensitive filter over name/manufacturer/model
-     * @param params.limit - Maximum number of products to return per page
+     * @param params.search - Case-insensitive substring over name, manufacturer, and model
+     * @param params.type - Exact product node type; can be used alone to browse a type
+     * @param params.limit - Maximum number of products to return per page (1–100, default 20)
      * @param params.cursor - Cursor from a previous response's `nextCursor`
-     * @returns A page of products with pagination metadata
+     * @returns A page of product cards with pagination metadata
      * @throws {HVAKRClientError} If the API returns an error response
      */
-    listProducts = async (
-        params: { search?: string; limit?: number; cursor?: string } = {}
-    ): Promise<ProductListResponse_v0> => {
+    searchProducts = async (
+        params: {
+            search?: string
+            type?: NodeType_v0
+            limit?: number
+            cursor?: string
+        } = {}
+    ): Promise<SearchProductsResponse_v0> => {
         const queryParams: Record<string, string> = {}
         if (params.search !== undefined) {
             queryParams.search = params.search
+        }
+        if (params.type !== undefined) {
+            queryParams.type = params.type
         }
         if (params.limit !== undefined) {
             queryParams.limit = params.limit.toString()
@@ -510,7 +523,7 @@ export class HVAKRClient {
         if (params.cursor !== undefined) {
             queryParams.cursor = params.cursor
         }
-        return this.request<ProductListResponse_v0>(
+        return this.request<SearchProductsResponse_v0>(
             this.createURL(`/products`, queryParams),
             { method: 'GET', headers: this.getAuthHeaders() }
         )

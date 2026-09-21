@@ -21,6 +21,9 @@ export const NodeTypes_v0 = {
     TERMINAL_EQUIPMENT: 'TERMINAL_EQUIPMENT',
 } as const
 
+export const NodeTypeSchema_v0 = z.enum(Object.values(NodeTypes_v0))
+export type NodeType_v0 = z.infer<typeof NodeTypeSchema_v0>
+
 export const DuctSizeTypes_v0 = {
     CIRCLE: 'CIRCLE',
     RECTANGLE: 'RECTANGLE',

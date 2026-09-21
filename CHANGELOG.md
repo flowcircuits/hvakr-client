@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.15.0] - 2026-09-21
+
+### Breaking Changes
+
+- `GET /v0/products` is now a searchable catalog endpoint. The SDK method is
+  renamed from `listProducts` to `searchProducts` and returns slim product
+  cards (`id`, `name`, `manufacturer`, `model`, `type`) instead of full product
+  records. Call `getProduct(id)` to fetch full specifications and file
+  attachments for a single product.
+- Added an optional `type` filter (`NodeType_v0`) that can be used alone to
+  browse a single node type.
+- Default page size drops from 100 to 20; maximum remains 100.
+- The response type is renamed from `ProductListResponse_v0` to
+  `SearchProductsResponse_v0`, and the new card projection is exported as
+  `ProductSearchCard_v0` (schema: `ProductSearchCardSchema_v0`). The full
+  `APIProduct_v0` shape is unchanged and is still returned by `getProduct`.
+- Exports a new `NodeTypeSchema_v0` / `NodeType_v0` alongside the existing
+  `NodeTypes_v0` const map.
+
+#### Migration
+
+- Rename `client.listProducts(...)` to `client.searchProducts(...)`.
+- Update result-consuming code to read only `id`, `name`, `manufacturer`,
+  `model`, and `type` from search results. When you need `description`,
+  `price`, `imageUrl`, `specifications`, or `files`, call
+  `client.getProduct(id)`.
+- If you imported `ProductListResponse_v0`, import `SearchProductsResponse_v0`
+  instead.
+- If you relied on the previous default of 100 results per page, pass an
+  explicit `limit`.
+
 ## [0.14.3] - 2026-09-16
 
 ### Added

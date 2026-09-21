@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { NodeTypeSchema_v0 } from '../database/project/graph_v0'
 
 /** A product-catalog file attachment (e.g. cut sheet, submittal). */
 export const APIProductFileSchema_v0 = z
@@ -42,19 +43,38 @@ export const APIProductSchema_v0 = z
 export type APIProduct_v0 = z.infer<typeof APIProductSchema_v0>
 
 /**
- * Paginated response shape returned by the list-products endpoint. Mirrors
+ * Slim catalog card returned by the search endpoint. Full specifications and
+ * file attachments live on `GET /products/{id}` — this projection carries only
+ * the fields needed to render a product picker.
+ */
+export const ProductSearchCardSchema_v0 = z
+    .object({
+        id: z.string().describe('Product id.'),
+        name: z.string().describe('Product name.'),
+        manufacturer: z.string().optional().describe('Manufacturer name.'),
+        model: z.string().optional().describe('Model number or identifier.'),
+        type: NodeTypeSchema_v0
+            .optional()
+            .describe('Dry-side node type the product represents.'),
+    })
+    .describe('A slim product card as returned by the search endpoint.')
+
+export type ProductSearchCard_v0 = z.infer<typeof ProductSearchCardSchema_v0>
+
+/**
+ * Paginated response shape returned by the search-products endpoint. Mirrors
  * `ProjectListResponseSchema_v0`: `hasMore` signals another page, and
  * `nextCursor` is the opaque cursor to pass back as `cursor` (null on the
  * last page).
  */
-export const ProductListResponseSchema_v0 = z
+export const SearchProductsResponseSchema_v0 = z
     .object({
-        products: z.array(APIProductSchema_v0),
+        products: z.array(ProductSearchCardSchema_v0),
         hasMore: z.boolean(),
         nextCursor: z.string().nullable(),
     })
-    .describe('A page of catalog products with pagination metadata.')
+    .describe('A page of catalog product cards with pagination metadata.')
 
-export type ProductListResponse_v0 = z.infer<
-    typeof ProductListResponseSchema_v0
+export type SearchProductsResponse_v0 = z.infer<
+    typeof SearchProductsResponseSchema_v0
 >

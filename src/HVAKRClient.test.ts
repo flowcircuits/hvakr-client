@@ -378,24 +378,39 @@ describe('HVAKRClient request building', () => {
         expect(requests.at(-1)?.method).toBe('GET')
     })
 
-    it('listProducts GETs /products and returns the pagination envelope', async () => {
+    it('searchProducts GETs /products and returns the pagination envelope', async () => {
         enqueue(200, {
-            products: [{ id: 'prod_1', name: 'RTU-5' }],
+            products: [
+                {
+                    id: 'prod_1',
+                    name: 'RTU-5',
+                    manufacturer: 'Carrier',
+                    type: 'CENTRAL_UNIT',
+                },
+            ],
             hasMore: true,
             nextCursor: 'prod_1',
         })
-        const page = await requestClient.listProducts({
+        const page = await requestClient.searchProducts({
             search: 'RTU',
+            type: 'CENTRAL_UNIT',
             limit: 1,
             cursor: 'prod_0',
         })
         expect(page).toEqual({
-            products: [{ id: 'prod_1', name: 'RTU-5' }],
+            products: [
+                {
+                    id: 'prod_1',
+                    name: 'RTU-5',
+                    manufacturer: 'Carrier',
+                    type: 'CENTRAL_UNIT',
+                },
+            ],
             hasMore: true,
             nextCursor: 'prod_1',
         })
         expect(requests.at(-1)?.path).toBe(
-            '/v0/products?search=RTU&limit=1&cursor=prod_0'
+            '/v0/products?search=RTU&type=CENTRAL_UNIT&limit=1&cursor=prod_0'
         )
         expect(requests.at(-1)?.method).toBe('GET')
     })
@@ -493,8 +508,8 @@ describeApi('HVAKR Client', () => {
         expect(fetchedProjectData.weatherSpec?.selectedStationId).toBeTruthy()
     }, 10000)
 
-    it('should list catalog products', async () => {
-        const page = await hvakrClient.listProducts()
+    it('should search catalog products', async () => {
+        const page = await hvakrClient.searchProducts()
         expect(Array.isArray(page.products)).toBe(true)
         expect(typeof page.hasMore).toBe('boolean')
         expect(

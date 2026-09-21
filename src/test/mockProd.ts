@@ -159,7 +159,7 @@ export class MockProdService {
                     name: 'Mock Product',
                 })
             }
-            return this.listProducts(url)
+            return this.searchProducts(url)
         }
 
         if (method === 'GET' && path === '/me') {
@@ -196,28 +196,33 @@ export class MockProdService {
         })
     }
 
-    private listProducts(url: URL) {
+    private searchProducts(url: URL) {
         const all = [
             {
                 id: 'mock-product-1',
                 name: 'Mock Product',
                 manufacturer: 'Mock',
+                type: 'AIR_CLEANER',
             },
             {
                 id: 'mock-product-2',
                 name: 'Mock RTU',
                 manufacturer: 'Mock',
                 model: 'RTU-5',
+                type: 'CENTRAL_UNIT',
             },
         ]
         const search = url.searchParams.get('search')?.toLowerCase()
-        const filtered = search
-            ? all.filter((product) =>
-                  [product.name, product.manufacturer, product.model]
-                      .filter((field): field is string => !!field)
-                      .some((field) => field.toLowerCase().includes(search))
-              )
-            : all
+        const type = url.searchParams.get('type') ?? undefined
+        const filtered = all
+            .filter((product) => (type ? product.type === type : true))
+            .filter((product) =>
+                search
+                    ? [product.name, product.manufacturer, product.model]
+                          .filter((field): field is string => !!field)
+                          .some((field) => field.toLowerCase().includes(search))
+                    : true
+            )
         const limit = Number(url.searchParams.get('limit') ?? filtered.length)
         const cursor = Number(url.searchParams.get('cursor') ?? 0)
         const page = filtered.slice(cursor, cursor + limit)

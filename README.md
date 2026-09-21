@@ -218,13 +218,14 @@ eligible maps, not only pages from this upload.
 
 ### Products
 
-| Method                                       | Description                                                                                                                          |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `listProducts({ search?, limit?, cursor? })` | List a page of products accessible to the authenticated user (read-only). Page with `nextCursor` while `hasMore`. Filter by `search` |
-| `getProduct(id)`                             | Get a single product by ID                                                                                                           |
+| Method                                                | Description                                                                                                                                                                                                                                                                                     |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `searchProducts({ search?, type?, limit?, cursor? })` | Search a page of products accessible to the authenticated user (read-only). Returns slim cards (`id`, `name`, `manufacturer`, `model`, `type`). Filter by `search` (case-insensitive substring over name/manufacturer/model) and/or `type` (exact node type). Default page 20, max 100. |
+| `getProduct(id)`                                      | Get a single product with full specifications and file attachments                                                                                                                                                                                                                              |
 
-Like `listProjects`, `listProducts` is paginated — it returns
-`{ products, hasMore, nextCursor }`; page with `nextCursor` while `hasMore`.
+`searchProducts` is paginated — it returns `{ products, hasMore, nextCursor }`;
+page with `nextCursor` while `hasMore`. Each card is a slim projection meant for
+pickers and lists; call `getProduct(id)` for the full product record.
 
 ### Equipment modes and calculations
 

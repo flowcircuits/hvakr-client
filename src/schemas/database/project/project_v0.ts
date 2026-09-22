@@ -264,13 +264,20 @@ export const ProjectUserRoleSchema_v0 = z.union(
 
 export const ProjectUserDataSchema_v0 = z.object({
     active: z.boolean().optional(),
+    email: z.string().describe("User's email (denormalized for display)"),
     firstName: z.string().optional(),
     lastActive: z.number().optional(),
     lastName: z.string().optional(),
-    pendingSignUp: z.boolean().optional(),
     profilePicture: z.string().nullish(),
     role: ProjectUserRoleSchema_v0,
 })
+
+export const InvitedUserDataSchema_v0 = z.object({
+    invitedByUserId: z.string().describe('Firebase uid of the inviter'),
+    role: z.number().describe("Role on the collection's ladder"),
+    timestamp: z.number().describe('Unix ms created'),
+})
+export type InvitedUserData_v0 = z.infer<typeof InvitedUserDataSchema_v0>
 
 export const ProjectTypes_v0 = {
     residential: 'residential',
@@ -325,9 +332,14 @@ export const AutomationsSchema_v0 = z.object({
 export type Automations_v0 = z.infer<typeof AutomationsSchema_v0>
 
 export const ComputedProjectDataSchema_v0 = z.object({
-    _owner: disableUserWrite(z.string().optional()),
-    _userEmails: disableUserWrite(z.array(z.string()).optional()),
-    _userIds: disableUserWrite(z.array(z.string()).optional()),
+    _userIds: disableUserWrite(
+        z
+            .array(z.string())
+            .optional()
+            .describe(
+                'Firebase uids with role ≥ VIEWER. Computed by write triggers; used for list queries and embedding access control.'
+            )
+    ),
     _nameLowercase: disableUserWrite(z.string().optional()),
 })
 
@@ -390,7 +402,19 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     takeoffModel: TakeoffModelSchema_v0.optional(),
     createdAt: disableUserWrite(z.number().optional()),
     unitSystem: DisplayUnitSystemIdSchema.optional(),
-    users: disableUserWrite(z.record(z.string(), ProjectUserDataSchema_v0)),
+    invitedUsers: disableUserWrite(
+        z
+            .record(z.string(), InvitedUserDataSchema_v0)
+            .optional()
+            .describe(
+                'Pending invites keyed by normalized email. Grants zero access until consumed server-side into users[uid].'
+            )
+    ),
+    users: disableUserWrite(
+        z
+            .record(z.string(), ProjectUserDataSchema_v0)
+            .describe('Map of Firebase uids to their project data')
+    ),
     utilityRates: UtilityRatesSchema_v0.optional(),
     ventilationStandard: VentilationStandardSchema_v0.optional(),
     weatherSpec: WeatherSpecSchema_v0.optional(),
@@ -403,9 +427,6 @@ export interface Project_v0 extends ProjectData_v0 {
 }
 
 /* BEGIN API ENDPOINT SCHEMAS */
-
-/** All canonical project fields are readable through the v0 API. */
-export const PROJECT_PRIVATE_READ_FIELDS_V0 = {} as const
 
 const disabledUserWriteFields = Object.fromEntries(
     Object.entries(ProjectDataSchema_v0.shape)

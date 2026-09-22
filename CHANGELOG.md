@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.16.0] - 2026-09-22
+
+### Breaking Changes
+
+- Project membership is uid-keyed. `ProjectUserData_v0` requires `email`
+  (denormalized for display) and no longer includes `pendingSignUp`.
+- Removed `_owner` and `_userEmails` from `ProjectData_v0`. `_userIds` is the
+  list of Firebase uids with role ≥ viewer, computed by write triggers.
+- Removed the `PROJECT_PRIVATE_READ_FIELDS_V0` export. Project GET responses
+  include every canonical field.
+
+### Added
+
+- `InvitedUserDataSchema_v0` / `InvitedUserData_v0` for a pending invite
+  (`invitedByUserId`, `role`, `timestamp`).
+- Optional `invitedUsers` on `ProjectData_v0`, keyed by normalized email.
+  Invites grant no access until the server consumes them into `users[uid]`.
+- `users` and `invitedUsers` are server-owned (`disableUserWrite: true`) and
+  appear on `PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0`. `_owner` and
+  `_userEmails` are no longer in that list.
+
 ## [0.15.0] - 2026-09-21
 
 ### Breaking Changes

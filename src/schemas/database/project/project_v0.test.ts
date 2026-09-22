@@ -70,6 +70,7 @@ describe('Project v0 schemas', () => {
             'duplicatedFrom',
             'elevation',
             'equipmentModes',
+            'defaultSystemPresetId',
             'fromExample',
             'iaqpOutdoorAirMerv',
             'isDeleted',
@@ -146,6 +147,7 @@ describe('Project v0 schemas', () => {
                 userStatus: { 'user-1': { active: true, lastActive: 1 } },
                 _nameLowercase: 'canonical read',
                 organizationId: 'organization-1',
+                defaultSystemPresetId: 'singleZoneRTU',
                 analytics: { updatedAt: 1 },
                 automations: { importSpaceTypes: { status: 'requested' } },
                 elevation: 100,
@@ -307,6 +309,23 @@ describe('Project v0 schemas', () => {
         expect(ProjectDataSchema_v0.shape.latitude.meta()).toMatchObject({
             disableUserWrite: true,
         })
+    })
+
+    it('keeps the default system preset read-only', () => {
+        const defaultSystemPresetId = 'singleZoneRTU'
+        const project = {
+            defaultSystemPresetId,
+            equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+            name: 'Preset read',
+            users: {},
+        }
+
+        expect(ProjectDataSchema_v0.safeParse(project).success).toBe(true)
+        expect(ProjectPostSchema_v0.safeParse(project).success).toBe(false)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({ defaultSystemPresetId })
+                .success
+        ).toBe(false)
     })
 
     it('accepts flat user-writable project metadata', () => {

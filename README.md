@@ -148,6 +148,8 @@ by default. Create and patch schemas apply that policy recursively, including
 inside spaces, type collections, weather data, and sheet files. Exports remain
 job-created, and uploaded sheet-file data is read-only except for
 `sheetFiles[id].name` in project patches.
+Project reads may include the server-owned `defaultSystemPresetId`, which is
+used to initialize equipment for new systems and zones.
 
 Projects can also store flat, user-writable `metadata` for external-system
 linking and application-specific context. Metadata values may be strings,

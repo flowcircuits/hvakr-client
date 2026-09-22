@@ -349,6 +349,7 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     duplicatedFrom: disableUserWrite(z.string().optional()),
     elevation: disableUserWrite(z.number().optional()),
     equipmentModes: EquipmentModesSchema_v0,
+    defaultSystemPresetId: disableUserWrite(z.string().optional()),
     fromExample: disableUserWrite(z.string().optional()),
     iaqpOutdoorAirMerv: z.number().int().min(8).max(15).optional(),
     isDeleted: disableUserWrite(z.boolean().optional()),

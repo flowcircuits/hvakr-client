@@ -148,6 +148,8 @@ by default. Create and patch schemas apply that policy recursively, including
 inside spaces, type collections, weather data, and sheet files. Exports remain
 job-created, and uploaded sheet-file data is read-only except for
 `sheetFiles[id].name` in project patches.
+Project reads may include the server-owned `defaultSystemPresetId`, which is
+used to initialize equipment for new systems and zones.
 
 Projects can also store flat, user-writable `metadata` for external-system
 linking and application-specific context. Metadata values may be strings,
@@ -218,10 +220,10 @@ eligible maps, not only pages from this upload.
 
 ### Products
 
-| Method                                                | Description                                                                                                                                                                                                                                                                                     |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Method                                                | Description                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `searchProducts({ search?, type?, limit?, cursor? })` | Search a page of products accessible to the authenticated user (read-only). Returns slim cards (`id`, `name`, `manufacturer`, `model`, `type`). Filter by `search` (case-insensitive substring over name/manufacturer/model) and/or `type` (exact node type). Default page 20, max 100. |
-| `getProduct(id)`                                      | Get a single product with full specifications and file attachments                                                                                                                                                                                                                              |
+| `getProduct(id)`                                      | Get a single product with full specifications and file attachments                                                                                                                                                                                                                      |
 
 `searchProducts` is paginated — it returns `{ products, hasMore, nextCursor }`;
 page with `nextCursor` while `hasMore`. Each card is a slim projection meant for

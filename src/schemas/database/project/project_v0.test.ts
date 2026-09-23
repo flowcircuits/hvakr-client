@@ -9,10 +9,12 @@ import {
 import {
     DEFAULT_EQUIPMENT_MODES_v0,
     BuildingDataSchema_v0,
-    PROJECT_PRIVATE_READ_FIELDS_V0,
+    InvitedUserDataSchema_v0,
     PROJECT_RESTRICTED_WRITE_FIELDS_V0,
+    PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0,
     ProjectDataSchema_v0,
     ProjectPostSchema_v0,
+    ProjectUserDataSchema_v0,
     WritableProjectDataSchema_v0,
 } from './project_v0'
 import { SpaceAirflowRequirementsSchema_v0 } from './space_v0'
@@ -28,10 +30,7 @@ describe('Project v0 schemas', () => {
     })
 
     it('exposes every canonical project field on reads', () => {
-        expect(PROJECT_PRIVATE_READ_FIELDS_V0).toEqual({})
         expect(Object.keys(ProjectDataSchema_v0.shape)).toEqual([
-            '_owner',
-            '_userEmails',
             '_userIds',
             '_nameLowercase',
             'address',
@@ -83,6 +82,7 @@ describe('Project v0 schemas', () => {
             'takeoffModel',
             'createdAt',
             'unitSystem',
+            'invitedUsers',
             'users',
             'utilityRates',
             'ventilationStandard',
@@ -93,9 +93,14 @@ describe('Project v0 schemas', () => {
             ProjectDataSchema_v0.safeParse({
                 equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
                 name: 'Canonical read',
-                users: {},
-                _owner: 'owner@example.com',
-                _userEmails: ['owner@example.com'],
+                users: { 'user-1': { email: 'owner@example.com', role: 10 } },
+                invitedUsers: {
+                    'invitee@example.com': {
+                        invitedByUserId: 'user-1',
+                        role: 1,
+                        timestamp: 1,
+                    },
+                },
                 _userIds: ['user-1'],
                 _nameLowercase: 'canonical read',
                 organizationId: 'organization-1',
@@ -113,6 +118,73 @@ describe('Project v0 schemas', () => {
                 },
             }).success
         ).toBe(true)
+    })
+
+    it('models uid-keyed membership and server-owned invites', () => {
+        expect(ProjectUserDataSchema_v0.shape).not.toHaveProperty(
+            'pendingSignUp'
+        )
+        expect(ProjectUserDataSchema_v0.shape.email.description).toBe(
+            "User's email (denormalized for display)"
+        )
+        expect(
+            ProjectUserDataSchema_v0.safeParse({
+                email: 'owner@example.com',
+                role: 10,
+            }).success
+        ).toBe(true)
+        expect(ProjectUserDataSchema_v0.safeParse({ role: 10 }).success).toBe(
+            false
+        )
+
+        expect(ProjectDataSchema_v0.shape).not.toHaveProperty('_owner')
+        expect(ProjectDataSchema_v0.shape).not.toHaveProperty('_userEmails')
+        expect(ProjectDataSchema_v0.shape._userIds.description).toBe(
+            'Firebase uids with role ≥ VIEWER. Computed by write triggers; used for list queries and embedding access control.'
+        )
+        expect(ProjectDataSchema_v0.shape.users.description).toBe(
+            'Map of Firebase uids to their project data'
+        )
+        expect(ProjectDataSchema_v0.shape.users.meta()).toMatchObject({
+            disableUserWrite: true,
+        })
+        expect(ProjectDataSchema_v0.shape.invitedUsers.description).toBe(
+            'Pending invites keyed by normalized email. Grants zero access until consumed server-side into users[uid].'
+        )
+        expect(ProjectDataSchema_v0.shape.invitedUsers.meta()).toMatchObject({
+            disableUserWrite: true,
+        })
+        expect(InvitedUserDataSchema_v0.shape.invitedByUserId.description).toBe(
+            'Firebase uid of the inviter'
+        )
+        expect(InvitedUserDataSchema_v0.shape.role.description).toBe(
+            "Role on the collection's ladder"
+        )
+        expect(InvitedUserDataSchema_v0.shape.timestamp.description).toBe(
+            'Unix ms created'
+        )
+        expect(
+            InvitedUserDataSchema_v0.parse({
+                invitedByUserId: 'user-1',
+                role: 4,
+                timestamp: 1,
+            })
+        ).toEqual({ invitedByUserId: 'user-1', role: 4, timestamp: 1 })
+
+        expect(PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0).toMatchObject({
+            users: true,
+            invitedUsers: true,
+        })
+        expect(PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0).not.toHaveProperty(
+            '_owner'
+        )
+        expect(PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0).not.toHaveProperty(
+            '_userEmails'
+        )
+        expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty('users')
+        expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
+            'invitedUsers'
+        )
     })
 
     it('derives project write restrictions from schema metadata', () => {

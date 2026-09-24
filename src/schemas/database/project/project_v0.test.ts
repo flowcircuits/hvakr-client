@@ -82,7 +82,7 @@ describe('Project v0 schemas', () => {
             'takeoffModel',
             'createdAt',
             'unitSystem',
-            'invitedUsers',
+            'invitedEmails',
             'users',
             'utilityRates',
             'ventilationStandard',
@@ -94,7 +94,7 @@ describe('Project v0 schemas', () => {
                 equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
                 name: 'Canonical read',
                 users: { 'user-1': { email: 'owner@example.com', role: 10 } },
-                invitedUsers: {
+                invitedEmails: {
                     'invitee@example.com': {
                         invitedByUserId: 'user-1',
                         role: 1,
@@ -148,10 +148,10 @@ describe('Project v0 schemas', () => {
         expect(ProjectDataSchema_v0.shape.users.meta()).toMatchObject({
             disableUserWrite: true,
         })
-        expect(ProjectDataSchema_v0.shape.invitedUsers.description).toBe(
+        expect(ProjectDataSchema_v0.shape.invitedEmails.description).toBe(
             'Pending invites keyed by normalized email. Grants zero access until consumed server-side into users[uid].'
         )
-        expect(ProjectDataSchema_v0.shape.invitedUsers.meta()).toMatchObject({
+        expect(ProjectDataSchema_v0.shape.invitedEmails.meta()).toMatchObject({
             disableUserWrite: true,
         })
         expect(InvitedUserDataSchema_v0.shape.invitedByUserId.description).toBe(
@@ -173,7 +173,7 @@ describe('Project v0 schemas', () => {
 
         expect(PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0).toMatchObject({
             users: true,
-            invitedUsers: true,
+            invitedEmails: true,
         })
         expect(PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0).not.toHaveProperty(
             '_owner'
@@ -183,7 +183,7 @@ describe('Project v0 schemas', () => {
         )
         expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty('users')
         expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
-            'invitedUsers'
+            'invitedEmails'
         )
     })
 

@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.17.0] - 2026-09-24
+
+### Breaking Changes
+
+- Renamed `invitedUsers` on `ProjectData_v0` to `invitedEmails`. The map is
+  still keyed by normalized email, still server-owned (`disableUserWrite:
+  true`), and still listed on `PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0`.
+
+#### Migration
+
+- Rename `invitedUsers` to `invitedEmails` wherever you read project data.
+
 ## [0.16.0] - 2026-09-22
 
 ### Breaking Changes

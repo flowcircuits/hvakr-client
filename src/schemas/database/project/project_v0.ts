@@ -402,7 +402,7 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     takeoffModel: TakeoffModelSchema_v0.optional(),
     createdAt: disableUserWrite(z.number().optional()),
     unitSystem: DisplayUnitSystemIdSchema.optional(),
-    invitedUsers: disableUserWrite(
+    invitedEmails: disableUserWrite(
         z
             .record(z.string(), InvitedUserDataSchema_v0)
             .optional()

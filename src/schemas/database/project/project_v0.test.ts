@@ -10,6 +10,7 @@ import {
     DEFAULT_EQUIPMENT_MODES_v0,
     BuildingDataSchema_v0,
     InvitedUserDataSchema_v0,
+    LevelDataSchema_v0,
     PROJECT_RESTRICTED_WRITE_FIELDS_V0,
     PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0,
     ProjectDataSchema_v0,
@@ -27,6 +28,18 @@ describe('Project v0 schemas', () => {
         expect(BuildingDataSchema_v0.parse({ area: 3000, stories: 2 })).toEqual(
             { area: 3000 }
         )
+    })
+
+    it('stores level relative elevation on the level above', () => {
+        expect(Object.keys(LevelDataSchema_v0.shape)).toEqual([
+            'relativeElevation',
+        ])
+        expect(
+            ProjectDataSchema_v0.shape.levels.parse({
+                '0': {},
+                '1': { relativeElevation: 156 },
+            })
+        ).toEqual({ 0: {}, 1: { relativeElevation: 156 } })
     })
 
     it('exposes every canonical project field on reads', () => {

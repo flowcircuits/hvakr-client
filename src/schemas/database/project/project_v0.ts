@@ -58,7 +58,14 @@ export const ProjectMetadataSchema_v0 = z.record(
 )
 export type ProjectMetadata_v0 = z.infer<typeof ProjectMetadataSchema_v0>
 
-export const LevelDataSchema_v0 = z.object({ height: z.number().optional() })
+export const LevelDataSchema_v0 = z.object({
+    relativeElevation: z
+        .number()
+        .optional()
+        .describe(
+            'Distance from the floor of the level below to the floor of this level, in inches. The lowest level sits at the project datum and has no relative elevation.'
+        ),
+})
 
 export const OutsideAirSpecSchema_v0 = z.object({
     loading: z.boolean().optional(),

@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.18.0] - 2026-09-24
+
+### Breaking Changes
+
+- Renamed `levels[n].height` on `ProjectData_v0` to `levels[n].relativeElevation`.
+  The value moves to the level above: it is the distance from the floor of the
+  level below to the floor of this level, in inches, including the slab. The
+  lowest level sits at the project datum and has no relative elevation.
+
+#### Migration
+
+- Read and write `levels[n + 1].relativeElevation` where you used
+  `levels[n].height`.
+
 ## [0.17.0] - 2026-09-24
 
 ### Breaking Changes

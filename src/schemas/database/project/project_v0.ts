@@ -276,7 +276,7 @@ export const ProjectUserDataSchema_v0 = z.object({
     lastActive: z.number().optional(),
     lastName: z.string().optional(),
     profilePicture: z.string().nullish(),
-    role: ProjectUserRoleSchema_v0,
+    accessLevel: ProjectUserRoleSchema_v0,
 })
 
 export const InvitedUserDataSchema_v0 = z.object({

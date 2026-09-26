@@ -17,6 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `true` when a canvas export had no content to draw. The export status is
   `failed` and there is no download URL.
 
+## [0.19.0] - 2026-09-25
+
+### Breaking Changes
+
+- Renamed `ProjectData_v0.users[uid].role` to `accessLevel`.
+
+#### Migration
+
+- Read `member.accessLevel` wherever project members previously used
+  `member.role`.
+
 ## [0.18.0] - 2026-09-24
 
 ### Breaking Changes

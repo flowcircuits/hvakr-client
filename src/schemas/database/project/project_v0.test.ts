@@ -106,7 +106,9 @@ describe('Project v0 schemas', () => {
             ProjectDataSchema_v0.safeParse({
                 equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
                 name: 'Canonical read',
-                users: { 'user-1': { email: 'owner@example.com', role: 10 } },
+                users: {
+                    'user-1': { email: 'owner@example.com', accessLevel: 10 },
+                },
                 invitedEmails: {
                     'invitee@example.com': {
                         invitedByUserId: 'user-1',
@@ -143,12 +145,12 @@ describe('Project v0 schemas', () => {
         expect(
             ProjectUserDataSchema_v0.safeParse({
                 email: 'owner@example.com',
-                role: 10,
+                accessLevel: 10,
             }).success
         ).toBe(true)
-        expect(ProjectUserDataSchema_v0.safeParse({ role: 10 }).success).toBe(
-            false
-        )
+        expect(
+            ProjectUserDataSchema_v0.safeParse({ accessLevel: 10 }).success
+        ).toBe(false)
 
         expect(ProjectDataSchema_v0.shape).not.toHaveProperty('_owner')
         expect(ProjectDataSchema_v0.shape).not.toHaveProperty('_userEmails')

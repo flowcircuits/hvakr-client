@@ -112,7 +112,7 @@ describe('canonical v0 equipment schemas', () => {
             dimensionData: { length: 60, width: 30 },
             energyConfiguration: {
                 schedule: { warmupHours: 2, warmupMultiplier: 1.5 },
-                efficiency: { heatingType: 'gasFurnace', coolingSeer: 14 },
+                efficiency: { heatingType: 'gasFurnace', coolingSEER: 14 },
             },
         })
         expect(system.projectScope).toEqual({ type: 'system', id: 'ahu-1' })
@@ -120,17 +120,16 @@ describe('canonical v0 equipment schemas', () => {
 
         const zone = EquipmentDataSchema_v0.parse({
             projectScope: { type: 'zone', id: 'vav-1' },
-            dimensionData: { inletSize: '8' },
+            dimensionData: { width: 14 },
         })
         expect(zone.projectScope).toEqual({ type: 'zone', id: 'vav-1' })
-        expect(zone.dimensionData?.inletSize).toBe('8')
+        expect(zone.dimensionData).toEqual({ width: 14 })
     })
 
     it('requires projectScope on every equipment document', () => {
         expect(
-            EquipmentDataSchema_v0.safeParse({
-                dimensionData: { inletSize: '8' },
-            }).success
+            EquipmentDataSchema_v0.safeParse({ dimensionData: { width: 14 } })
+                .success
         ).toBe(false)
         expect(
             EquipmentDataSchema_v0.safeParse({
@@ -195,12 +194,12 @@ describe('canonical v0 equipment schemas', () => {
                         projectScope: { type: 'system', id: 'system-1' },
                         dimensionData: { length: 60, width: 30 },
                         energyConfiguration: {
-                            efficiency: { coolingSeer: 14 },
+                            efficiency: { coolingSEER: 14 },
                         },
                     },
                     'equipment-vav-1': {
                         projectScope: { type: 'zone', id: 'zone-1' },
-                        dimensionData: { inletSize: '8' },
+                        dimensionData: { width: 14 },
                     },
                 },
             }).success

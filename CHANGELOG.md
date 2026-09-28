@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.18.2] - 2026-09-28
+
+### Removed
+
+- Removed the retired `dimensionData.inletSize` from `EquipmentData_v0`, with
+  `TERMINAL_UNIT_INLET_SIZES_v0`, `TerminalUnitInletSizeSchema_v0`, and
+  `TerminalUnitInletSize_v0`. It only set how large a terminal unit is drawn.
+  Terminal units now use `dimensionData.length` and `dimensionData.width`
+  (inches), like central units.
+
+### Fixed
+
+- Renamed the `EquipmentData_v0` efficiency fields to match the stored names:
+  `coolingSeer` → `coolingSEER`, `heatingCop` → `heatingCOP`, and
+  `heatingAfue` → `heatingAFUE`. The API already reads and writes the
+  uppercase names, so the old names were ignored.
+
 ## [0.18.1] - 2026-09-28
 
 ### Added
@@ -37,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Renamed `invitedUsers` on `ProjectData_v0` to `invitedEmails`. The map is
   still keyed by normalized email, still server-owned (`disableUserWrite:
-  true`), and still listed on `PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0`.
+true`), and still listed on `PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0`.
 
 #### Migration
 

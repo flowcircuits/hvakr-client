@@ -27,8 +27,8 @@ const centralUnitEquipment: EquipmentData_v0 = {
         },
         efficiency: {
             heatingType: 'gasFurnace',
-            coolingSeer: 14,
-            heatingAfue: 0.8,
+            coolingSEER: 14,
+            heatingAFUE: 0.8,
         },
     },
     components: [
@@ -159,13 +159,13 @@ const terminalUnitComponents: Pick<
 
 const terminalUnitEquipmentFcu3: EquipmentData_v0 = {
     projectScope: { type: 'zone', id: ZONE_FCU_3_ID },
-    dimensionData: { inletSize: '8' },
+    dimensionData: { width: 12 },
     ...terminalUnitComponents,
 }
 
 const terminalUnitEquipmentFcu1: EquipmentData_v0 = {
     projectScope: { type: 'zone', id: ZONE_FCU_1_ID },
-    dimensionData: { inletSize: '10' },
+    dimensionData: { width: 14 },
     ...terminalUnitComponents,
 }
 

@@ -21,12 +21,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
-- Renamed `ProjectData_v0.users[uid].role` to `accessLevel`.
+- Renamed project membership and invite `role` fields to `accessLevel`.
+- Renamed the shared project access schemas to `UserAccessSchema_v0`,
+  `UserGroupAccessSchema_v0`, `OrganizationAccessSchema_v0`, and
+  `ProjectAccessSchema_v0`.
+- Project access levels are now `VIEWER` (1), `COMMENTER` (2), `MEMBER` (4),
+  `ADMIN` (8), and `OWNER` (10); the zero level is removed.
+- Removed `active` and `lastActive` from `ProjectUserData_v0` entries and
+  removed `ProjectData_v0._userIds`.
+- Added server-owned `userGroups`, `organization`, `_atLeastAccess`, and
+  `userStatus` project fields.
 
 #### Migration
 
 - Read `member.accessLevel` wherever project members previously used
   `member.role`.
+- Read project presence from `project.userStatus[uid]` instead of membership
+  entries.
 
 ## [0.18.0] - 2026-09-24
 

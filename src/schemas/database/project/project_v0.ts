@@ -258,30 +258,110 @@ export const DEFAULT_EQUIPMENT_MODES_v0: EquipmentModes_v0 = {
     },
 }
 
-export const ProjectUserRoles_v0 = {
-    NONE: 0,
+export const ProjectAccessLevels_v0 = {
     VIEWER: 1,
+    COMMENTER: 2,
     MEMBER: 4,
     ADMIN: 8,
     OWNER: 10,
 } as const
-export const ProjectUserRoleSchema_v0 = z.union(
-    Object.values(ProjectUserRoles_v0).map((role) => z.literal(role))
-)
+export const ProjectAccessLevelSchema_v0 = z
+    .union(
+        Object.values(ProjectAccessLevels_v0).map((level) => z.literal(level))
+    )
+    .describe('Access level for a collaborative document')
+export type ProjectAccessLevel_v0 = z.infer<typeof ProjectAccessLevelSchema_v0>
+export type ProjectAccessLevelName_v0 = keyof typeof ProjectAccessLevels_v0
 
-export const ProjectUserDataSchema_v0 = z.object({
-    active: z.boolean().optional(),
+export const UserAccessSchema_v0 = z.object({
+    accessLevel: ProjectAccessLevelSchema_v0,
     email: z.string().describe("User's email (denormalized for display)"),
-    firstName: z.string().optional(),
-    lastActive: z.number().optional(),
-    lastName: z.string().optional(),
-    profilePicture: z.string().nullish(),
-    accessLevel: ProjectUserRoleSchema_v0,
+    firstName: z.string().optional().describe("User's first name"),
+    lastName: z.string().optional().describe("User's last name"),
+    profilePicture: z
+        .string()
+        .nullish()
+        .describe("URL to user's profile picture"),
 })
+export type UserAccess_v0 = z.infer<typeof UserAccessSchema_v0>
+
+export const UserGroupAccessSchema_v0 = z.object({
+    accessLevel: ProjectAccessLevelSchema_v0,
+    name: z.string().describe('Name of the user group'),
+    organizationId: z
+        .string()
+        .describe('ID of the organization that owns the user group'),
+})
+export type UserGroupAccess_v0 = z.infer<typeof UserGroupAccessSchema_v0>
+
+export const OrganizationAccessSchema_v0 = z.object({
+    accessLevel: ProjectAccessLevelSchema_v0,
+    id: z.string(),
+    name: z.string().describe('Name of the organization'),
+    profilePicture: z
+        .string()
+        .nullish()
+        .describe("URL to organization's profile picture"),
+})
+export type OrganizationAccess_v0 = z.infer<typeof OrganizationAccessSchema_v0>
+
+const PrincipalIdSchema_v0 = z.union([
+    z.templateLiteral(['user', ':', z.string()]),
+    z.templateLiteral(['userGroup', ':', z.string(), ':', z.string()]),
+    z.templateLiteral(['organization', ':', z.string()]),
+])
+
+export const AtLeastAccessSchema_v0 = z.object({
+    VIEWER: z.array(PrincipalIdSchema_v0),
+    COMMENTER: z.array(PrincipalIdSchema_v0),
+    MEMBER: z.array(PrincipalIdSchema_v0),
+    ADMIN: z.array(PrincipalIdSchema_v0),
+    OWNER: z.array(PrincipalIdSchema_v0),
+})
+export type AtLeastAccess_v0 = z.infer<typeof AtLeastAccessSchema_v0>
+
+export const ProjectAccessSchema_v0 = z.object({
+    users: disableUserWrite(
+        z
+            .record(z.string(), UserAccessSchema_v0)
+            .describe(
+                'Users granted access, keyed by Firebase uid. New keys are added by the invite callable only.'
+            )
+    ),
+    userGroups: disableUserWrite(
+        z
+            .record(z.string(), UserGroupAccessSchema_v0)
+            .optional()
+            .describe(
+                'User groups granted access, keyed by user group id. New keys are added by the invite callable only.'
+            )
+    ),
+    organization: disableUserWrite(
+        OrganizationAccessSchema_v0.optional().describe(
+            'The single organization granted access. Added by the invite callable only.'
+        )
+    ),
+    _atLeastAccess: disableUserWrite(
+        AtLeastAccessSchema_v0.optional().describe(
+            'Principal ids holding at least each access level, derived from users, userGroups, and organization. Computed by write triggers and seeded by the creator. Used by Firestore rules, list queries, and embedding access control.'
+        )
+    ),
+})
+export type ProjectAccess_v0 = z.infer<typeof ProjectAccessSchema_v0>
+
+export const ProjectUserStatusSchema_v0 = z.object({
+    active: z.boolean().describe('Whether the user has the project open'),
+    lastActive: z
+        .number()
+        .describe('Unix milliseconds of the last presence change'),
+})
+export type ProjectUserStatus_v0 = z.infer<typeof ProjectUserStatusSchema_v0>
 
 export const InvitedUserDataSchema_v0 = z.object({
     invitedByUserId: z.string().describe('Firebase uid of the inviter'),
-    role: z.number().describe("Role on the collection's ladder"),
+    accessLevel: ProjectAccessLevelSchema_v0.describe(
+        'Access level granted on consume'
+    ),
     timestamp: z.number().describe('Unix ms created'),
 })
 export type InvitedUserData_v0 = z.infer<typeof InvitedUserDataSchema_v0>
@@ -339,18 +419,12 @@ export const AutomationsSchema_v0 = z.object({
 export type Automations_v0 = z.infer<typeof AutomationsSchema_v0>
 
 export const ComputedProjectDataSchema_v0 = z.object({
-    _userIds: disableUserWrite(
-        z
-            .array(z.string())
-            .optional()
-            .describe(
-                'Firebase uids with role ≥ VIEWER. Computed by write triggers; used for list queries and embedding access control.'
-            )
-    ),
     _nameLowercase: disableUserWrite(z.string().optional()),
 })
 
-export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
+export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend(
+    ProjectAccessSchema_v0.shape
+).extend({
     address: z.string().optional(),
     organizationId: disableUserWrite(z.string().optional()),
     airflowIncrement: z.number().int().min(1).optional(),
@@ -417,10 +491,13 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
                 'Pending invites keyed by normalized email. Grants zero access until consumed server-side into users[uid].'
             )
     ),
-    users: disableUserWrite(
+    userStatus: disableUserWrite(
         z
-            .record(z.string(), ProjectUserDataSchema_v0)
-            .describe('Map of Firebase uids to their project data')
+            .record(z.string(), ProjectUserStatusSchema_v0)
+            .optional()
+            .describe(
+                'Presence of each user who has opened the project, keyed by Firebase uid. Written by onUserStatusUpdate. Grants no access.'
+            )
     ),
     utilityRates: UtilityRatesSchema_v0.optional(),
     ventilationStandard: VentilationStandardSchema_v0.optional(),

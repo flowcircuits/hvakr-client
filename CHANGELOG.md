@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Terminal units now use `dimensionData.length` and `dimensionData.width`
   (inches), like central units.
 
+### Fixed
+
+- Renamed the `EquipmentData_v0` efficiency fields to match the stored names:
+  `coolingSeer` → `coolingSEER`, `heatingCop` → `heatingCOP`, and
+  `heatingAfue` → `heatingAFUE`. The API already reads and writes the
+  uppercase names, so the old names were ignored.
+
 ## [0.18.1] - 2026-09-28
 
 ### Added

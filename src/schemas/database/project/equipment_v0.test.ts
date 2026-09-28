@@ -112,7 +112,7 @@ describe('canonical v0 equipment schemas', () => {
             dimensionData: { length: 60, width: 30 },
             energyConfiguration: {
                 schedule: { warmupHours: 2, warmupMultiplier: 1.5 },
-                efficiency: { heatingType: 'gasFurnace', coolingSeer: 14 },
+                efficiency: { heatingType: 'gasFurnace', coolingSEER: 14 },
             },
         })
         expect(system.projectScope).toEqual({ type: 'system', id: 'ahu-1' })
@@ -194,7 +194,7 @@ describe('canonical v0 equipment schemas', () => {
                         projectScope: { type: 'system', id: 'system-1' },
                         dimensionData: { length: 60, width: 30 },
                         energyConfiguration: {
-                            efficiency: { coolingSeer: 14 },
+                            efficiency: { coolingSEER: 14 },
                         },
                     },
                     'equipment-vav-1': {

@@ -269,7 +269,7 @@ const project = {
             // and terminal units; energy config is optional.
             dimensionData: { length: 60, width: 30 },
             outlet: { ductHeatGain: 2, ductLeakagePercent: 0.01 },
-            energyConfiguration: { efficiency: { coolingSeer: 14 } },
+            energyConfiguration: { efficiency: { coolingSEER: 14 } },
         },
         'equipment-vav-1': {
             projectScope: { type: 'zone', id: 'zone-1' },

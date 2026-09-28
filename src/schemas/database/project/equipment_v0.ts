@@ -262,9 +262,9 @@ export type EnergySchedule_v0 = z.infer<typeof EnergyScheduleSchema_v0>
 
 export const EquipmentEfficiencySchema_v0 = z.object({
     heatingType: z.enum(HeatingEquipmentTypes_v0).optional(),
-    coolingSeer: z.number().optional(),
-    heatingCop: z.number().optional(),
-    heatingAfue: z.number().optional(),
+    coolingSEER: z.number().optional(),
+    heatingCOP: z.number().optional(),
+    heatingAFUE: z.number().optional(),
 })
 export type EquipmentEfficiency_v0 = z.infer<
     typeof EquipmentEfficiencySchema_v0

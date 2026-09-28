@@ -27,8 +27,8 @@ const centralUnitEquipment: EquipmentData_v0 = {
         },
         efficiency: {
             heatingType: 'gasFurnace',
-            coolingSeer: 14,
-            heatingAfue: 0.8,
+            coolingSEER: 14,
+            heatingAFUE: 0.8,
         },
     },
     components: [

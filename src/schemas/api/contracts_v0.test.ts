@@ -271,6 +271,18 @@ describe('export schema', () => {
         expect(parsed.progress).toBe(1)
     })
 
+    it('carries the empty flag on an empty canvas export', () => {
+        const parsed = APIExportSchema_v0.parse({
+            id: 'exp_3',
+            name: 'Level 1',
+            status: 'failed',
+            date: 1,
+            empty: true,
+        })
+        expect(parsed.empty).toBe(true)
+        expect(parsed.downloadUrl).toBeUndefined()
+    })
+
     it('carries the study id and captured study name on a study export', () => {
         const parsed = APIExportSchema_v0.parse({
             id: 'exp_2',

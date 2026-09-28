@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.18.1] - 2026-09-28
+
+### Added
+
+- `APIExport_v0` and `ExportData_v0` carry an optional `empty` flag. It is
+  `true` when a canvas export had no content to draw. The export status is
+  `failed` and there is no download URL.
+
 ## [0.18.0] - 2026-09-24
 
 ### Breaking Changes

@@ -42,6 +42,8 @@ export const ExportDataSchema_v0 = z.object({
     displayUnitSystemId: DisplayUnitSystemIdSchema,
     /** Whether export generation failed */
     error: z.boolean().optional(),
+    /** The canvas had no content to export. Generation finished without a file. */
+    empty: z.boolean().optional(),
     fileName: z.string(),
     name: z.string(),
     /** User ID to notify when export generation is complete */

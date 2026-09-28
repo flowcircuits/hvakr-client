@@ -46,6 +46,12 @@ export const APIExportSchema_v0 = z
             .number()
             .optional()
             .describe('Generation progress (0–1), when reported.'),
+        empty: z
+            .boolean()
+            .optional()
+            .describe(
+                'True when the canvas had no content to export. Status is "failed" and there is no download URL.'
+            ),
         studyId: z
             .string()
             .optional()

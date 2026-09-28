@@ -238,25 +238,11 @@ export type EquipmentProjectScope_v0 = z.infer<
     typeof EquipmentProjectScopeSchema_v0
 >
 
-export const TERMINAL_UNIT_INLET_SIZES_v0 = [
-    '6',
-    '8',
-    '10',
-    '12',
-    '14',
-    '16',
-    '24x16',
-] as const satisfies Readonly<string[]>
-export const TerminalUnitInletSizeSchema_v0 = z.enum(
-    TERMINAL_UNIT_INLET_SIZES_v0
-)
-export type TerminalUnitInletSize_v0 = z.infer<
-    typeof TerminalUnitInletSizeSchema_v0
->
-
-/** Consolidated central (length/width) and terminal (inletSize) dimensions. */
+/**
+ * Drawn plan size of a central or terminal unit, in inches. `length` runs
+ * along the airflow and `width` runs across it.
+ */
 export const EquipmentDimensionDataSchema_v0 = z.object({
-    inletSize: TerminalUnitInletSizeSchema_v0.optional(),
     length: z.number().optional(),
     width: z.number().optional(),
 })

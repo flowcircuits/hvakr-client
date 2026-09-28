@@ -120,17 +120,16 @@ describe('canonical v0 equipment schemas', () => {
 
         const zone = EquipmentDataSchema_v0.parse({
             projectScope: { type: 'zone', id: 'vav-1' },
-            dimensionData: { inletSize: '8' },
+            dimensionData: { width: 14 },
         })
         expect(zone.projectScope).toEqual({ type: 'zone', id: 'vav-1' })
-        expect(zone.dimensionData?.inletSize).toBe('8')
+        expect(zone.dimensionData).toEqual({ width: 14 })
     })
 
     it('requires projectScope on every equipment document', () => {
         expect(
-            EquipmentDataSchema_v0.safeParse({
-                dimensionData: { inletSize: '8' },
-            }).success
+            EquipmentDataSchema_v0.safeParse({ dimensionData: { width: 14 } })
+                .success
         ).toBe(false)
         expect(
             EquipmentDataSchema_v0.safeParse({
@@ -200,7 +199,7 @@ describe('canonical v0 equipment schemas', () => {
                     },
                     'equipment-vav-1': {
                         projectScope: { type: 'zone', id: 'zone-1' },
-                        dimensionData: { inletSize: '8' },
+                        dimensionData: { width: 14 },
                     },
                 },
             }).success

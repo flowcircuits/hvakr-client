@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.19.0] - 2026-09-28
+
+### Breaking Changes
+
+- Removed `dimensionData.inletSize` from `EquipmentData_v0`, with
+  `TERMINAL_UNIT_INLET_SIZES_v0`, `TerminalUnitInletSizeSchema_v0`, and
+  `TerminalUnitInletSize_v0`. The inlet size only set how large a terminal
+  unit is drawn. Terminal units now use `dimensionData.length` and
+  `dimensionData.width`, like central units.
+
+#### Migration
+
+- Set `dimensionData.width` (inches, across the airflow) where you set
+  `inletSize`. Leave it unset to size the unit from its supply airflow.
+
 ## [0.18.1] - 2026-09-28
 
 ### Added
@@ -37,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Renamed `invitedUsers` on `ProjectData_v0` to `invitedEmails`. The map is
   still keyed by normalized email, still server-owned (`disableUserWrite:
-  true`), and still listed on `PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0`.
+true`), and still listed on `PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0`.
 
 #### Migration
 

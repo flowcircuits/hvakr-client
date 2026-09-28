@@ -265,15 +265,15 @@ const project = {
                     },
                 },
             },
-            // Central dimensions (length/width) and terminal inlet size share
-            // one `dimensionData` shape; energy config is optional.
+            // `dimensionData` is the drawn plan size in inches for central
+            // and terminal units; energy config is optional.
             dimensionData: { length: 60, width: 30 },
             outlet: { ductHeatGain: 2, ductLeakagePercent: 0.01 },
             energyConfiguration: { efficiency: { coolingSeer: 14 } },
         },
         'equipment-vav-1': {
             projectScope: { type: 'zone', id: 'zone-1' },
-            dimensionData: { inletSize: '8' },
+            dimensionData: { width: 12 },
         },
     },
 }

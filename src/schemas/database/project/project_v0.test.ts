@@ -7,15 +7,19 @@ import {
     WritableProjectSubcollectionsSchema_v0,
 } from './expandedProject_v0'
 import {
+    AtLeastAccessSchema_v0,
     DEFAULT_EQUIPMENT_MODES_v0,
     BuildingDataSchema_v0,
     InvitedUserDataSchema_v0,
     LevelDataSchema_v0,
     PROJECT_RESTRICTED_WRITE_FIELDS_V0,
     PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0,
+    ProjectAccessLevelSchema_v0,
+    ProjectAccessLevels_v0,
     ProjectDataSchema_v0,
     ProjectPostSchema_v0,
-    ProjectUserDataSchema_v0,
+    ProjectUserStatusSchema_v0,
+    UserAccessSchema_v0,
     WritableProjectDataSchema_v0,
 } from './project_v0'
 import { SpaceAirflowRequirementsSchema_v0 } from './space_v0'
@@ -44,8 +48,11 @@ describe('Project v0 schemas', () => {
 
     it('exposes every canonical project field on reads', () => {
         expect(Object.keys(ProjectDataSchema_v0.shape)).toEqual([
-            '_userIds',
             '_nameLowercase',
+            'users',
+            'userGroups',
+            'organization',
+            '_atLeastAccess',
             'address',
             'organizationId',
             'airflowIncrement',
@@ -96,7 +103,7 @@ describe('Project v0 schemas', () => {
             'createdAt',
             'unitSystem',
             'invitedEmails',
-            'users',
+            'userStatus',
             'utilityRates',
             'ventilationStandard',
             'weatherSpec',
@@ -106,15 +113,37 @@ describe('Project v0 schemas', () => {
             ProjectDataSchema_v0.safeParse({
                 equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
                 name: 'Canonical read',
-                users: { 'user-1': { email: 'owner@example.com', role: 10 } },
+                users: {
+                    'user-1': { email: 'owner@example.com', accessLevel: 10 },
+                },
+                userGroups: {
+                    'group-1': {
+                        accessLevel: 4,
+                        name: 'Engineering',
+                        organizationId: 'organization-1',
+                    },
+                },
+                organization: {
+                    accessLevel: 1,
+                    id: 'organization-1',
+                    name: 'Acme MEP',
+                    profilePicture: null,
+                },
                 invitedEmails: {
                     'invitee@example.com': {
                         invitedByUserId: 'user-1',
-                        role: 1,
+                        accessLevel: 1,
                         timestamp: 1,
                     },
                 },
-                _userIds: ['user-1'],
+                _atLeastAccess: {
+                    VIEWER: ['user:user-1'],
+                    COMMENTER: ['user:user-1'],
+                    MEMBER: ['user:user-1'],
+                    ADMIN: ['user:user-1'],
+                    OWNER: ['user:user-1'],
+                },
+                userStatus: { 'user-1': { active: true, lastActive: 1 } },
                 _nameLowercase: 'canonical read',
                 organizationId: 'organization-1',
                 analytics: { updatedAt: 1 },
@@ -133,32 +162,50 @@ describe('Project v0 schemas', () => {
         ).toBe(true)
     })
 
-    it('models uid-keyed membership and server-owned invites', () => {
-        expect(ProjectUserDataSchema_v0.shape).not.toHaveProperty(
-            'pendingSignUp'
-        )
-        expect(ProjectUserDataSchema_v0.shape.email.description).toBe(
+    it('models access-level membership and server-owned access fields', () => {
+        expect(UserAccessSchema_v0.shape).not.toHaveProperty('pendingSignUp')
+        expect(UserAccessSchema_v0.shape.email.description).toBe(
             "User's email (denormalized for display)"
         )
         expect(
-            ProjectUserDataSchema_v0.safeParse({
+            UserAccessSchema_v0.safeParse({
                 email: 'owner@example.com',
-                role: 10,
+                accessLevel: 10,
             }).success
         ).toBe(true)
-        expect(ProjectUserDataSchema_v0.safeParse({ role: 10 }).success).toBe(
+        expect(UserAccessSchema_v0.safeParse({ accessLevel: 10 }).success).toBe(
             false
         )
+        expect(
+            UserAccessSchema_v0.safeParse({
+                email: 'owner@example.com',
+                accessLevel: 0,
+            }).success
+        ).toBe(false)
+        expect(ProjectAccessLevels_v0).toEqual({
+            VIEWER: 1,
+            COMMENTER: 2,
+            MEMBER: 4,
+            ADMIN: 8,
+            OWNER: 10,
+        })
+        expect(ProjectAccessLevelSchema_v0.safeParse(0).success).toBe(false)
 
         expect(ProjectDataSchema_v0.shape).not.toHaveProperty('_owner')
         expect(ProjectDataSchema_v0.shape).not.toHaveProperty('_userEmails')
-        expect(ProjectDataSchema_v0.shape._userIds.description).toBe(
-            'Firebase uids with role ≥ VIEWER. Computed by write triggers; used for list queries and embedding access control.'
-        )
         expect(ProjectDataSchema_v0.shape.users.description).toBe(
-            'Map of Firebase uids to their project data'
+            'Users granted access, keyed by Firebase uid. New keys are added by the invite callable only.'
         )
         expect(ProjectDataSchema_v0.shape.users.meta()).toMatchObject({
+            disableUserWrite: true,
+        })
+        expect(ProjectDataSchema_v0.shape.userGroups.meta()).toMatchObject({
+            disableUserWrite: true,
+        })
+        expect(ProjectDataSchema_v0.shape.organization.meta()).toMatchObject({
+            disableUserWrite: true,
+        })
+        expect(ProjectDataSchema_v0.shape._atLeastAccess.meta()).toMatchObject({
             disableUserWrite: true,
         })
         expect(ProjectDataSchema_v0.shape.invitedEmails.description).toBe(
@@ -167,11 +214,14 @@ describe('Project v0 schemas', () => {
         expect(ProjectDataSchema_v0.shape.invitedEmails.meta()).toMatchObject({
             disableUserWrite: true,
         })
+        expect(ProjectDataSchema_v0.shape.userStatus.meta()).toMatchObject({
+            disableUserWrite: true,
+        })
         expect(InvitedUserDataSchema_v0.shape.invitedByUserId.description).toBe(
             'Firebase uid of the inviter'
         )
-        expect(InvitedUserDataSchema_v0.shape.role.description).toBe(
-            "Role on the collection's ladder"
+        expect(InvitedUserDataSchema_v0.shape.accessLevel.description).toBe(
+            'Access level granted on consume'
         )
         expect(InvitedUserDataSchema_v0.shape.timestamp.description).toBe(
             'Unix ms created'
@@ -179,14 +229,30 @@ describe('Project v0 schemas', () => {
         expect(
             InvitedUserDataSchema_v0.parse({
                 invitedByUserId: 'user-1',
-                role: 4,
+                accessLevel: 4,
                 timestamp: 1,
             })
-        ).toEqual({ invitedByUserId: 'user-1', role: 4, timestamp: 1 })
+        ).toEqual({ invitedByUserId: 'user-1', accessLevel: 4, timestamp: 1 })
+        expect(
+            ProjectUserStatusSchema_v0.parse({ active: true, lastActive: 1 })
+        ).toEqual({ active: true, lastActive: 1 })
+        expect(
+            AtLeastAccessSchema_v0.parse({
+                VIEWER: ['user:user-1'],
+                COMMENTER: [],
+                MEMBER: [],
+                ADMIN: [],
+                OWNER: [],
+            }).VIEWER
+        ).toEqual(['user:user-1'])
 
         expect(PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0).toMatchObject({
             users: true,
+            userGroups: true,
+            organization: true,
+            _atLeastAccess: true,
             invitedEmails: true,
+            userStatus: true,
         })
         expect(PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0).not.toHaveProperty(
             '_owner'
@@ -197,6 +263,18 @@ describe('Project v0 schemas', () => {
         expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty('users')
         expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
             'invitedEmails'
+        )
+        expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
+            'userGroups'
+        )
+        expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
+            'organization'
+        )
+        expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
+            '_atLeastAccess'
+        )
+        expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
+            'userStatus'
         )
     })
 

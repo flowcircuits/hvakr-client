@@ -20,6 +20,12 @@ export const APIProductSchema_v0 = z
         name: z.string().describe('Product name.'),
         manufacturer: z.string().optional().describe('Manufacturer name.'),
         model: z.string().optional().describe('Model number or identifier.'),
+        tag: z
+            .string()
+            .optional()
+            .describe(
+                'Default equipment tag shown on drawings and schedules. A tag on the placed node overrides it.'
+            ),
         description: z.string().optional().describe('Product description.'),
         type: z
             .string()
@@ -53,9 +59,9 @@ export const ProductSearchCardSchema_v0 = z
         name: z.string().describe('Product name.'),
         manufacturer: z.string().optional().describe('Manufacturer name.'),
         model: z.string().optional().describe('Model number or identifier.'),
-        type: NodeTypeSchema_v0
-            .optional()
-            .describe('Dry-side node type the product represents.'),
+        type: NodeTypeSchema_v0.optional().describe(
+            'Dry-side node type the product represents.'
+        ),
     })
     .describe('A slim product card as returned by the search endpoint.')
 

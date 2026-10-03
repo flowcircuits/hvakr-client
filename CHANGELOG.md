@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.19.2] - 2026-10-02
+
+### Added
+
+- `APIProductSchema_v0` and `APIProduct_v0` now expose the optional supplier
+  equipment tag.
+
 ## [0.19.1] - 2026-09-29
 
 ### Added

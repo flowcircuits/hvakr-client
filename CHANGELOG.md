@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.19.3] - 2026-10-02
+
+### Fixed
+
+- Product reads preserve optional `link`, `length`, and `width` fields.
+- Air-cleaner graph reads and writes preserve tag overrides and IAQP settings
+  (`cleaningAirflow`, `filterLocation`, and `filterEfficiencies`).
+- Graph node patches accept partial updates, using the same object union
+  structure as the canonical server schema.
+
 ## [0.19.2] - 2026-10-02
 
 ### Added

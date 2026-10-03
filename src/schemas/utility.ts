@@ -149,6 +149,12 @@ const transformField = (schema: z.ZodType): z.ZodType => {
         return z.record(keySchema, transformedValue)
     }
 
+    if (unwrapped instanceof z.ZodUnion) {
+        return z.union(
+            unwrapped.options.map((option) => transformField(option))
+        )
+    }
+
     return schema
 }
 

@@ -35,6 +35,9 @@ export const APIProductSchema_v0 = z
             ),
         price: z.number().optional().describe('Product price in USD.'),
         imageUrl: z.string().optional().describe('Product image URL.'),
+        link: z.string().optional().describe('Product documentation URL.'),
+        length: z.number().optional().describe('Plan-view length in inches.'),
+        width: z.number().optional().describe('Plan-view width in inches.'),
         specifications: z
             .record(z.string(), z.unknown())
             .optional()

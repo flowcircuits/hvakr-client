@@ -120,6 +120,10 @@ export const AirCleanerNodeDataSchema_v0 = z.object({
     nodeType: z.literal(NodeTypes_v0.AIR_CLEANER),
     productId: z.string().optional(),
     selections: z.record(z.string(), SelectionSchema_v0).optional(),
+    cleaningAirflow: z.number().optional(),
+    filterLocation: z.string().optional(),
+    filterEfficiencies: z.record(z.string(), z.number()).optional(),
+    tag: z.string().optional(),
 })
 
 export const PumpNodeDataSchema_v0 = z.object({
@@ -193,13 +197,20 @@ export const GraphAdjacencySchema_v0 = z
     .and(AssociatedAdjacencyDataSchema_v0)
 export type GraphAdjacency_v0 = z.infer<typeof GraphAdjacencySchema_v0>
 
-export const NodeDataSchema_v0 = AssociatedNodeDataSchema_v0.and(
-    CoordinateNodeDataSchema_v0
+export const NodeDataSchema_v0 = z.union(
+    AssociatedNodeDataSchema_v0.options.map((schema) =>
+        schema.extend(CoordinateNodeDataSchema_v0.shape)
+    )
 )
 
-export const GraphNodeSchema_v0 = z
-    .object({ adjacencies: z.array(GraphAdjacencySchema_v0), id: z.string() })
-    .and(NodeDataSchema_v0)
+export const GraphNodeSchema_v0 = z.union(
+    NodeDataSchema_v0.options.map((schema) =>
+        schema.extend({
+            adjacencies: z.array(GraphAdjacencySchema_v0),
+            id: z.string(),
+        })
+    )
+)
 export type GraphNode_v0 = z.infer<typeof GraphNodeSchema_v0>
 
 export const GraphSchema_v0 = z.record(z.string(), GraphNodeSchema_v0)

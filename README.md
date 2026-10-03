@@ -235,6 +235,11 @@ eligible maps, not only pages from this upload.
 page with `nextCursor` while `hasMore`. Each card is a slim projection meant for
 pickers and lists; call `getProduct(id)` for the full product record.
 
+Product records include optional `link`, `length`, and `width` fields. Plan-view
+dimensions use inches. Air-cleaner graph nodes accept a `tag` override and the
+IAQP settings `cleaningAirflow` (CFM), `filterLocation`, and `filterEfficiencies`.
+Set these node fields to `null` in a project patch to clear them.
+
 ### Equipment modes and calculations
 
 Since `0.6.0`, projects use a shared `equipmentModes` registry. As of `0.10.0`,

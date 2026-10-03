@@ -473,11 +473,13 @@ describe('product schema', () => {
             id: 'prod_1',
             name: 'RTU-5',
             manufacturer: 'Acme',
+            tag: 'AC-1',
             price: 1200,
             specifications: { tonnage: 5 },
             files: { f1: { name: 'cut-sheet.pdf', url: 'https://x/f.pdf' } },
         })
         expect(parsed.name).toBe('RTU-5')
+        expect(parsed.tag).toBe('AC-1')
         expect(parsed.files?.f1?.url).toBe('https://x/f.pdf')
     })
 

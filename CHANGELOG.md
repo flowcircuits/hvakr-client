@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.20.0] - 2026-10-07
+
+### Breaking Changes
+
+- Moved `annotations` from `ProjectData_v0` to `ProjectSubcollections_v0`.
+  Read annotations with `getProject(id, ['annotations'])` or
+  `getProject(id, true)`. Expanded project create and patch payloads keep the
+  same top-level `annotations` record.
+
+### Added
+
+- Exported `AnnotationData_v0` and the annotation size, alignment, and shape
+  schemas and types. Annotation reads and writes now preserve `width`, `size`,
+  `align`, and `shape`.
+
 ## [0.19.3] - 2026-10-02
 
 ### Fixed

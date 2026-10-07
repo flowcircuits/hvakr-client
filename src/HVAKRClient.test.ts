@@ -213,6 +213,26 @@ describe('HVAKRClient request building', () => {
         )
     })
 
+    it('getProject requests the annotations subcollection', async () => {
+        const annotations = {
+            'note-1': {
+                x: 100,
+                y: 200,
+                text: 'Verify diffuser location',
+                author: 'engineer@example.com',
+                createdAt: 1_700_000_000_000,
+                level: 1,
+                shape: 'cloud',
+            },
+        }
+        enqueue(200, { id: 'p1', annotations })
+
+        const project = await requestClient.getProject('p1', ['annotations'])
+
+        expect(requests.at(-1)?.path).toBe('/v0/projects/p1?expand=annotations')
+        expect(project.annotations).toEqual(annotations)
+    })
+
     it('getProject omits expand when not requested', async () => {
         enqueue(200, { id: 'p1' })
         await requestClient.getProject('p1')

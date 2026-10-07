@@ -57,7 +57,6 @@ describe('Project v0 schemas', () => {
             'organizationId',
             'airflowIncrement',
             'analytics',
-            'annotations',
             'apiCreated',
             'automations',
             'building',

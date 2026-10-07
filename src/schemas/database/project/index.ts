@@ -1,3 +1,4 @@
+export * from './annotation_v0'
 export * from './deadline_v0'
 export * from './doorType_v0'
 export * from './ductType_v0'

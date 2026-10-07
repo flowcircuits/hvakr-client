@@ -6,6 +6,7 @@ import {
     getStrictSchema,
     getUserWritableSchema,
 } from '../../utility'
+import { AnnotationDataSchema_v0 } from './annotation_v0'
 import { DeadlineDataSchema_v0 } from './deadline_v0'
 import { DoorTypeDataSchema_v0 } from './doorType_v0'
 import { DuctTypeDataSchema_v0 } from './ductType_v0'
@@ -26,6 +27,7 @@ import { ZoneDataSchema_v0 } from './zone_v0'
 
 /** Subcollections returned by `expand`. */
 export const ProjectSubcollectionsSchema_v0 = z.object({
+    annotations: z.record(z.string(), AnnotationDataSchema_v0).optional(),
     deadlines: z.record(z.string(), DeadlineDataSchema_v0).optional(),
     doorTypes: z.record(z.string(), DoorTypeDataSchema_v0).optional(),
     ductTypes: z.record(z.string(), DuctTypeDataSchema_v0).optional(),

@@ -151,6 +151,29 @@ job-created, and uploaded sheet-file data is read-only except for
 Project reads may include the server-owned `defaultSystemPresetId`, which is
 used to initialize equipment for new systems and zones.
 
+Annotations are a project subcollection. Read them with
+`getProject(id, ['annotations'])` or `getProject(id, true)`; the response has an
+`annotations` record keyed by annotation ID. Its entries use `AnnotationData_v0`.
+Create and update requests accept the same top-level record. Set an entry to
+`null` to delete that annotation. Set an optional field to `null` to clear it:
+
+```ts
+await hvakr.updateProject('project-id', {
+    annotations: {
+        'note-1': {
+            text: 'Verify diffuser location',
+            shape: 'cloud',
+            width: 240,
+        },
+        'note-2': null,
+    },
+})
+```
+
+Annotation style fields are optional: `size` (`small`, `medium`, `large`),
+`align` (`left`, `center`, `right`), `shape` (`none`, `box`, `cloud`, `hexagon`),
+and `color`. `width` must be positive and controls text wrapping.
+
 Projects can also store flat, user-writable `metadata` for external-system
 linking and application-specific context. Metadata values may be strings,
 numbers, or booleans; nested objects and arrays are intentionally excluded.

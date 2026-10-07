@@ -76,18 +76,6 @@ export const UtilityRatesSchema_v0 = z.object({
     gasRate: z.number().optional(),
 })
 
-export const AnnotationDataSchema_v0 = z.object({
-    arrowX: z.number().optional(),
-    arrowY: z.number().optional(),
-    author: z.string(),
-    color: z.string().optional(),
-    level: z.number(),
-    text: z.string(),
-    createdAt: z.number(),
-    x: z.number(),
-    y: z.number(),
-})
-
 export const PresentModeConfigSchema_v0 = z.object({
     hiddenSlides: z.array(z.string()).optional(),
 })
@@ -429,7 +417,6 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend(
     organizationId: disableUserWrite(z.string().optional()),
     airflowIncrement: z.number().int().min(1).optional(),
     analytics: disableUserWrite(ProjectAnalyticsSchema_v0.optional()),
-    annotations: z.record(z.string(), AnnotationDataSchema_v0).optional(),
     apiCreated: disableUserWrite(z.boolean().optional()),
     automations: disableUserWrite(AutomationsSchema_v0.optional()),
     building: BuildingDataSchema_v0.optional(),

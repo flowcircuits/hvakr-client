@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.20.1] - 2026-10-08
+
+### Removed
+
+- Removed `createdAt` from `AnnotationData_v0`. Annotations no longer store a
+  creation time. Payloads that still send it are accepted and the field is
+  dropped.
+
 ## [0.20.0] - 2026-10-07
 
 ### Breaking Changes

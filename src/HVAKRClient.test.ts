@@ -220,7 +220,6 @@ describe('HVAKRClient request building', () => {
                 y: 200,
                 text: 'Verify diffuser location',
                 author: 'engineer@example.com',
-                createdAt: 1_700_000_000_000,
                 level: 1,
                 shape: 'cloud',
             },

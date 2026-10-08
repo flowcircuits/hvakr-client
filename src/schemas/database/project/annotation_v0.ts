@@ -22,7 +22,6 @@ export const AnnotationDataSchema_v0 = z.object({
     text: z.string(),
     width: z.number().positive().optional(),
     author: z.string(),
-    createdAt: z.number(),
     level: z.number(),
     color: z.string().optional(),
     size: AnnotationSizeSchema_v0.optional(),

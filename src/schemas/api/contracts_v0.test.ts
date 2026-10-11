@@ -112,6 +112,35 @@ describe('calculator flags', () => {
 })
 
 describe('calculations contract', () => {
+    it('preserves calculated graph metadata in the graph section', () => {
+        const graph = {
+            node_1: {
+                id: 'node_1',
+                nodeType: 'FITTING',
+                level: 0,
+                point: { x: 10, y: 20 },
+                pressure: 0.2,
+                adjacencies: [
+                    {
+                        id: 'node_2',
+                        adjacencyType: 'DUCT',
+                        ductSize: { ductSizeType: 'CIRCLE', height: 12 },
+                        flowRate: 500,
+                    },
+                    { id: 'node_3', adjacencyType: 'LINK' },
+                ],
+            },
+        }
+
+        expect(
+            APIProjectCalculationsSchema_v0.parse({
+                errors: [],
+                flags: {},
+                graph,
+            }).graph
+        ).toEqual(graph)
+    })
+
     it('accepts a response with only the requested sections', () => {
         const parsed = APIProjectCalculationsSchema_v0.parse({
             errors: [],

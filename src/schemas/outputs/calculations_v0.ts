@@ -14,7 +14,7 @@ import { ErrorSchema_v0 } from './ErrorSchema_v0'
 import {
     CoolingLoadsSchema_v0,
     HeatingLoadsSchema_v0,
-    MetaDrySideGraphSchema_v0,
+    MetaGraphSchema_v0,
     SpaceRegisterScheduleRowSchema_v0,
 } from './misc_v0'
 
@@ -24,7 +24,7 @@ import {
  * `?include=`. Each section below is the calculator output reshaped — the
  * values are already computed, these schemas only describe the wire shape.
  *
- * Sections are flat: `registerSchedule` is the row array itself, `drySideGraph`
+ * Sections are flat: `registerSchedule` is the row array itself, `graph`
  * is the graph itself, and `equipment` is the per-equipment record itself — no
  * redundant single-key wrappers.
  */
@@ -57,16 +57,13 @@ export type CalcRegisterScheduleSection_v0 = z.infer<
 >
 
 // --------------------------------------------------------------------
-// -- Dryside graph ---------------------------------------------------
+// -- Graph -----------------------------------------------------------
 
-/** Duct (dry-side) graph annotated with flow rates, sizes, and pressures. */
-export const CalcDrySideGraphSectionSchema_v0 =
-    MetaDrySideGraphSchema_v0.describe(
-        'Duct graph annotated with flow rates, duct sizes, and pressures.'
-    )
-export type CalcDrySideGraphSection_v0 = z.infer<
-    typeof CalcDrySideGraphSectionSchema_v0
->
+/** Duct graph annotated with flow rates, sizes, and pressures. */
+export const CalcGraphSectionSchema_v0 = MetaGraphSchema_v0.describe(
+    'Duct graph annotated with flow rates, duct sizes, and pressures.'
+)
+export type CalcGraphSection_v0 = z.infer<typeof CalcGraphSectionSchema_v0>
 
 // --------------------------------------------------------------------
 // -- Ventilation -----------------------------------------------------
@@ -186,12 +183,12 @@ export type CalcAirflowsSection_v0 = z.infer<
 /**
  * Calculation section keys accepted by `?include=`. Snake-case on the wire;
  * they map to the camelCase fields on {@link APIProjectCalculationsSchema_v0}
- * (`register_schedule` → `registerSchedule`, `dryside_graph` → `drySideGraph`).
+ * (`register_schedule` → `registerSchedule`).
  */
 export const APICalculationSections_v0 = {
     loads: 'loads',
     register_schedule: 'register_schedule',
-    dryside_graph: 'dryside_graph',
+    graph: 'graph',
     ventilation: 'ventilation',
     equipment: 'equipment',
     checksums: 'checksums',
@@ -221,7 +218,7 @@ export const APIProjectCalculationsSchema_v0 = z
         flags: CalculatorFlagsSchema_v0,
         loads: CalcLoadsSectionSchema_v0.optional(),
         registerSchedule: CalcRegisterScheduleSectionSchema_v0.optional(),
-        drySideGraph: CalcDrySideGraphSectionSchema_v0.optional(),
+        graph: CalcGraphSectionSchema_v0.optional(),
         ventilation: CalcVentilationSectionSchema_v0.optional(),
         equipment: CalcEquipmentSectionSchema_v0.optional(),
         checksums: CalcChecksumsSectionSchema_v0.optional(),

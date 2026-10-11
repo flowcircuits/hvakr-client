@@ -570,10 +570,10 @@ describeApi('HVAKR Client', () => {
 
     it('should get multiple calculation sections from one call', async () => {
         const calc = await hvakrClient.getProjectCalculations(id!, {
-            include: ['loads', 'dryside_graph'],
+            include: ['loads', 'graph'],
         })
         expect(Object.keys(calc.loads!.spaceCoolingLoads).length).toBe(123)
-        expect(Object.keys(calc.drySideGraph!).length).toBe(776)
+        expect(Object.keys(calc.graph!).length).toBe(776)
     }, 40000)
 
     it('runs sync jobs inline and polls async jobs', async () => {

@@ -31,7 +31,7 @@ export const APIProductSchema_v0 = z
             .string()
             .optional()
             .describe(
-                'Dry-side node type the product represents (e.g. terminal unit, central unit).'
+                'Graph node type the product represents (e.g. terminal unit, central unit).'
             ),
         price: z.number().optional().describe('Product price in USD.'),
         imageUrl: z.string().optional().describe('Product image URL.'),
@@ -63,7 +63,7 @@ export const ProductSearchCardSchema_v0 = z
         manufacturer: z.string().optional().describe('Manufacturer name.'),
         model: z.string().optional().describe('Model number or identifier.'),
         type: NodeTypeSchema_v0.optional().describe(
-            'Dry-side node type the product represents.'
+            'Graph node type the product represents.'
         ),
     })
     .describe('A slim product card as returned by the search endpoint.')

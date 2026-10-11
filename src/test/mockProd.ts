@@ -34,7 +34,7 @@ type MockJob = {
 const ALL_CALCULATION_SECTIONS = [
     'loads',
     'register_schedule',
-    'dryside_graph',
+    'graph',
     'ventilation',
     'equipment',
     'checksums',
@@ -287,8 +287,8 @@ export class MockProdService {
                 systemHeatingLoads: entries(6),
             }
         }
-        if (include.includes('dryside_graph')) {
-            result.drySideGraph = Object.fromEntries(
+        if (include.includes('graph')) {
+            result.graph = Object.fromEntries(
                 Array.from({ length: 776 }, (_, index) => [`node-${index}`, {}])
             )
         }

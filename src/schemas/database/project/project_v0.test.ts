@@ -27,6 +27,54 @@ import { SpaceTypeDataSchema_v0 } from './spaceType_v0'
 import { WindowTypeDataSchema_v0 } from './windowType_v0'
 
 describe('Project v0 schemas', () => {
+    it('preserves duct design settings on project reads and writes', () => {
+        const ductDesign = {
+            fittings: { ELBOW: { lossCoefficient: 0.3 } },
+            sizingData: {
+                ductSizes: {
+                    duct_1: {
+                        ductSizeType: 'RECTANGLE',
+                        height: 12,
+                        width: 18,
+                    },
+                },
+                ductSizingHash: 'sizing-hash',
+            },
+        }
+        const project = {
+            equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+            name: 'Duct design project',
+            ductDesign,
+        }
+
+        expect(
+            ProjectDataSchema_v0.parse({ ...project, users: {} }).ductDesign
+        ).toEqual(ductDesign)
+        expect(ProjectPostSchema_v0.parse(project).ductDesign).toEqual(
+            ductDesign
+        )
+        expect(
+            ExpandedProjectPatchSchema_v0.parse({ ductDesign }).ductDesign
+        ).toEqual(ductDesign)
+    })
+
+    it('preserves layout and duct sizing analytics on project reads', () => {
+        const analytics = {
+            hasLayoutStarted: true,
+            hasDuctsSized: false,
+            updatedAt: 1,
+        }
+
+        expect(
+            ProjectDataSchema_v0.parse({
+                equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+                name: 'Project analytics',
+                users: {},
+                analytics,
+            }).analytics
+        ).toEqual(analytics)
+    })
+
     it('removes the unused building stories field', () => {
         expect(BuildingDataSchema_v0.shape).not.toHaveProperty('stories')
         expect(BuildingDataSchema_v0.parse({ area: 3000, stories: 2 })).toEqual(
@@ -65,7 +113,7 @@ describe('Project v0 schemas', () => {
             'constructionType',
             'contacts',
             'description',
-            'drySide',
+            'ductDesign',
             'duplicatedFrom',
             'elevation',
             'equipmentModes',

@@ -372,7 +372,7 @@ export class HVAKRClient {
      * equipment mode ids.
      * @param projectId - The ID of the project
      * @param opts.include - Sections to compute and return (`loads`,
-     *   `register_schedule`, `dryside_graph`, `ventilation`, `equipment`,
+     *   `register_schedule`, `graph`, `ventilation`, `equipment`,
      *   `checksums`, `airflows`). Omit to return every section (one calc run;
      *   the response can be large).
      * @returns `errors`, `flags`, and each requested section

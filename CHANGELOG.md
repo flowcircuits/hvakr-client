@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.21.0] - 2026-10-11
+
+### Breaking Changes
+
+- Renamed the project field `drySide` to `ductDesign` and its exported schema
+  `DrySideDataSchema_v0` to `DuctDesignDataSchema_v0`. Fittings and sizing data
+  keep the same shape.
+- Renamed project analytics fields `hasDrySideDesignStarted` to
+  `hasLayoutStarted` and `hasDrySideDesignSized` to `hasDuctsSized`.
+- Renamed the calculations include selector `dryside_graph` and response field
+  `drySideGraph` to `graph`. Use
+  `getProjectCalculations(id, { include: ['graph'] })` and read `result.graph`.
+- Renamed `CalcDrySideGraphSectionSchema_v0` and `CalcDrySideGraphSection_v0` to
+  `CalcGraphSectionSchema_v0` and `CalcGraphSection_v0`.
+- Renamed the graph metadata schemas and types:
+  `MetaDrySideGraph*` → `MetaGraph*`,
+  `MetaDrySideGraphNode*` → `MetaGraphNode*`,
+  `MetaDrySideNodeData*` → `MetaGraphNodeData*`,
+  `MetaDrySideAdjacencyData*` → `MetaGraphAdjacencyData*`,
+  `MetaDrySideDuctAdjacencySchema_v0` → `MetaGraphDuctAdjacencySchema_v0`, and
+  `MetaDrySideLinkAdjacencySchema_v0` → `MetaGraphLinkAdjacencySchema_v0`.
+  Update consumer imports and payloads to the new names.
+
 ## [0.20.1] - 2026-10-08
 
 ### Removed

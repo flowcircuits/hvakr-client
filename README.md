@@ -139,7 +139,7 @@ breaking changes ship in minor bumps (see [Versioning & stability](#versioning--
 | `createProject(data, opts?)`                                        | Create a new project                                                                                                                                                               |
 | `updateProject(id, data, opts?)`                                    | Update an existing project                                                                                                                                                         |
 | `deleteProject(id)`                                                 | Delete a project                                                                                                                                                                   |
-| `getProjectCalculations(id, { include? })`                          | Run the calculator and return the requested sections (`loads`, `register_schedule`, `dryside_graph`, `ventilation`, `equipment`, `checksums`, `airflows`). Omit `include` for all. |
+| `getProjectCalculations(id, { include? })`                          | Run the calculator and return the requested sections (`loads`, `register_schedule`, `graph`, `ventilation`, `equipment`, `checksums`, `airflows`). Omit `include` for all.         |
 
 Project reads include every canonical project field, including server-owned
 state. The exported Zod schemas mark fields that normal project writes cannot
@@ -150,6 +150,13 @@ job-created, and uploaded sheet-file data is read-only except for
 `sheetFiles[id].name` in project patches.
 Project reads may include the server-owned `defaultSystemPresetId`, which is
 used to initialize equipment for new systems and zones.
+
+Duct design settings use `project.ductDesign`, with optional `fittings` and
+`sizingData` fields. Project analytics use `hasLayoutStarted` and `hasDuctsSized`.
+To request the calculated graph, use
+`getProjectCalculations(id, { include: ['graph'] })` and read `result.graph`.
+The graph metadata exports use the `MetaGraph` prefix; the calculation section
+schema and type are `CalcGraphSectionSchema_v0` and `CalcGraphSection_v0`.
 
 Annotations are a project subcollection. Read them with
 `getProject(id, ['annotations'])` or `getProject(id, true)`; the response has an

@@ -738,7 +738,7 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             zoneId: 'MLHdYTDgLmxzwtzyvoeg',
         },
     },
-    drySide: {
+    ductDesign: {
         fittings: {
             DIVERGENT_WYE: {
                 branchLossCoefficient: 0.4,

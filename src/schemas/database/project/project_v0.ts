@@ -14,7 +14,7 @@ import {
     getUserWritableSchema,
     type UserWriteDisabledKeys,
 } from '../../utility'
-import * as DrySide_v0 from './graph_v0'
+import * as Graph_v0 from './graph_v0'
 import { ModeIdSchema_v0, ModeSchema_v0 } from './equipment_v0'
 import { SpaceDataSchema_v0 } from './space_v0'
 
@@ -149,7 +149,7 @@ export const BuildingDataSchema_v0 = z.object({
 })
 
 export const DuctSizingDataSchema_v0 = z.object({
-    ductSizes: z.record(z.string(), DrySide_v0.DuctSizeSchema_v0).optional(),
+    ductSizes: z.record(z.string(), Graph_v0.DuctSizeSchema_v0).optional(),
     ductSizingHash: z.string().optional(),
 })
 
@@ -204,7 +204,7 @@ export const FittingsConfigSchema_v0 = z.object({
     }).optional(),
 })
 
-export const DrySideDataSchema_v0 = z.object({
+export const DuctDesignDataSchema_v0 = z.object({
     fittings: FittingsConfigSchema_v0.optional(),
     sizingData: DuctSizingDataSchema_v0.optional(),
 })
@@ -372,8 +372,8 @@ export const ProjectStatusSchema_v0 = z.enum(Object.values(ProjectStatuses_v0))
 export type ProjectStatus_v0 = z.infer<typeof ProjectStatusSchema_v0>
 
 export const ProjectAnalyticsSchema_v0 = z.object({
-    hasDrySideDesignSized: z.boolean().optional(),
-    hasDrySideDesignStarted: z.boolean().optional(),
+    hasDuctsSized: z.boolean().optional(),
+    hasLayoutStarted: z.boolean().optional(),
     hasEquipmentConfigured: z.boolean().optional(),
     hasProjectComments: z.boolean().optional(),
     hasReports: z.boolean().optional(),
@@ -425,7 +425,7 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend(
     constructionType: z.enum(['New', 'Retrofit']).optional(),
     contacts: z.record(z.string(), ContactSchema_v0).optional(),
     description: z.string().optional(),
-    drySide: DrySideDataSchema_v0.optional(),
+    ductDesign: DuctDesignDataSchema_v0.optional(),
     duplicatedFrom: disableUserWrite(z.string().optional()),
     elevation: disableUserWrite(z.number().optional()),
     equipmentModes: EquipmentModesSchema_v0,

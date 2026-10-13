@@ -23,9 +23,7 @@ export const APIProductSchema_v0 = z
         tag: z
             .string()
             .optional()
-            .describe(
-                'Default equipment tag shown on drawings and schedules. A tag on the placed node overrides it.'
-            ),
+            .describe('Equipment tag copied to the unit when picked.'),
         description: z.string().optional().describe('Product description.'),
         type: z
             .string()
@@ -33,11 +31,26 @@ export const APIProductSchema_v0 = z
             .describe(
                 'Graph node type the product represents (e.g. terminal unit, central unit).'
             ),
-        price: z.number().optional().describe('Product price in USD.'),
+        price: z
+            .number()
+            .optional()
+            .describe(
+                'Fixed product price in USD. Copied to the unit cost when picked. Missing means the product is quoted per project.'
+            ),
         imageUrl: z.string().optional().describe('Product image URL.'),
         link: z.string().optional().describe('Product documentation URL.'),
-        length: z.number().optional().describe('Plan-view length in inches.'),
-        width: z.number().optional().describe('Plan-view width in inches.'),
+        width: z
+            .number()
+            .optional()
+            .describe(
+                'Plan footprint width in inches. Registers use the face width. Copied to the unit when picked.'
+            ),
+        height: z
+            .number()
+            .optional()
+            .describe(
+                'Plan footprint height in inches. Registers use the face height. Copied to the unit when picked.'
+            ),
         specifications: z
             .record(z.string(), z.unknown())
             .optional()

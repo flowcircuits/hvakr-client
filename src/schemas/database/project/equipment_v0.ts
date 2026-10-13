@@ -238,18 +238,6 @@ export type EquipmentProjectScope_v0 = z.infer<
     typeof EquipmentProjectScopeSchema_v0
 >
 
-/**
- * Drawn plan size of a central or terminal unit, in inches. `length` runs
- * along the airflow and `width` runs across it.
- */
-export const EquipmentDimensionDataSchema_v0 = z.object({
-    length: z.number().optional(),
-    width: z.number().optional(),
-})
-export type EquipmentDimensionData_v0 = z.infer<
-    typeof EquipmentDimensionDataSchema_v0
->
-
 export const HeatingEquipmentTypes_v0 = ['heatPump', 'gasFurnace'] as const
 export type HeatingEquipmentType_v0 = (typeof HeatingEquipmentTypes_v0)[number]
 
@@ -298,7 +286,6 @@ export const EquipmentDataSchema_v0 = z.object({
         })
         .optional(),
     outlet: EquipmentOutletSchema_v0.optional(),
-    dimensionData: EquipmentDimensionDataSchema_v0.optional(),
     energyConfiguration: EnergyConfigurationSchema_v0.optional(),
 })
 export type EquipmentData_v0 = z.infer<typeof EquipmentDataSchema_v0>

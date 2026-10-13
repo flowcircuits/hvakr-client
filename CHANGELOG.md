@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.23.0] - 2026-10-13
+
+### Breaking Changes
+
+- Renamed the project field `userStatus` to `userPresence` and its exported
+  schema `ProjectUserStatusSchema_v0` to `ProjectUserPresenceSchema_v0`.
+  Entries no longer have `active`. They keep `lastActive`, now the last open
+  time, and add optional `email`, `firstName`, `lastName`, and
+  `profilePicture`.
+- Removed the project field `isOpen`.
+
 ## [0.22.0] - 2026-10-12
 
 ### Breaking Changes

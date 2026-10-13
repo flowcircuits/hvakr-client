@@ -189,8 +189,8 @@ Set an individual metadata key to `null` in `updateProject` to delete it.
 Project membership is returned in `project.users`, keyed by Firebase UID. Each
 member includes an `accessLevel` numeric value and a denormalized `email` for
 display. Server-owned sharing fields include `userGroups`, `organization`,
-`_atLeastAccess`, and `userStatus`; presence data is keyed by Firebase UID in
-`userStatus`.
+`_atLeastAccess`, and `userPresence`. `userPresence` is keyed by Firebase UID
+and holds each user's last open time and profile.
 
 Building floor-level data is represented by the project's `levels` collection;
 the `building` object does not include a floor count.

@@ -18,7 +18,7 @@ import {
     ProjectAccessLevels_v0,
     ProjectDataSchema_v0,
     ProjectPostSchema_v0,
-    ProjectUserStatusSchema_v0,
+    ProjectUserPresenceSchema_v0,
     UserAccessSchema_v0,
     WritableProjectDataSchema_v0,
 } from './project_v0'
@@ -123,7 +123,6 @@ describe('Project v0 schemas', () => {
             'isDeleted',
             'isExample',
             'isHealthcare',
-            'isOpen',
             'lastOpenTime',
             'latitude',
             'levels',
@@ -151,7 +150,7 @@ describe('Project v0 schemas', () => {
             'createdAt',
             'unitSystem',
             'invitedEmails',
-            'userStatus',
+            'userPresence',
             'utilityRates',
             'ventilationStandard',
             'weatherSpec',
@@ -191,7 +190,9 @@ describe('Project v0 schemas', () => {
                     ADMIN: ['user:user-1'],
                     OWNER: ['user:user-1'],
                 },
-                userStatus: { 'user-1': { active: true, lastActive: 1 } },
+                userPresence: {
+                    'user-1': { lastActive: 1, email: 'user-1@example.com' },
+                },
                 _nameLowercase: 'canonical read',
                 organizationId: 'organization-1',
                 defaultSystemPresetId: 'singleZoneRTU',
@@ -263,7 +264,7 @@ describe('Project v0 schemas', () => {
         expect(ProjectDataSchema_v0.shape.invitedEmails.meta()).toMatchObject({
             disableUserWrite: true,
         })
-        expect(ProjectDataSchema_v0.shape.userStatus.meta()).toMatchObject({
+        expect(ProjectDataSchema_v0.shape.userPresence.meta()).toMatchObject({
             disableUserWrite: true,
         })
         expect(InvitedUserDataSchema_v0.shape.invitedByUserId.description).toBe(
@@ -283,8 +284,8 @@ describe('Project v0 schemas', () => {
             })
         ).toEqual({ invitedByUserId: 'user-1', accessLevel: 4, timestamp: 1 })
         expect(
-            ProjectUserStatusSchema_v0.parse({ active: true, lastActive: 1 })
-        ).toEqual({ active: true, lastActive: 1 })
+            ProjectUserPresenceSchema_v0.parse({ lastActive: 1, active: true })
+        ).toEqual({ lastActive: 1 })
         expect(
             AtLeastAccessSchema_v0.parse({
                 VIEWER: ['user:user-1'],
@@ -301,7 +302,7 @@ describe('Project v0 schemas', () => {
             organization: true,
             _atLeastAccess: true,
             invitedEmails: true,
-            userStatus: true,
+            userPresence: true,
         })
         expect(PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0).not.toHaveProperty(
             '_owner'
@@ -323,7 +324,7 @@ describe('Project v0 schemas', () => {
             '_atLeastAccess'
         )
         expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
-            'userStatus'
+            'userPresence'
         )
     })
 

@@ -15,7 +15,6 @@ const ZONE_FCU_1_ID = 'nAU4ubzKE34QRN1YA9nl'
 
 const centralUnitEquipment: EquipmentData_v0 = {
     projectScope: { type: 'system', id: SYSTEM_CU_01_ID },
-    dimensionData: { length: 60, width: 30 },
     energyConfiguration: {
         schedule: {
             occupiedHours: [
@@ -159,13 +158,11 @@ const terminalUnitComponents: Pick<
 
 const terminalUnitEquipmentFcu3: EquipmentData_v0 = {
     projectScope: { type: 'zone', id: ZONE_FCU_3_ID },
-    dimensionData: { width: 12 },
     ...terminalUnitComponents,
 }
 
 const terminalUnitEquipmentFcu1: EquipmentData_v0 = {
     projectScope: { type: 'zone', id: ZONE_FCU_1_ID },
-    dimensionData: { width: 14 },
     ...terminalUnitComponents,
 }
 
@@ -783,7 +780,8 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
     registerTypes: {
         DpeIXJHs1P594TgLLGrO: {
             name: 'Supply Sidewall Register',
-            size: { width: 24, height: 12 },
+            width: 24,
+            height: 12,
             placementType: 'SIDEWALL',
             flowType: 'SUPPLY',
             tag: 'SG-1',
@@ -796,11 +794,13 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             name: 'Small Supply Register',
             tag: 'SG-1',
             defaultType: 'SMALL',
-            size: { width: 12, height: 12 },
+            width: 12,
+            height: 12,
             flowType: 'SUPPLY',
         },
         PSF2QsvUaNQpktw9fnSP: {
-            size: { height: 24, width: 24 },
+            width: 24,
+            height: 24,
             name: 'Large Return Register',
             flowType: 'RETURN',
             tag: 'RG-1',
@@ -813,7 +813,8 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             name: 'Small Exhaust Register',
             placementType: 'CEILING',
             tag: 'EG-1',
-            size: { height: 12, width: 12 },
+            width: 12,
+            height: 12,
             flowType: 'EXHAUST',
             defaultType: 'SMALL',
         },
@@ -824,11 +825,13 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             tag: 'EG-1',
             defaultType: 'LARGE',
             pressureLoss: 0.1,
-            size: { width: 24, height: 24 },
+            width: 24,
+            height: 24,
         },
         gHgNmKnEceBhaX4qS3Py: {
             flowType: 'SUPPLY',
-            size: { width: 24, height: 24 },
+            width: 24,
+            height: 24,
             placementType: 'CEILING',
             tag: 'SG-1',
             name: 'Large Supply Register',
@@ -841,14 +844,16 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             name: 'Small Return Register',
             pressureLoss: 0.1,
             placementType: 'CEILING',
-            size: { height: 12, width: 12 },
+            width: 12,
+            height: 12,
             flowType: 'RETURN',
         },
         vkL4W2bkWt1ar7HToZ9w: {
             flowType: 'RETURN',
             name: 'Return Sidewall Register',
             pressureLoss: 0.1,
-            size: { height: 12, width: 24 },
+            width: 24,
+            height: 12,
             tag: 'RG-1',
             defaultType: 'NORMAL',
             placementType: 'SIDEWALL',
@@ -860,7 +865,8 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             flowType: 'EXHAUST',
             name: 'Exhaust Sidewall Register',
             defaultType: 'NORMAL',
-            size: { width: 24, height: 12 },
+            width: 24,
+            height: 12,
         },
     },
 }

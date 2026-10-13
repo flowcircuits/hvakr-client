@@ -265,10 +265,21 @@ eligible maps, not only pages from this upload.
 page with `nextCursor` while `hasMore`. Each card is a slim projection meant for
 pickers and lists; call `getProduct(id)` for the full product record.
 
-Product records include optional `link`, `length`, and `width` fields. Plan-view
-dimensions use inches. Air-cleaner graph nodes accept a `tag` override and the
-IAQP settings `cleaningAirflow` (CFM), `filterLocation`, and `filterEfficiencies`.
-Set these node fields to `null` in a project patch to clear them.
+Product records include optional `link`, `width`, and `height` fields. These
+are the plan footprint in inches; registers use the face size. Picking a product
+copies its values onto the unit.
+
+Since `0.22.0`, `REGISTER`, `CENTRAL_UNIT`, `TERMINAL_UNIT`, and `AIR_CLEANER`
+graph nodes carry an optional `productId` product link and optional flat `width`
+and `height` in inches. Register types use the same flat `width` and `height`.
+A missing value uses the node type default: central unit 144×72, terminal unit
+40×16, air cleaner 32×32, and register 12×12. On central and terminal units,
+`selections` holds legacy Cambridge heater selections; `productId` is the
+product link.
+
+Air-cleaner graph nodes accept a `tag` and the IAQP settings
+`cleaningAirflow` (CFM), `filterLocation`, and `filterEfficiencies`. Set these
+node fields to `null` in a project patch to clear them.
 
 ### Equipment modes and calculations
 
@@ -308,16 +319,12 @@ const project = {
                     },
                 },
             },
-            // `dimensionData` is the drawn plan size in inches for central
-            // and terminal units; energy config is optional.
-            dimensionData: { length: 60, width: 30 },
+            // Energy config is optional. The drawn unit size lives on the
+            // central or terminal unit graph node as `width` and `height`.
             outlet: { ductHeatGain: 2, ductLeakagePercent: 0.01 },
             energyConfiguration: { efficiency: { coolingSEER: 14 } },
         },
-        'equipment-vav-1': {
-            projectScope: { type: 'zone', id: 'zone-1' },
-            dimensionData: { width: 12 },
-        },
+        'equipment-vav-1': { projectScope: { type: 'zone', id: 'zone-1' } },
     },
 }
 ```

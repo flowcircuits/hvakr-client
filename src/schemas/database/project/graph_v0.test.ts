@@ -47,3 +47,48 @@ describe('air cleaner v0 contract', () => {
         ).toEqual({ graph: clearedGraph })
     })
 })
+
+describe('equipment and register node size and product link', () => {
+    const coordinates = { adjacencies: [], level: 1, point: { x: 0, y: 0 } }
+    const register = {
+        ...coordinates,
+        id: 'reg',
+        nodeType: 'REGISTER',
+        flowType: 'SUPPLY',
+        placementType: 'CEILING',
+    }
+    const graph = {
+        cu: {
+            ...coordinates,
+            id: 'cu',
+            nodeType: 'CENTRAL_UNIT',
+            systemId: 'system-1',
+            productId: 'product-rtu',
+            width: 144,
+            height: 72,
+        },
+        tu: {
+            ...coordinates,
+            id: 'tu',
+            nodeType: 'TERMINAL_UNIT',
+            zoneId: 'zone-1',
+            productId: 'product-vav',
+            width: 40,
+            height: 16,
+        },
+        reg: {
+            ...register,
+            productId: 'product-grille',
+            width: 24,
+            height: 12,
+        },
+    }
+
+    it('preserves flat width, height, and productId on reads', () => {
+        expect(GraphSchema_v0.parse(graph)).toEqual(graph)
+    })
+
+    it('accepts nodes without width or height', () => {
+        expect(GraphSchema_v0.safeParse({ reg: register }).success).toBe(true)
+    })
+})

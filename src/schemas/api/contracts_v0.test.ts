@@ -505,16 +505,16 @@ describe('product schema', () => {
             tag: 'AC-1',
             price: 1200,
             link: 'https://x/product',
-            length: 24,
-            width: 18,
+            width: 24,
+            height: 18,
             specifications: { tonnage: 5 },
             files: { f1: { name: 'cut-sheet.pdf', url: 'https://x/f.pdf' } },
         })
         expect(parsed.name).toBe('RTU-5')
         expect(parsed.tag).toBe('AC-1')
         expect(parsed.link).toBe('https://x/product')
-        expect(parsed.length).toBe(24)
-        expect(parsed.width).toBe(18)
+        expect(parsed.width).toBe(24)
+        expect(parsed.height).toBe(18)
         expect(parsed.files?.f1?.url).toBe('https://x/f.pdf')
     })
 

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { PointSchema, SizeSchema } from '../../misc'
+import { PointSchema } from '../../misc'
 
 export const FlowTypes_v0 = {
     SUPPLY: 'SUPPLY',
@@ -54,12 +54,28 @@ export const RegisterPlacementTypeSchema_v0 = z.enum(
     Object.values(RegisterPlacementTypes_v0)
 )
 
+/**
+ * Plan footprint in inches. Registers use the face size. A missing value uses
+ * the node type default: central unit 144×72, terminal unit 40×16, air cleaner
+ * 32×32, and register 12×12.
+ */
+const HasSizeSchema_v0 = z.object({
+    width: z.number().optional(),
+    height: z.number().optional(),
+})
+
+/**
+ * Catalog product the unit was picked from. Picking a product copies its
+ * values onto the unit; later product edits do not change it.
+ */
+const HasProductSchema_v0 = z.object({ productId: z.string().optional() })
+
 export const RegisterSpecificDataSchema_v0 = z.object({
+    ...HasSizeSchema_v0.shape,
     flowRate: z.number().optional(),
     flowType: FlowTypeSchema_v0,
     placementType: RegisterPlacementTypeSchema_v0,
     pressureLoss: z.number().optional(),
-    size: SizeSchema,
     tag: z.string().optional(),
     throw: z.number().optional(),
 })
@@ -70,10 +86,18 @@ const HasPressureLossSchema_v0 = z.object({
 
 const HasRotationSchema_v0 = z.object({ rotation: z.number().optional() })
 
+const EquipmentNodeSchema_v0 = z.object({
+    ...HasPressureLossSchema_v0.shape,
+    ...HasRotationSchema_v0.shape,
+    ...HasSizeSchema_v0.shape,
+    ...HasProductSchema_v0.shape,
+})
+
 export const RegisterNodeDataSchema_v0 = z.object({
     ...RegisterSpecificDataSchema_v0.shape,
     ...HasPressureLossSchema_v0.shape,
     ...HasRotationSchema_v0.shape,
+    ...HasProductSchema_v0.shape,
     inletSize: z.string().optional(),
     nodeType: z.literal(NodeTypes_v0.REGISTER),
     registerModelId: z.string().optional(),
@@ -93,17 +117,17 @@ export const SelectionSchema_v0 = z.object({
 })
 
 export const TerminalUnitNodeDataSchema_v0 = z.object({
-    ...HasPressureLossSchema_v0.shape,
-    ...HasRotationSchema_v0.shape,
+    ...EquipmentNodeSchema_v0.shape,
     nodeType: z.literal(NodeTypes_v0.TERMINAL_UNIT),
+    /** Legacy Cambridge heater selections. `productId` is the product link. */
     selections: z.record(z.string(), SelectionSchema_v0).optional(),
     zoneId: z.string(),
 })
 
 export const CentralUnitNodeDataSchema_v0 = z.object({
-    ...HasPressureLossSchema_v0.shape,
-    ...HasRotationSchema_v0.shape,
+    ...EquipmentNodeSchema_v0.shape,
     nodeType: z.literal(NodeTypes_v0.CENTRAL_UNIT),
+    /** Legacy Cambridge heater selections. `productId` is the product link. */
     selections: z.record(z.string(), SelectionSchema_v0).optional(),
     systemId: z.string(),
 })
@@ -115,10 +139,8 @@ export const PortalNodeDataSchema_v0 = z.object({
 })
 
 export const AirCleanerNodeDataSchema_v0 = z.object({
-    ...HasPressureLossSchema_v0.shape,
-    ...HasRotationSchema_v0.shape,
+    ...EquipmentNodeSchema_v0.shape,
     nodeType: z.literal(NodeTypes_v0.AIR_CLEANER),
-    productId: z.string().optional(),
     selections: z.record(z.string(), SelectionSchema_v0).optional(),
     cleaningAirflow: z.number().optional(),
     filterLocation: z.string().optional(),

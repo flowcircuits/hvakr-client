@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.22.0] - 2026-10-12
+
+### Breaking Changes
+
+- Renamed product plan size fields: `length` is now `width` and `width` is now
+  `height`. Both stay optional and in inches. Registers use the face size.
+- Replaced the required register `size: { width, height }` with optional flat
+  `width` and `height` on `REGISTER` graph nodes and register types.
+- Removed `dimensionData` and `EquipmentDimensionDataSchema_v0` /
+  `EquipmentDimensionData_v0` from equipment documents. The drawn unit size now
+  lives on the central or terminal unit graph node.
+
+### Added
+
+- `CENTRAL_UNIT`, `TERMINAL_UNIT`, and `AIR_CLEANER` graph nodes accept optional
+  flat `width` and `height` in inches. A missing value uses the node type
+  default: central unit 144×72, terminal unit 40×16, air cleaner 32×32, and
+  register 12×12.
+- `REGISTER`, `CENTRAL_UNIT`, and `TERMINAL_UNIT` graph nodes accept an optional
+  `productId` product link, as air cleaners already did.
+
 ## [0.21.0] - 2026-10-11
 
 ### Breaking Changes

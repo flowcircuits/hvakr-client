@@ -337,13 +337,26 @@ export const ProjectAccessSchema_v0 = z.object({
 })
 export type ProjectAccess_v0 = z.infer<typeof ProjectAccessSchema_v0>
 
-export const ProjectUserStatusSchema_v0 = z.object({
-    active: z.boolean().describe('Whether the user has the project open'),
+export const ProjectUserPresenceSchema_v0 = z.object({
     lastActive: z
         .number()
-        .describe('Unix milliseconds of the last presence change'),
+        .describe('Unix milliseconds when the user last opened the project'),
+    email: z
+        .string()
+        .optional()
+        .describe(
+            "User's email (denormalized for display). Missing on entries written before profiles were stored."
+        ),
+    firstName: z.string().optional().describe("User's first name"),
+    lastName: z.string().optional().describe("User's last name"),
+    profilePicture: z
+        .string()
+        .nullish()
+        .describe("URL to user's profile picture"),
 })
-export type ProjectUserStatus_v0 = z.infer<typeof ProjectUserStatusSchema_v0>
+export type ProjectUserPresence_v0 = z.infer<
+    typeof ProjectUserPresenceSchema_v0
+>
 
 export const InvitedUserDataSchema_v0 = z.object({
     invitedByUserId: z.string().describe('Firebase uid of the inviter'),
@@ -435,7 +448,6 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend(
     isDeleted: disableUserWrite(z.boolean().optional()),
     isExample: disableUserWrite(z.boolean().optional()),
     isHealthcare: z.boolean().optional(),
-    isOpen: disableUserWrite(z.boolean().optional()),
     lastOpenTime: disableUserWrite(z.number().optional()),
     latitude: disableUserWrite(z.number().optional()),
     levels: z.record(z.coerce.number(), LevelDataSchema_v0).optional(),
@@ -479,12 +491,12 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend(
                 'Pending invites keyed by normalized email. Grants zero access until consumed server-side into users[uid].'
             )
     ),
-    userStatus: disableUserWrite(
+    userPresence: disableUserWrite(
         z
-            .record(z.string(), ProjectUserStatusSchema_v0)
+            .record(z.string(), ProjectUserPresenceSchema_v0)
             .optional()
             .describe(
-                'Presence of each user who has opened the project, keyed by Firebase uid. Written by onUserStatusUpdate. Grants no access.'
+                'Profile and last open time of each user who has opened the project, keyed by Firebase uid. Written by onUserStatusUpdate. Grants no access.'
             )
     ),
     utilityRates: UtilityRatesSchema_v0.optional(),

@@ -197,10 +197,10 @@ the `building` object does not include a floor count.
 
 ### Jobs
 
-| Method                       | Description                                                                                                                           |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `createJob(id, body, opts?)` | Create a job (`export`, `auto-group`, `check`, or `auto-takeoff`). Sync jobs return `status: "completed"`; async jobs return `queued` |
-| `getJob(id, jobId)`          | Get a job's current state. Poll async jobs until `status` leaves `queued`/`running`                                                   |
+| Method                       | Description                                                                                                                                         |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createJob(id, body, opts?)` | Create a job (`export`, `auto-group`, `check`, `auto-takeoff`, or `auto-route`). Sync jobs return `status: "completed"`; async jobs return `queued` |
+| `getJob(id, jobId)`          | Get a job's current state. Poll async jobs until `status` leaves `queued`/`running`                                                                 |
 
 Create PDF/CSV/ZIP output with an export job. `definition` accepts
 `load-calculation`, `basis-of-design`, `ventilation-csv`, or

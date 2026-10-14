@@ -434,6 +434,31 @@ describe('job schemas', () => {
         expect(parsed.error).toBe('boom')
     })
 
+    it('parses a completed auto-route job', () => {
+        const parsed = APIJobSchema_v0.parse({
+            jobId: 'job_4',
+            type: 'auto-route',
+            status: 'completed',
+            result: {
+                status: 'partial',
+                registerConnections: 12,
+                terminalUnitConnections: 2,
+                skippedRegisters: 1,
+                skippedTerminalUnits: 0,
+            },
+        })
+        expect(parsed.type).toBe('auto-route')
+    })
+
+    it('parses a waiting job', () => {
+        const parsed = APIJobSchema_v0.parse({
+            jobId: 'job_5',
+            type: 'auto-takeoff',
+            status: 'waiting',
+        })
+        expect(parsed.status).toBe('waiting')
+    })
+
     it('parses an export job bridged to its export doc', () => {
         const parsed = APIJobSchema_v0.parse({
             jobId: 'job_3',

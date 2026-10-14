@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.24.0] - 2026-10-14
+
+### Breaking Changes
+
+- Removed the project field `automations` and its exported schemas
+  (`AutomationsSchema_v0`, `AutomationStatusSchema_v0`,
+  `ImportCZMinimumEnvelopesAutomationSchema_v0`,
+  `ImportSpaceTypesAutomationSchema_v0`). Project setup work now runs as jobs.
+
+### Added
+
+- `auto-route` job type for `POST /projects/{id}/jobs`. It routes ducts with
+  the project's saved routing constraints, runs asynchronously, and returns
+  `APIAutoRouteResultSchema_v0`.
+- Job statuses `requested` (asked for by the app, not admitted yet) and
+  `waiting` (starts when the jobs it depends on complete).
+
 ## [0.23.0] - 2026-10-13
 
 ### Breaking Changes

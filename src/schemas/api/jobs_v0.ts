@@ -342,15 +342,16 @@ export type APISheetUploadJobResult_v0 = z.infer<
 // --------------------------------------------------------------------
 // -- Job -------------------------------------------------------------
 
-/** Union of every job result payload, discriminated by the job's `type`. */
+/** Union of every standalone job result payload. */
 export const APIJobResultSchema_v0 = z
     .union([
         APIExportJobResultSchema_v0,
         APIAutoGroupResultSchema_v0,
         APICheckReportSchema_v0,
-        APIAutoTakeoffResultSchema_v0,
         APIAutoRouteResultSchema_v0,
         APISheetUploadJobResultSchema_v0,
+        // Keep the all-optional result last so it cannot strip other payloads.
+        APIAutoTakeoffResultSchema_v0,
     ])
     .describe('Job result payload; shape depends on the job type.')
 export type APIJobResult_v0 = z.infer<typeof APIJobResultSchema_v0>

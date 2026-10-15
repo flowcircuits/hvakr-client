@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Job statuses `requested` (asked for by the app, not admitted yet) and
   `waiting` (starts when the jobs it depends on complete).
 
+### Fixed
+
+- `APIJobResultSchema_v0` preserves auto-route and sheet-upload result fields
+  instead of stripping them through the all-optional auto-takeoff result schema.
+
 ## [0.23.0] - 2026-10-13
 
 ### Breaking Changes

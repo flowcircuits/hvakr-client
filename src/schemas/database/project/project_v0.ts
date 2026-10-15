@@ -401,24 +401,6 @@ export const ProjectAnalyticsSchema_v0 = z.object({
 })
 export type ProjectAnalytics_v0 = z.infer<typeof ProjectAnalyticsSchema_v0>
 
-export const AutomationStatusSchema_v0 = z.enum(['requested', 'inProgress'])
-
-export const ImportCZMinimumEnvelopesAutomationSchema_v0 = z.object({
-    status: AutomationStatusSchema_v0,
-})
-
-export const ImportSpaceTypesAutomationSchema_v0 = z.object({
-    status: AutomationStatusSchema_v0,
-    templateProjectIds: z.array(z.string()).optional(),
-})
-
-export const AutomationsSchema_v0 = z.object({
-    importCZMinimumEnvelopes:
-        ImportCZMinimumEnvelopesAutomationSchema_v0.optional(),
-    importSpaceTypes: ImportSpaceTypesAutomationSchema_v0.optional(),
-})
-export type Automations_v0 = z.infer<typeof AutomationsSchema_v0>
-
 export const ComputedProjectDataSchema_v0 = z.object({
     _nameLowercase: disableUserWrite(z.string().optional()),
 })
@@ -431,7 +413,6 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend(
     airflowIncrement: z.number().int().min(1).optional(),
     analytics: disableUserWrite(ProjectAnalyticsSchema_v0.optional()),
     apiCreated: disableUserWrite(z.boolean().optional()),
-    automations: disableUserWrite(AutomationsSchema_v0.optional()),
     building: BuildingDataSchema_v0.optional(),
     climateZone: z.string().optional(),
     constraints: z.record(z.string(), ConstraintSchema_v0).optional(),

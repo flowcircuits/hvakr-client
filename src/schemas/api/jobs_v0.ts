@@ -10,9 +10,9 @@ import {
 
 /** Status of an API job. */
 export const APIJobStatusSchema_v0 = z
-    .enum(['queued', 'running', 'completed', 'failed'])
+    .enum(['requested', 'waiting', 'queued', 'running', 'completed', 'failed'])
     .describe(
-        'Job status. Sync jobs return "completed" immediately; async jobs return "queued" — poll GET until the status leaves queued/running.'
+        'Job status. Sync jobs return "completed" immediately; async jobs return "queued" — poll GET until the status is "completed" or "failed". "requested" is a job the app asked for that the server has not admitted yet; "waiting" is a job that starts when the jobs it depends on complete.'
     )
 export type APIJobStatus_v0 = z.infer<typeof APIJobStatusSchema_v0>
 
@@ -25,12 +25,13 @@ export const APIJobCreateTypes_v0 = {
     'auto-group': 'auto-group',
     check: 'check',
     'auto-takeoff': 'auto-takeoff',
+    'auto-route': 'auto-route',
 } as const
 
 export const APIJobCreateTypeSchema_v0 = z
     .enum(Object.values(APIJobCreateTypes_v0))
     .describe(
-        'Job kind: export (async PDF/CSV/ZIP generation), auto-group (sync zoning/system grouping), check (sync validation), auto-takeoff (async floor-plan extraction).'
+        "Job kind: export (async PDF/CSV/ZIP generation), auto-group (sync zoning/system grouping), check (sync validation), auto-takeoff (async floor-plan extraction), auto-route (async duct routing with the project's saved routing constraints)."
     )
 export type APIJobCreateType_v0 = z.infer<typeof APIJobCreateTypeSchema_v0>
 
@@ -61,6 +62,7 @@ export type APIJobType_v0 = z.infer<typeof APIJobTypeSchema_v0>
  * - `check` → no parameters.
  * - `auto-takeoff` → all parameters optional (`confidence`, `levels`,
  *   `roofTypeId`, `slabTypeId`, `wallTypeId`, `windowTypeId`).
+ * - `auto-route` → no parameters; uses the project's saved routing constraints.
  */
 export const APIJobCreateSchema_v0 = z
     .object({
@@ -214,6 +216,37 @@ export type APIAutoTakeoffResult_v0 = z.infer<
 >
 
 // --------------------------------------------------------------------
+// -- Auto-route result -----------------------------------------------
+
+/** Result of a completed `auto-route` job. */
+export const APIAutoRouteResultSchema_v0 = z
+    .object({
+        status: z
+            .enum(['complete', 'partial', 'infeasible'])
+            .describe(
+                'complete: every target was routed; partial: some targets were skipped; infeasible: no route was found.'
+            ),
+        registerConnections: z
+            .number()
+            .describe('Registers connected by this run.'),
+        terminalUnitConnections: z
+            .number()
+            .describe('Terminal units connected by this run.'),
+        skippedRegisters: z
+            .number()
+            .describe(
+                'Registers not routed, including ones already connected.'
+            ),
+        skippedTerminalUnits: z
+            .number()
+            .describe(
+                'Terminal units not routed, including ones already connected.'
+            ),
+    })
+    .describe('Result of an auto-route job.')
+export type APIAutoRouteResult_v0 = z.infer<typeof APIAutoRouteResultSchema_v0>
+
+// --------------------------------------------------------------------
 // -- Export job result -----------------------------------------------
 
 /**
@@ -309,14 +342,16 @@ export type APISheetUploadJobResult_v0 = z.infer<
 // --------------------------------------------------------------------
 // -- Job -------------------------------------------------------------
 
-/** Union of every job result payload, discriminated by the job's `type`. */
+/** Union of every standalone job result payload. */
 export const APIJobResultSchema_v0 = z
     .union([
         APIExportJobResultSchema_v0,
         APIAutoGroupResultSchema_v0,
         APICheckReportSchema_v0,
-        APIAutoTakeoffResultSchema_v0,
+        APIAutoRouteResultSchema_v0,
         APISheetUploadJobResultSchema_v0,
+        // Keep the all-optional result last so it cannot strip other payloads.
+        APIAutoTakeoffResultSchema_v0,
     ])
     .describe('Job result payload; shape depends on the job type.')
 export type APIJobResult_v0 = z.infer<typeof APIJobResultSchema_v0>
@@ -325,7 +360,7 @@ export type APIJobResult_v0 = z.infer<typeof APIJobResultSchema_v0>
  * A job as returned by `POST /projects/{id}/jobs` and
  * `GET /projects/{id}/jobs/{jobId}`. Sync jobs (`auto-group`, `check`) come
  * back `completed` with `result` populated; async jobs (`export`,
- * `auto-takeoff`) come back `queued` — poll GET until the status settles.
+ * `auto-takeoff`, `auto-route`) come back `queued` — poll GET until the status settles.
  */
 const APIJobBaseSchema_v0 = z.object({
     jobId: z.string().describe('Job id; use it to poll GET.'),
@@ -357,6 +392,10 @@ export const APIJobSchema_v0 = z
         APIJobBaseSchema_v0.extend({
             type: z.literal(APIJobTypes_v0['auto-takeoff']),
             result: APIAutoTakeoffResultSchema_v0.optional(),
+        }),
+        APIJobBaseSchema_v0.extend({
+            type: z.literal(APIJobTypes_v0['auto-route']),
+            result: APIAutoRouteResultSchema_v0.optional(),
         }),
         APIJobBaseSchema_v0.extend({
             type: z.literal(APIJobTypes_v0['sheet-upload']),

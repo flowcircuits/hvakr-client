@@ -22,6 +22,7 @@ import {
     APIAutoGroupResultSchema_v0,
     APICheckReportSchema_v0,
     APIJobCreateSchema_v0,
+    APIJobResultSchema_v0,
     APIJobSchema_v0,
     APISheetUploadJobResultSchema_v0,
 } from './jobs_v0'
@@ -434,6 +435,42 @@ describe('job schemas', () => {
         expect(parsed.error).toBe('boom')
     })
 
+    it('preserves auto-route results in job and result schemas', () => {
+        const result = {
+            status: 'partial',
+            registerConnections: 12,
+            terminalUnitConnections: 2,
+            skippedRegisters: 1,
+            skippedTerminalUnits: 0,
+        }
+        const parsed = APIJobSchema_v0.parse({
+            jobId: 'job_4',
+            type: 'auto-route',
+            status: 'completed',
+            result,
+        })
+        expect(parsed.type).toBe('auto-route')
+        expect(parsed.result).toEqual(result)
+        expect(APIJobResultSchema_v0.parse(result)).toEqual(result)
+    })
+
+    it.each([
+        {},
+        { error: { code: 'failed_precondition', message: 'No sheets' } },
+        { error: { code: 'timed_out', message: 'Takeoff timed out' } },
+    ])('preserves auto-takeoff results in the result union: %j', (result) => {
+        expect(APIJobResultSchema_v0.parse(result)).toEqual(result)
+    })
+
+    it('parses a waiting job', () => {
+        const parsed = APIJobSchema_v0.parse({
+            jobId: 'job_5',
+            type: 'auto-takeoff',
+            status: 'waiting',
+        })
+        expect(parsed.status).toBe('waiting')
+    })
+
     it('parses an export job bridged to its export doc', () => {
         const parsed = APIJobSchema_v0.parse({
             jobId: 'job_3',
@@ -493,6 +530,7 @@ describe('job schemas', () => {
             throw new Error('Expected sheet upload')
         if (!parsed.result) throw new Error('Expected sheet-upload result')
         expect(parsed.result?.pages[0]?.placed).toBe(true)
+        expect(APIJobResultSchema_v0.parse(parsed.result)).toEqual(parsed.result)
     })
 })
 

@@ -44,7 +44,7 @@ describe('annotation v0 contract', () => {
         expect(
             ExpandedProjectSchema_v0.parse({
                 ...ExpandedProjectPostDataExample_v0,
-                users: {},
+                access: { direct: { users: {} } },
                 annotations,
             }).annotations
         ).toEqual(annotations)

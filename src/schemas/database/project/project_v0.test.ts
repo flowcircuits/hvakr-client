@@ -15,6 +15,7 @@ import {
     PROJECT_RESTRICTED_WRITE_FIELDS_V0,
     PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0,
     ProjectAccessLevelSchema_v0,
+    ProjectAccessSchema_v0,
     ProjectAccessLevels_v0,
     ProjectDataSchema_v0,
     ProjectPostSchema_v0,
@@ -48,7 +49,10 @@ describe('Project v0 schemas', () => {
         }
 
         expect(
-            ProjectDataSchema_v0.parse({ ...project, users: {} }).ductDesign
+            ProjectDataSchema_v0.parse({
+                ...project,
+                access: { direct: { users: {} } },
+            }).ductDesign
         ).toEqual(ductDesign)
         expect(ProjectPostSchema_v0.parse(project).ductDesign).toEqual(
             ductDesign
@@ -69,7 +73,7 @@ describe('Project v0 schemas', () => {
             ProjectDataSchema_v0.parse({
                 equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
                 name: 'Project analytics',
-                users: {},
+                access: { direct: { users: {} } },
                 analytics,
             }).analytics
         ).toEqual(analytics)
@@ -97,10 +101,7 @@ describe('Project v0 schemas', () => {
     it('exposes every canonical project field on reads', () => {
         expect(Object.keys(ProjectDataSchema_v0.shape)).toEqual([
             '_nameLowercase',
-            'users',
-            'userGroups',
-            'organization',
-            '_atLeastAccess',
+            'access',
             'address',
             'organizationId',
             'airflowIncrement',
@@ -159,21 +160,43 @@ describe('Project v0 schemas', () => {
             ProjectDataSchema_v0.safeParse({
                 equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
                 name: 'Canonical read',
-                users: {
-                    'user-1': { email: 'owner@example.com', accessLevel: 10 },
-                },
-                userGroups: {
-                    'group-1': {
-                        accessLevel: 4,
-                        name: 'Engineering',
-                        organizationId: 'organization-1',
+                access: {
+                    direct: {
+                        users: {
+                            'user-1': {
+                                email: 'owner@example.com',
+                                accessLevel: 10,
+                            },
+                        },
+                        userGroups: {
+                            'group-1': {
+                                accessLevel: 4,
+                                name: 'Engineering',
+                                organizationId: 'organization-1',
+                            },
+                        },
+                        organization: {
+                            accessLevel: 1,
+                            id: 'organization-1',
+                            name: 'Acme MEP',
+                            profilePicture: null,
+                        },
                     },
-                },
-                organization: {
-                    accessLevel: 1,
-                    id: 'organization-1',
-                    name: 'Acme MEP',
-                    profilePicture: null,
+                    inherited: {
+                        users: {
+                            'user-2': {
+                                email: 'lead@example.com',
+                                accessLevel: 8,
+                            },
+                        },
+                    },
+                    _atLeastAccess: {
+                        VIEWER: ['user:user-1', 'user:user-2'],
+                        COMMENTER: ['user:user-1', 'user:user-2'],
+                        MEMBER: ['user:user-1', 'user:user-2'],
+                        ADMIN: ['user:user-1', 'user:user-2'],
+                        OWNER: ['user:user-1'],
+                    },
                 },
                 invitedEmails: {
                     'invitee@example.com': {
@@ -181,13 +204,6 @@ describe('Project v0 schemas', () => {
                         accessLevel: 1,
                         timestamp: 1,
                     },
-                },
-                _atLeastAccess: {
-                    VIEWER: ['user:user-1'],
-                    COMMENTER: ['user:user-1'],
-                    MEMBER: ['user:user-1'],
-                    ADMIN: ['user:user-1'],
-                    OWNER: ['user:user-1'],
                 },
                 userPresence: {
                     'user-1': { lastActive: 1, email: 'user-1@example.com' },
@@ -241,23 +257,19 @@ describe('Project v0 schemas', () => {
 
         expect(ProjectDataSchema_v0.shape).not.toHaveProperty('_owner')
         expect(ProjectDataSchema_v0.shape).not.toHaveProperty('_userEmails')
-        expect(ProjectDataSchema_v0.shape.users.description).toBe(
+        expect(ProjectDataSchema_v0.shape.access.meta()).toMatchObject({
+            disableUserWrite: true,
+        })
+        expect(
+            ProjectAccessSchema_v0.shape.direct.shape.users.description
+        ).toBe(
             'Users granted access, keyed by Firebase uid. New keys are added by the invite callable only.'
         )
-        expect(ProjectDataSchema_v0.shape.users.meta()).toMatchObject({
-            disableUserWrite: true,
-        })
-        expect(ProjectDataSchema_v0.shape.userGroups.meta()).toMatchObject({
-            disableUserWrite: true,
-        })
-        expect(ProjectDataSchema_v0.shape.organization.meta()).toMatchObject({
-            disableUserWrite: true,
-        })
-        expect(ProjectDataSchema_v0.shape._atLeastAccess.meta()).toMatchObject({
-            disableUserWrite: true,
-        })
+        expect(ProjectAccessSchema_v0.parse({ direct: { users: {} } })).toEqual(
+            { direct: { users: {} } }
+        )
         expect(ProjectDataSchema_v0.shape.invitedEmails.description).toBe(
-            'Pending invites keyed by normalized email. Grants zero access until consumed server-side into users[uid].'
+            'Pending invites keyed by normalized email. Grants zero access until consumed server-side into access.direct.users[uid].'
         )
         expect(ProjectDataSchema_v0.shape.invitedEmails.meta()).toMatchObject({
             disableUserWrite: true,
@@ -295,10 +307,7 @@ describe('Project v0 schemas', () => {
         ).toEqual(['user:user-1'])
 
         expect(PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0).toMatchObject({
-            users: true,
-            userGroups: true,
-            organization: true,
-            _atLeastAccess: true,
+            access: true,
             invitedEmails: true,
             userPresence: true,
         })
@@ -308,18 +317,9 @@ describe('Project v0 schemas', () => {
         expect(PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0).not.toHaveProperty(
             '_userEmails'
         )
-        expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty('users')
+        expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty('access')
         expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
             'invitedEmails'
-        )
-        expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
-            'userGroups'
-        )
-        expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
-            'organization'
-        )
-        expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
-            '_atLeastAccess'
         )
         expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(
             'userPresence'
@@ -363,7 +363,7 @@ describe('Project v0 schemas', () => {
             defaultSystemPresetId,
             equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
             name: 'Preset read',
-            users: {},
+            access: { direct: { users: {} } },
         }
 
         expect(ProjectDataSchema_v0.safeParse(project).success).toBe(true)
@@ -480,8 +480,10 @@ describe('Project v0 schemas', () => {
 
     it('requires equipment modes on reads and defaults them on create', () => {
         expect(
-            ProjectDataSchema_v0.safeParse({ name: 'Missing modes', users: {} })
-                .success
+            ProjectDataSchema_v0.safeParse({
+                name: 'Missing modes',
+                access: { direct: { users: {} } },
+            }).success
         ).toBe(false)
         expect(
             ProjectPostSchema_v0.safeParse({ name: 'Default modes' }).success
@@ -490,7 +492,7 @@ describe('Project v0 schemas', () => {
             ProjectDataSchema_v0.safeParse({
                 equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
                 name: 'Canonical modes',
-                users: {},
+                access: { direct: { users: {} } },
             }).success
         ).toBe(true)
     })

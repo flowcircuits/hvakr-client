@@ -308,31 +308,33 @@ export const AtLeastAccessSchema_v0 = z.object({
 })
 export type AtLeastAccess_v0 = z.infer<typeof AtLeastAccessSchema_v0>
 
+export const AccessGrantsSchema_v0 = z.object({
+    users: z
+        .record(z.string(), UserAccessSchema_v0)
+        .describe(
+            'Users granted access, keyed by Firebase uid. New keys are added by the invite callable only.'
+        ),
+    userGroups: z
+        .record(z.string(), UserGroupAccessSchema_v0)
+        .optional()
+        .describe(
+            'User groups granted access, keyed by user group id. New keys are added by the invite callable only.'
+        ),
+    organization: OrganizationAccessSchema_v0.optional().describe(
+        'The single organization granted access. Added by the invite callable only, which refuses an organization that differs from the inherited one.'
+    ),
+})
+export type AccessGrants_v0 = z.infer<typeof AccessGrantsSchema_v0>
+
 export const ProjectAccessSchema_v0 = z.object({
-    users: disableUserWrite(
-        z
-            .record(z.string(), UserAccessSchema_v0)
-            .describe(
-                'Users granted access, keyed by Firebase uid. New keys are added by the invite callable only.'
-            )
+    direct: AccessGrantsSchema_v0.describe(
+        'Grants made on this document. A direct grant replaces the inherited level for that principal, even when lower.'
     ),
-    userGroups: disableUserWrite(
-        z
-            .record(z.string(), UserGroupAccessSchema_v0)
-            .optional()
-            .describe(
-                'User groups granted access, keyed by user group id. New keys are added by the invite callable only.'
-            )
+    inherited: AccessGrantsSchema_v0.optional().describe(
+        "The parent folder's effective grants: its direct grants resolved over its own inherited grants. Written by the folder reconcile only. Absent at root."
     ),
-    organization: disableUserWrite(
-        OrganizationAccessSchema_v0.optional().describe(
-            'The single organization granted access. Added by the invite callable only.'
-        )
-    ),
-    _atLeastAccess: disableUserWrite(
-        AtLeastAccessSchema_v0.optional().describe(
-            'Principal ids holding at least each access level, derived from users, userGroups, and organization. Computed by write triggers and seeded by the creator. Used by Firestore rules, list queries, and embedding access control.'
-        )
+    _atLeastAccess: AtLeastAccessSchema_v0.optional().describe(
+        'Index of principal ids holding at least each access level, converted from direct resolved over inherited. Read by Firestore rules, list queries, storage rules, and embedding access control only.'
     ),
 })
 export type ProjectAccess_v0 = z.infer<typeof ProjectAccessSchema_v0>
@@ -405,9 +407,12 @@ export const ComputedProjectDataSchema_v0 = z.object({
     _nameLowercase: disableUserWrite(z.string().optional()),
 })
 
-export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend(
-    ProjectAccessSchema_v0.shape
-).extend({
+export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
+    access: disableUserWrite(
+        ProjectAccessSchema_v0.describe(
+            'Collaborative access: direct grants, grants inherited from the folder, and the at-least index.'
+        )
+    ),
     address: z.string().optional(),
     organizationId: disableUserWrite(z.string().optional()),
     airflowIncrement: z.number().int().min(1).optional(),
@@ -469,7 +474,7 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend(
             .record(z.string(), InvitedUserDataSchema_v0)
             .optional()
             .describe(
-                'Pending invites keyed by normalized email. Grants zero access until consumed server-side into users[uid].'
+                'Pending invites keyed by normalized email. Grants zero access until consumed server-side into access.direct.users[uid].'
             )
     ),
     userPresence: disableUserWrite(

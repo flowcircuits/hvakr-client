@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.25.0] - 2026-10-18
+
+### Breaking Changes
+
+- Project sharing moved from the top-level `users`, `userGroups`,
+  `organization`, and `_atLeastAccess` fields to one server-owned `access`
+  field: `access.direct` (the project's own grants), `access.inherited` (the
+  grants the project inherits from its folder, absent at root), and
+  `access._atLeastAccess` (the server-derived index). `ProjectAccessSchema_v0`
+  now describes that nested shape; the grant maps are `AccessGrantsSchema_v0`.
+  `PROJECT_SERVER_CONTROLLED_WRITE_FIELDS_V0` lists `access` in place of the
+  four removed names.
+
 ## [0.24.0] - 2026-10-14
 
 ### Breaking Changes

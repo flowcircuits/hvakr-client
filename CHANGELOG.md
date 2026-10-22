@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.25.1] - 2026-10-22
+
+### Added
+
+- `ExportFileTypeSchema_v0` accepts `XLSX`, `PNG`, `JPG`, `SVG`, `DXF`, `TXT`,
+  `MD`, and `HTML`, the types of files the HVAKR AI agent saves as exports.
+
 ## [0.25.0] - 2026-10-18
 
 ### Breaking Changes

@@ -328,7 +328,22 @@ describe('export schema', () => {
 
     it('accepts every canonical export file type', () => {
         expect(
-            ['PDF', 'CSV', 'DOCX', 'ZIP', 'XML', 'JSON'].every(
+            [
+                'PDF',
+                'CSV',
+                'DOCX',
+                'ZIP',
+                'XML',
+                'JSON',
+                'XLSX',
+                'PNG',
+                'JPG',
+                'SVG',
+                'DXF',
+                'TXT',
+                'MD',
+                'HTML',
+            ].every(
                 (fileType) =>
                     ExportFileTypeSchema_v0.safeParse(fileType).success
             )
@@ -530,7 +545,9 @@ describe('job schemas', () => {
             throw new Error('Expected sheet upload')
         if (!parsed.result) throw new Error('Expected sheet-upload result')
         expect(parsed.result?.pages[0]?.placed).toBe(true)
-        expect(APIJobResultSchema_v0.parse(parsed.result)).toEqual(parsed.result)
+        expect(APIJobResultSchema_v0.parse(parsed.result)).toEqual(
+            parsed.result
+        )
     })
 })
 

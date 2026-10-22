@@ -229,6 +229,11 @@ if (job.type === 'export' && job.status === 'completed') {
 }
 ```
 
+Project exports also hold files made by the HVAKR AI agent, so a stored
+export's `definition.fileType` and `outputFileType` can be any
+`ExportFileTypeSchema_v0` value: `PDF`, `CSV`, `DOCX`, `ZIP`, `XML`, `JSON`,
+`XLSX`, `PNG`, `JPG`, `SVG`, `DXF`, `TXT`, `MD`, or `HTML`.
+
 ### Sheet files
 
 | Method                                           | Description                                                                                                                   |

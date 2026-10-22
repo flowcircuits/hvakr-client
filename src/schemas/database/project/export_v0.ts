@@ -8,6 +8,14 @@ const EXPORT_FILE_TYPES = {
     ZIP: 'ZIP',
     XML: 'XML',
     JSON: 'JSON',
+    XLSX: 'XLSX',
+    PNG: 'PNG',
+    JPG: 'JPG',
+    SVG: 'SVG',
+    DXF: 'DXF',
+    TXT: 'TXT',
+    MD: 'MD',
+    HTML: 'HTML',
 } as const
 
 export const ExportFileTypeSchema_v0 = z.enum(Object.values(EXPORT_FILE_TYPES))

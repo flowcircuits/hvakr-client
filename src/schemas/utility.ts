@@ -151,7 +151,9 @@ const transformField = (schema: z.ZodType): z.ZodType => {
 
     if (unwrapped instanceof z.ZodUnion) {
         return z.union(
-            unwrapped.options.map((option) => transformField(option))
+            unwrapped.options.map((option) =>
+                transformField(option as z.ZodType)
+            )
         )
     }
 

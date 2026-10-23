@@ -4,6 +4,7 @@ import { ExpandedProjectPostDataExample_v0 } from '../../../fixtures'
 import {
     ExpandedProjectPatchSchema_v0,
     ExpandedProjectPostSchema_v0,
+    ExpandedProjectSchema_v0,
     WritableProjectSubcollectionsSchema_v0,
 } from './expandedProject_v0'
 import {
@@ -28,6 +29,82 @@ import { SpaceTypeDataSchema_v0 } from './spaceType_v0'
 import { WindowTypeDataSchema_v0 } from './windowType_v0'
 
 describe('Project v0 schemas', () => {
+    it.each([
+        'ASHRAE 62.1 / 170 (2022)',
+        'ASHRAE 62.1 / 170 (2025)',
+        'Title 24 (Pre-2019)',
+        'Title 24 (Post-2019)',
+    ])('accepts %s on project reads and writes', (ventilationStandard) => {
+        const project = {
+            name: 'Ventilation project',
+            equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+            access: { direct: { users: {} } },
+            ventilationStandard,
+        }
+
+        expect(
+            ExpandedProjectSchema_v0.shape.ventilationStandard.safeParse(
+                ventilationStandard
+            ).success
+        ).toBe(true)
+        expect(
+            ExpandedProjectSchema_v0.parse(project).ventilationStandard
+        ).toBe(ventilationStandard)
+        expect(
+            ExpandedProjectPostSchema_v0.parse({ ventilationStandard })
+                .ventilationStandard
+        ).toBe(ventilationStandard)
+        expect(
+            ExpandedProjectPatchSchema_v0.parse({ ventilationStandard })
+        ).toEqual({ ventilationStandard })
+    })
+
+    it.each([0, 1.3])(
+        'preserves ventilation safety factor %s on project reads and writes',
+        (ventilationSafetyFactor) => {
+            const settings = {
+                ventilationStandard: 'Title 24 (Post-2019)',
+                ventilationSafetyFactor,
+            }
+            const project = {
+                name: 'Ventilation project',
+                equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+                access: { direct: { users: {} } },
+                ...settings,
+            }
+
+            expect(ProjectDataSchema_v0.parse(project)).toMatchObject(settings)
+            expect(ExpandedProjectSchema_v0.parse(project)).toMatchObject(
+                settings
+            )
+            expect(ProjectPostSchema_v0.parse(settings)).toEqual(settings)
+            expect(ExpandedProjectPostSchema_v0.parse(settings)).toEqual(
+                settings
+            )
+            expect(ExpandedProjectPatchSchema_v0.parse(settings)).toEqual(
+                settings
+            )
+        }
+    )
+
+    it('rejects negative ventilation safety factors on patches', () => {
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                ventilationSafetyFactor: -0.1,
+            }).success
+        ).toBe(false)
+    })
+
+    it('leaves ventilation safety factor defaults to the ventilation standard', () => {
+        expect(
+            ExpandedProjectSchema_v0.shape.ventilationSafetyFactor.parse(
+                undefined
+            )
+        ).toBeUndefined()
+        expect(ExpandedProjectPostSchema_v0.parse({})).toEqual({})
+        expect(ExpandedProjectPatchSchema_v0.parse({})).toEqual({})
+    })
+
     it('preserves duct design settings on project reads and writes', () => {
         const ductDesign = {
             fittings: { ELBOW: { lossCoefficient: 0.3 } },
@@ -153,6 +230,7 @@ describe('Project v0 schemas', () => {
             'userPresence',
             'utilityRates',
             'ventilationStandard',
+            'ventilationSafetyFactor',
             'weatherSpec',
             'yearBuilt',
         ])

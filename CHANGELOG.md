@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.26.0] - 2026-10-23
+
+### Added
+
+- Project ventilation standards accept `Title 24 (Pre-2019)` and
+  `Title 24 (Post-2019)` on reads, creates, and updates.
+- Optional, user-writable `ventilationSafetyFactor` on project schemas and
+  types. Values must be nonnegative; omission uses the ventilation standard
+  default (1.3 for Title 24 Post-2019, 1.0 for every other standard).
+
 ## [0.25.1] - 2026-10-22
 
 ### Added

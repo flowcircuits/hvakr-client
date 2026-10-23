@@ -220,6 +220,8 @@ export const RevisionSchema_v0 = z.object({
 const VentilationStandards_v0 = {
     ASHRAE_2022: 'ASHRAE 62.1 / 170 (2022)',
     ASHRAE_2025: 'ASHRAE 62.1 / 170 (2025)',
+    TITLE_24_PRE_2019: 'Title 24 (Pre-2019)',
+    TITLE_24_POST_2019: 'Title 24 (Post-2019)',
 } as const
 export const VentilationStandardSchema_v0 = z.enum(
     Object.values(VentilationStandards_v0)
@@ -486,7 +488,18 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
             )
     ),
     utilityRates: UtilityRatesSchema_v0.optional(),
-    ventilationStandard: VentilationStandardSchema_v0.optional(),
+    ventilationStandard: VentilationStandardSchema_v0.optional().describe(
+        'How outdoor air is calculated. ASHRAE 62.1 / 170 editions add the people and area rates and divide by Ez; the 2025 edition also applies air-density correction. Title 24 (Pre-2019) uses the greater of 15 CFM per person and the area rate, without Ez. Title 24 (Post-2019) follows the ASHRAE sum and multiplies breathing-zone airflow by the applied safety factor before Ez.'
+    ),
+    ventilationSafetyFactor: z
+        .number()
+        .min(0)
+        .optional()
+        .meta({
+            title: 'Applied Safety Factor',
+            description:
+                'Multiplier on breathing-zone outdoor airflow, applied before zone air distribution effectiveness. Omit to use the ventilation standard default: 1.3 for Title 24 (Post-2019) and 1.0 for every other standard.',
+        }),
     weatherSpec: WeatherSpecSchema_v0.optional(),
     yearBuilt: z.string().optional(),
 })

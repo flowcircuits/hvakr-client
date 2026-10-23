@@ -151,6 +151,21 @@ job-created, and uploaded sheet-file data is read-only except for
 Project reads may include the server-owned `defaultSystemPresetId`, which is
 used to initialize equipment for new systems and zones.
 
+Project `ventilationStandard` accepts `ASHRAE 62.1 / 170 (2022)`,
+`ASHRAE 62.1 / 170 (2025)`, `Title 24 (Pre-2019)`, and `Title 24 (Post-2019)`.
+The optional, writable `ventilationSafetyFactor` is a nonnegative multiplier
+on breathing-zone outdoor airflow, applied before zone air distribution
+effectiveness (Ez). Omit it to use the standard's default: 1.3 for
+`Title 24 (Post-2019)` and 1.0 for every other standard. Schemas preserve
+omission rather than inserting a default value.
+
+```ts
+await hvakr.updateProject('project-id', {
+    ventilationStandard: 'Title 24 (Post-2019)',
+    ventilationSafetyFactor: 1.3,
+})
+```
+
 Duct design settings use `project.ductDesign`, with optional `fittings` and
 `sizingData` fields. Project analytics use `hasLayoutStarted` and `hasDuctsSized`.
 To request the calculated graph, use

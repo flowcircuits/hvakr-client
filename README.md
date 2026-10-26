@@ -158,6 +158,15 @@ To request the calculated graph, use
 The graph metadata exports use the `MetaGraph` prefix; the calculation section
 schema and type are `CalcGraphSectionSchema_v0` and `CalcGraphSection_v0`.
 
+`ventilationStandard` is how outdoor air is calculated. Allowed values are
+`ASHRAE 62.1 / 170 (2022)`, `ASHRAE 62.1 / 170 (2025)`, and `Title 24`.
+ASHRAE 62.1 / 170 editions add the people and area rates and divide by Ez; the
+2025 edition also applies air-density correction. Title 24 uses the greater of
+15 CFM per person and the area rate, without Ez. The field is optional on
+create and patch. When it is omitted, the server defaults to
+`ASHRAE 62.1 / 170 (2025)`. The client accepts and returns the standard and
+does not calculate outdoor air.
+
 Annotations are a project subcollection. Read them with
 `getProject(id, ['annotations'])` or `getProject(id, true)`; the response has an
 `annotations` record keyed by annotation ID. Its entries use `AnnotationData_v0`.

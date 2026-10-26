@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { ExpandedProjectPostDataExample_v0 } from '../../../fixtures'
+import { getJSONSchema } from '../../getJSONSchema'
 import {
     ExpandedProjectPatchSchema_v0,
     ExpandedProjectPostSchema_v0,
+    ExpandedProjectSchema_v0,
     WritableProjectSubcollectionsSchema_v0,
 } from './expandedProject_v0'
 import {
@@ -21,6 +23,8 @@ import {
     ProjectPostSchema_v0,
     ProjectUserPresenceSchema_v0,
     UserAccessSchema_v0,
+    VentilationStandardSchema_v0,
+    type VentilationStandard_v0,
     WritableProjectDataSchema_v0,
 } from './project_v0'
 import { SpaceAirflowRequirementsSchema_v0 } from './space_v0'
@@ -503,6 +507,137 @@ describe('Project v0 schemas', () => {
                 ExpandedProjectPostDataExample_v0
             ).success
         ).toBe(true)
+    })
+
+    it('accepts Title 24 and both ASHRAE ventilation standards', () => {
+        const standards = [
+            'ASHRAE 62.1 / 170 (2022)',
+            'ASHRAE 62.1 / 170 (2025)',
+            'Title 24',
+        ] as const satisfies readonly VentilationStandard_v0[]
+        const readProject = {
+            equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+            name: 'Ventilation standard',
+            access: { direct: { users: {} } },
+        }
+
+        for (const ventilationStandard of standards) {
+            expect(
+                VentilationStandardSchema_v0.parse(ventilationStandard)
+            ).toBe(ventilationStandard)
+            expect(
+                ProjectDataSchema_v0.parse({
+                    ...readProject,
+                    ventilationStandard,
+                }).ventilationStandard
+            ).toBe(ventilationStandard)
+            expect(
+                ExpandedProjectSchema_v0.parse({
+                    ...readProject,
+                    ventilationStandard,
+                }).ventilationStandard
+            ).toBe(ventilationStandard)
+            expect(
+                ProjectPostSchema_v0.parse({ ventilationStandard })
+                    .ventilationStandard
+            ).toBe(ventilationStandard)
+            expect(
+                ExpandedProjectPostSchema_v0.parse({ ventilationStandard })
+                    .ventilationStandard
+            ).toBe(ventilationStandard)
+            expect(
+                ExpandedProjectPatchSchema_v0.parse({ ventilationStandard })
+                    .ventilationStandard
+            ).toBe(ventilationStandard)
+        }
+    })
+
+    it('rejects an unknown ventilation standard', () => {
+        const readProject = {
+            equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+            name: 'Unknown ventilation standard',
+            access: { direct: { users: {} } },
+            ventilationStandard: 'ASHRAE 62.2',
+        }
+
+        expect(
+            VentilationStandardSchema_v0.safeParse('ASHRAE 62.2').success
+        ).toBe(false)
+        expect(ProjectDataSchema_v0.safeParse(readProject).success).toBe(false)
+        expect(ExpandedProjectSchema_v0.safeParse(readProject).success).toBe(
+            false
+        )
+        expect(
+            ProjectPostSchema_v0.safeParse({
+                ventilationStandard: 'ASHRAE 62.2',
+            }).success
+        ).toBe(false)
+        expect(
+            ExpandedProjectPostSchema_v0.safeParse({
+                ventilationStandard: 'ASHRAE 62.2',
+            }).success
+        ).toBe(false)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                ventilationStandard: 'ASHRAE 62.2',
+            }).success
+        ).toBe(false)
+    })
+
+    it('leaves an omitted ventilation standard unset', () => {
+        expect(
+            ProjectPostSchema_v0.parse({ name: 'Server default' })
+                .ventilationStandard
+        ).toBeUndefined()
+        expect(
+            ExpandedProjectPostSchema_v0.parse({ name: 'Server default' })
+                .ventilationStandard
+        ).toBeUndefined()
+        expect(
+            ExpandedProjectPatchSchema_v0.parse({ name: 'Server default' })
+                .ventilationStandard
+        ).toBeUndefined()
+    })
+
+    it('publishes Title 24 on read, create, and patch OpenAPI schemas', () => {
+        const description =
+            'How outdoor air is calculated. ASHRAE 62.1 / 170 editions add the people and area rates and divide by Ez; the 2025 edition also applies air-density correction. Title 24 uses the greater of 15 CFM per person and the area rate, without Ez.'
+        const standards = [
+            'ASHRAE 62.1 / 170 (2022)',
+            'ASHRAE 62.1 / 170 (2025)',
+            'Title 24',
+        ]
+
+        expect(VentilationStandardSchema_v0.description).toBe(description)
+        expect(ProjectDataSchema_v0.shape.ventilationStandard.description).toBe(
+            description
+        )
+
+        for (const schema of [
+            VentilationStandardSchema_v0,
+            ProjectDataSchema_v0,
+            ExpandedProjectSchema_v0,
+            ProjectPostSchema_v0,
+            ExpandedProjectPostSchema_v0,
+            ExpandedProjectPatchSchema_v0,
+        ]) {
+            const generated = getJSONSchema(schema) as {
+                properties?: { ventilationStandard?: unknown }
+                required?: string[]
+            }
+            const property = (generated.properties?.ventilationStandard ??
+                generated) as { default?: unknown }
+
+            expect(property).toMatchObject({
+                type: 'string',
+                enum: standards,
+                description,
+            })
+            expect(property).not.toHaveProperty('default')
+            expect(generated.required ?? []).not.toContain(
+                'ventilationStandard'
+            )
+        }
     })
 })
 

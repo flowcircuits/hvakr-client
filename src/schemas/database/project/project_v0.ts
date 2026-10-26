@@ -220,10 +220,16 @@ export const RevisionSchema_v0 = z.object({
 const VentilationStandards_v0 = {
     ASHRAE_2022: 'ASHRAE 62.1 / 170 (2022)',
     ASHRAE_2025: 'ASHRAE 62.1 / 170 (2025)',
+    TITLE_24: 'Title 24',
 } as const
-export const VentilationStandardSchema_v0 = z.enum(
-    Object.values(VentilationStandards_v0)
-)
+const VENTILATION_STANDARD_DESCRIPTION_v0 =
+    'How outdoor air is calculated. ASHRAE 62.1 / 170 editions add the people and area rates and divide by Ez; the 2025 edition also applies air-density correction. Title 24 uses the greater of 15 CFM per person and the area rate, without Ez.'
+export const VentilationStandardSchema_v0 = z
+    .enum(Object.values(VentilationStandards_v0))
+    .describe(VENTILATION_STANDARD_DESCRIPTION_v0)
+export type VentilationStandard_v0 = z.infer<
+    typeof VentilationStandardSchema_v0
+>
 
 export const EquipmentModesSchema_v0 = z.record(ModeIdSchema_v0, ModeSchema_v0)
 export type EquipmentModes_v0 = z.infer<typeof EquipmentModesSchema_v0>
@@ -486,7 +492,10 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
             )
     ),
     utilityRates: UtilityRatesSchema_v0.optional(),
-    ventilationStandard: VentilationStandardSchema_v0.optional(),
+    /** Optional. The server defaults an omitted value to ASHRAE 62.1 / 170 (2025). */
+    ventilationStandard: VentilationStandardSchema_v0.optional().describe(
+        VENTILATION_STANDARD_DESCRIPTION_v0
+    ),
     weatherSpec: WeatherSpecSchema_v0.optional(),
     yearBuilt: z.string().optional(),
 })

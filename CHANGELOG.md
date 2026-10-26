@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.25.2] - 2026-10-26
+
+### Added
+
+- `ventilationStandard` accepts `Title 24` alongside
+  `ASHRAE 62.1 / 170 (2022)` and `ASHRAE 62.1 / 170 (2025)`.
+  `VentilationStandard_v0` is that union. The field stays optional on project
+  read, create, and patch. When it is omitted, the server still defaults to
+  `ASHRAE 62.1 / 170 (2025)`.
+
 ## [0.25.1] - 2026-10-22
 
 ### Added

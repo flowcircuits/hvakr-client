@@ -1,7 +1,7 @@
 import { assert, describe, expect, it } from 'vitest'
 import { getJSONSchema } from '../getJSONSchema'
 import {
-    EquipmentDataSchema_v0,
+    EquipmentConfigSchema_v0,
     ExportDefinitionSchema_v0,
     ExportFileTypeSchema_v0,
     SpaceDataSchema_v0,
@@ -253,6 +253,7 @@ describe('calculations contract', () => {
 
     it('parses canonical equipment mode summaries and keeps checksums separate', () => {
         const equipment = EquipmentCalculationsSchema_v0.parse({
+            scope: { type: 'system', id: 'system-1' },
             airflows: { raw: { cooling_mode: airflows } },
             checksums: { cooling_mode: { airflowDensity: 0.8 } },
             modes: {
@@ -280,6 +281,21 @@ describe('calculations contract', () => {
         expect(
             equipment.modes?.cooling_mode?.summary.coilTotals?.coilLoad
         ).toBe(-24_000)
+        const response = {
+            errors: [],
+            flags: {},
+            equipment: {
+                'central-node': {
+                    scope: equipment.scope,
+                    airflows: equipment.airflows,
+                    modes: equipment.modes,
+                },
+                'terminal-node': { scope: { type: 'zone', id: 'zone-1' } },
+            },
+        }
+        expect(APIProjectCalculationsSchema_v0.parse(response)).toEqual(
+            response
+        )
         expect(EquipmentSectionOutputSchema_v0.shape).not.toHaveProperty(
             'checksums'
         )
@@ -583,7 +599,7 @@ describe('OpenAPI JSON Schema generation', () => {
         APIErrorSchema_v0,
         APIProjectCalculationsSchema_v0,
         EquipmentCalculationsSchema_v0,
-        EquipmentDataSchema_v0,
+        EquipmentConfigSchema_v0,
         APIJobCreateSchema_v0,
         APIJobSchema_v0,
         APISheetUploadJobResultSchema_v0,

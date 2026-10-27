@@ -136,10 +136,12 @@ export type EquipmentSectionOutput_v0 = z.infer<
     typeof EquipmentSectionOutputSchema_v0
 >
 
-/** Per-equipment canonical outputs, keyed by equipment id. */
+/** Per-unit outputs, keyed by graph node id, with the served system/zone scope. */
 export const CalcEquipmentSectionSchema_v0 = z
     .record(z.string(), EquipmentSectionOutputSchema_v0)
-    .describe('Per-equipment calculated outputs, keyed by equipment id.')
+    .describe(
+        'Per-unit calculated outputs, keyed by graph node id, with scope.'
+    )
 export type CalcEquipmentSection_v0 = z.infer<
     typeof CalcEquipmentSectionSchema_v0
 >

@@ -251,6 +251,38 @@ describe('calculations contract', () => {
         ).toBe(false)
     })
 
+    it.each([
+        { nodeType: 'CENTRAL_UNIT', systemId: 'system-1' },
+        { nodeType: 'TERMINAL_UNIT', zoneId: 'zone-1' },
+    ])(
+        'parses calculated graph metadata for placed and unplaced $nodeType nodes',
+        (unit) => {
+            for (const placement of [{}, { level: 1, point: { x: 0, y: 0 } }]) {
+                const response = {
+                    errors: [],
+                    flags: {},
+                    graph: {
+                        unit: {
+                            ...unit,
+                            ...placement,
+                            id: 'unit',
+                            adjacencies: [],
+                            pressure: 0.2,
+                            outlet: { ductHeatGain: 2 },
+                            energyConfiguration: {
+                                efficiency: { coolingSEER: 14 },
+                            },
+                            cost: 1200,
+                        },
+                    },
+                }
+                expect(APIProjectCalculationsSchema_v0.parse(response)).toEqual(
+                    response
+                )
+            }
+        }
+    )
+
     it('parses canonical equipment mode summaries and keeps checksums separate', () => {
         const equipment = EquipmentCalculationsSchema_v0.parse({
             scope: { type: 'system', id: 'system-1' },

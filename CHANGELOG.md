@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unit nodes may be unplaced: omit both `level` and `point`, or supply both to
   place the node. All other node types still require coordinates. Unit nodes
   retain product links, selections, size, and optional nonnegative `cost`.
+  Calculated graph metadata follows the same placed/unplaced unit rules.
 - Equipment calculation results are keyed by unit graph node ID and include a
   required `scope: { type: 'system' | 'zone', id: string }` back-reference.
   Mode-keyed pipeline outputs remain unchanged. The `equipment` calculation

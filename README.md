@@ -169,6 +169,15 @@ create and patch. When it is omitted, the server defaults to
 `ASHRAE 62.1 / 170 (2025)`. The client accepts and returns the standard and
 does not calculate outdoor air.
 
+`weatherSpec.source` and `weatherSpec.year` select the weather dataset, for
+example `{ source: 'ASHRAE', year: 2021 }`. When they are omitted, the server
+uses ASHRAE 2025. The server rejects a pair that does not name an available
+dataset, and it selects the nearest station when the dataset changes.
+
+`building.planRotation` is the compass bearing that the top of the plan faces,
+in degrees clockwise from true north. A surface's compass azimuth is its drawn
+direction (0 = plan up) plus `planRotation`.
+
 Annotations are a project subcollection. Read them with
 `getProject(id, ['annotations'])` or `getProject(id, true)`; the response has an
 `annotations` record keyed by annotation ID. Its entries use `AnnotationData_v0`.
@@ -275,6 +284,11 @@ if (job.type === 'sheet-upload' && job.status === 'completed') {
 
 `auto-takeoff` remains project-wide: it processes all active placed sheets and
 eligible maps, not only pages from this upload.
+
+By default, auto-takeoff adds the detected spaces to the project. Pass
+`commit: false` to write them as suggestions to review in the HVAKR app
+instead. The API cannot accept suggestions, and a later auto-takeoff deletes
+the pending suggestions on the levels it runs.
 
 Each page has a detected drawing `scale` (real inches per paper inch: `48` for
 1/4" = 1'-0", `96` for 1/8" = 1'-0"). Auto-takeoff converts sheet geometry with

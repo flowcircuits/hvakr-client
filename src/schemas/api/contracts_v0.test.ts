@@ -406,6 +406,18 @@ describe('job schemas', () => {
         ).toBe(true)
     })
 
+    it('accepts a boolean commit flag on auto-takeoff', () => {
+        expect(
+            APIJobCreateSchema_v0.parse({ type: 'auto-takeoff', commit: false })
+        ).toEqual({ type: 'auto-takeoff', commit: false })
+        expect(
+            APIJobCreateSchema_v0.safeParse({
+                type: 'auto-takeoff',
+                commit: 'yes',
+            }).success
+        ).toBe(false)
+    })
+
     it('parses an auto-group result', () => {
         expect(
             APIAutoGroupResultSchema_v0.parse({ created: 1, assigned: 2 })

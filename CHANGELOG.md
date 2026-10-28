@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.25.4] - 2026-10-28
+
+### Added
+
+- `commit` on `auto-takeoff` job creates (`APIJobCreateSchema_v0`). The server
+  defaults it to `true`: detected spaces go straight into the project. Set
+  `commit: false` to write them as suggestions to review in the HVAKR app
+  instead. A later auto-takeoff deletes pending suggestions on the levels it
+  runs, and the v0 API cannot accept them.
+- `weatherSpec.source` and `weatherSpec.year` (`WeatherSpecSchema_v0`): the
+  weather data publisher and edition, for example `ASHRAE` and `2025`. Reads
+  return them when they are set, and create and patch requests can set them.
+  Omitted means ASHRAE 2025. The server rejects a pair that does not name an
+  available dataset.
+- A description for `building.planRotation`: the compass bearing that the top
+  of the plan faces, in degrees clockwise from true north.
+
 ## [0.25.3] - 2026-10-28
 
 ### Added

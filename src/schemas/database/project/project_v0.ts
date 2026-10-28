@@ -27,6 +27,18 @@ export const WeatherSpecSchema_v0 = z.object({
     loading: disableUserWrite(z.boolean().optional()),
     nearestWeatherStationIds: disableUserWrite(z.array(z.string()).optional()),
     selectedStationId: z.string().optional(),
+    source: z
+        .string()
+        .optional()
+        .describe(
+            'Weather data publisher, for example "ASHRAE" or "CIBSE". Omitted means ASHRAE. With year, it must name an available weather dataset.'
+        ),
+    year: z
+        .number()
+        .optional()
+        .describe(
+            'Weather data edition year, for example 2025 or 2021. Omitted means 2025.'
+        ),
 })
 
 export const MapTypeSchema_v0 = z.enum(['roadmap', 'satellite', 'hybrid'])
@@ -145,7 +157,12 @@ export const BuildingDataSchema_v0 = z.object({
     description: z.string().optional(),
     name: z.string().optional(),
     occupancy: z.number().optional(),
-    planRotation: z.number().optional(),
+    planRotation: z
+        .number()
+        .optional()
+        .describe(
+            'Compass bearing that the top of the plan faces, in degrees clockwise from true north. A surface azimuth is its drawn direction (0 = plan up) plus planRotation. 0 means plan up is true north.'
+        ),
 })
 
 export const DuctSizingDataSchema_v0 = z.object({

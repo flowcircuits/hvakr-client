@@ -61,7 +61,7 @@ export type APIJobType_v0 = z.infer<typeof APIJobTypeSchema_v0>
  * - `auto-group` → requires `scope`; accepts `entityIds`.
  * - `check` → no parameters.
  * - `auto-takeoff` → all parameters optional (`confidence`, `levels`,
- *   `roofTypeId`, `slabTypeId`, `wallTypeId`, `windowTypeId`).
+ *   `roofTypeId`, `slabTypeId`, `wallTypeId`, `windowTypeId`, `commit`).
  * - `auto-route` → no parameters; uses the project's saved routing constraints.
  */
 export const APIJobCreateSchema_v0 = z
@@ -119,6 +119,12 @@ export const APIJobCreateSchema_v0 = z
             .optional()
             .describe(
                 'Auto-takeoff: window type assigned to detected windows.'
+            ),
+        commit: z
+            .boolean()
+            .optional()
+            .describe(
+                'Auto-takeoff: true (default) adds detected spaces to the project. False writes them as suggestions to review in the HVAKR app; a later auto-takeoff deletes pending suggestions on the levels it runs.'
             ),
     })
     .describe('Request body to create a job.')

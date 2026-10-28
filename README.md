@@ -147,7 +147,9 @@ change with `disableUserWrite: true`; fields without that metadata are writable
 by default. Create and patch schemas apply that policy recursively, including
 inside spaces, type collections, weather data, and sheet files. Exports remain
 job-created, and uploaded sheet-file data is read-only except for
-`sheetFiles[id].name` in project patches.
+`sheetFiles[id].name` in project patches. Pages from uploaded sheet files are
+in the `sheetFilePages` subcollection. Patches cannot create or delete pages,
+and cannot change server-owned page fields.
 Project reads may include the server-owned `defaultSystemPresetId`, which is
 used to initialize equipment for new systems and zones.
 
@@ -273,6 +275,17 @@ if (job.type === 'sheet-upload' && job.status === 'completed') {
 
 `auto-takeoff` remains project-wide: it processes all active placed sheets and
 eligible maps, not only pages from this upload.
+
+Each page has a detected drawing `scale` (real inches per paper inch: `48` for
+1/4" = 1'-0", `96` for 1/8" = 1'-0"). Auto-takeoff converts sheet geometry with
+it. If the detected scale is wrong, patch the page before you run auto-takeoff.
+The page ID is `job.result.pages[i].id`:
+
+```ts
+await hvakr.updateProject(projectId, {
+    sheetFilePages: { [pageId]: { scale: 48, customScaleInfo: null } },
+})
+```
 
 ### Products
 

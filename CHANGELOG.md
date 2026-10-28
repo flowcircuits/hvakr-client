@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.25.3] - 2026-10-28
+
+### Added
+
+- `sheetFilePages` project subcollection (`SheetFilePageDataSchema_v0`): the
+  pages of uploaded sheet files. Expand it with
+  `getProject(id, ['sheetFilePages'])`. Project patches can set a page's
+  `scale` (a positive number) and clear `customScaleInfo`, so a wrong detected
+  scale can be corrected before auto-takeoff. Processing, takeoff, and file
+  fields are read-only. Only sheet uploads create pages, so project create
+  rejects `sheetFilePages`.
+
 ## [0.25.2] - 2026-10-26
 
 ### Added

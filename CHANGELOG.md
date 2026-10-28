@@ -21,6 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   fields are read-only. Only sheet uploads create pages, so project create
   rejects `sheetFilePages`.
 
+### Fixed
+
+- `LengthUnitSchema_v0` now accepts every canonical length unit (`CM`, `MI`,
+  `KM`, `SMOOT`, and `BARLEYCORN` were missing), so `customScaleInfo` units
+  match what the app stores.
+
 ## [0.25.2] - 2026-10-26
 
 ### Added

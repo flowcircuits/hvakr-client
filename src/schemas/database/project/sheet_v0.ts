@@ -1,7 +1,17 @@
 import { z } from 'zod'
 import { BoxSchema, PolygonSchema } from '../../misc'
 
-export const LengthUnits_v0 = { IN: 'IN', FT: 'FT', MM: 'MM', M: 'M' } as const
+export const LengthUnits_v0 = {
+    IN: 'IN',
+    FT: 'FT',
+    MM: 'MM',
+    CM: 'CM',
+    M: 'M',
+    MI: 'MI',
+    KM: 'KM',
+    SMOOT: 'SMOOT',
+    BARLEYCORN: 'BARLEYCORN',
+} as const
 
 export const LengthUnitSchema_v0 = z.enum(Object.values(LengthUnits_v0))
 export type LengthUnit_v0 = z.infer<typeof LengthUnitSchema_v0>

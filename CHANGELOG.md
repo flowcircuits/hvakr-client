@@ -32,6 +32,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This prepares the client contract for HSF-477. Publish this version before
 updating the HVAKR monorepo dependency; this PR does not publish or migrate data.
 
+## [0.25.3] - 2026-10-28
+
+### Added
+
+- `sheetFilePages` project subcollection (`SheetFilePageDataSchema_v0`): the
+  pages of uploaded sheet files. Expand it with
+  `getProject(id, ['sheetFilePages'])`. Project patches can set a page's
+  `scale` (a positive number) and clear `customScaleInfo`, so a wrong detected
+  scale can be corrected before auto-takeoff. Processing, takeoff, and file
+  fields are read-only. Only sheet uploads create pages, so project create
+  rejects `sheetFilePages`.
+
+### Fixed
+
+- `LengthUnitSchema_v0` now accepts every canonical length unit (`CM`, `MI`,
+  `KM`, `SMOOT`, and `BARLEYCORN` were missing), so `customScaleInfo` units
+  match what the app stores.
+
 ## [0.25.2] - 2026-10-26
 
 ### Added

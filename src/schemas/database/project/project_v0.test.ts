@@ -552,6 +552,31 @@ describe('Project v0 schemas', () => {
         }
     })
 
+    it('reads and writes the weather data source and edition year', () => {
+        const weatherSpec = { source: 'ASHRAE', year: 2021 }
+        const readProject = {
+            equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+            name: 'Weather edition',
+            access: { direct: { users: {} } },
+            weatherSpec,
+        }
+
+        expect(ProjectDataSchema_v0.parse(readProject).weatherSpec).toEqual(
+            weatherSpec
+        )
+        expect(
+            ExpandedProjectPostSchema_v0.parse({ weatherSpec }).weatherSpec
+        ).toEqual(weatherSpec)
+        expect(
+            ExpandedProjectPatchSchema_v0.parse({ weatherSpec }).weatherSpec
+        ).toEqual(weatherSpec)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                weatherSpec: { year: '2021' },
+            }).success
+        ).toBe(false)
+    })
+
     it('rejects an unknown ventilation standard', () => {
         const readProject = {
             equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,

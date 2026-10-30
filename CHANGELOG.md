@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.26.0] - 2026-10-30
+
+### Breaking Changes
+
+- Check report schemas now require `step` on each finding and a top-level
+  `steps` record covering every audit step with `complete`, `warning`, `error`,
+  or `blocked` status, matching the existing server's `ProjectAudit` contract.
+  Consumers constructing reports must supply these fields. Older report
+  payloads without them no longer pass explicit schema validation; the client
+  does not parse responses automatically.
+
+### Fixed
+
+- Standalone job result validation rejects legacy or malformed check reports
+  instead of silently stripping them to an empty auto-takeoff result. Empty
+  auto-takeoff results remain valid.
+
+### Added
+
+- `spaceType` finding entity type and `APICheckStepSchema_v0`, mirroring
+  `AUDIT_STEPS` in `@hvakr/common`.
+- Check report documentation: `tiers` always has three entries. Blocked steps
+  omit calculated-result findings but retain tier-1 missing-input findings.
+
 ## [0.25.4] - 2026-10-28
 
 ### Added

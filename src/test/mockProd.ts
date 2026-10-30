@@ -343,7 +343,40 @@ export class MockProdService {
                 result: {
                     passed: true,
                     summary: { errors: 0, warnings: 0, info: 0 },
-                    tiers: [],
+                    tiers: [
+                        {
+                            tier: 1,
+                            label: 'Structural Completeness',
+                            passed: true,
+                            findings: [],
+                        },
+                        {
+                            tier: 2,
+                            label: 'Calculation Sanity',
+                            passed: true,
+                            findings: [],
+                        },
+                        {
+                            tier: 3,
+                            label: 'Design Quality',
+                            passed: true,
+                            findings: [],
+                        },
+                    ],
+                    steps: {
+                        weather: 'complete',
+                        building: 'complete',
+                        spaces: 'complete',
+                        envelopeTypes: 'complete',
+                        spaceTypes: 'complete',
+                        loads: 'complete',
+                        zones: 'complete',
+                        systems: 'complete',
+                        modes: 'complete',
+                        airflows: 'complete',
+                        ventilation: 'complete',
+                        equipment: 'complete',
+                    },
                 },
             }
             this.jobs.set(jobId, job)

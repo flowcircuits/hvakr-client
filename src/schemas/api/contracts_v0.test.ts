@@ -21,6 +21,8 @@ import {
 import {
     APIAutoGroupResultSchema_v0,
     APICheckReportSchema_v0,
+    APICheckFindingSchema_v0,
+    APICheckStepSchema_v0,
     APIJobCreateSchema_v0,
     APIJobResultSchema_v0,
     APIJobSchema_v0,
@@ -424,22 +426,165 @@ describe('job schemas', () => {
         ).toEqual({ created: 1, assigned: 2 })
     })
 
-    it('parses a check report', () => {
-        const parsed = APICheckReportSchema_v0.parse({
+    const auditSteps = [
+        'weather',
+        'building',
+        'spaces',
+        'envelopeTypes',
+        'spaceTypes',
+        'loads',
+        'zones',
+        'systems',
+        'modes',
+        'airflows',
+        'ventilation',
+        'equipment',
+    ] as const
+    const checkReport = {
+        passed: false,
+        summary: { errors: 1, warnings: 1, info: 0 },
+        steps: {
+            weather: 'error',
+            building: 'complete',
+            spaces: 'complete',
+            envelopeTypes: 'complete',
+            spaceTypes: 'warning',
+            loads: 'blocked',
+            zones: 'complete',
+            systems: 'complete',
+            modes: 'complete',
+            airflows: 'blocked',
+            ventilation: 'warning',
+            equipment: 'blocked',
+        },
+        tiers: [
+            {
+                tier: 1,
+                label: 'Structural Completeness',
+                passed: false,
+                findings: [
+                    {
+                        tier: 1,
+                        step: 'weather',
+                        severity: 'error',
+                        message: 'Missing weather',
+                    },
+                    {
+                        tier: 1,
+                        step: 'spaceTypes',
+                        severity: 'warning',
+                        message: 'Missing setpoint',
+                        entityType: 'spaceType',
+                        entityId: 'office',
+                        entityName: 'Office',
+                    },
+                ],
+            },
+            {
+                tier: 2,
+                label: 'Calculation Sanity',
+                passed: true,
+                findings: [],
+            },
+            { tier: 3, label: 'Design Quality', passed: true, findings: [] },
+        ],
+    }
+
+    it('parses the full audit report without stripping step or spaceType fields', () => {
+        expect(APICheckStepSchema_v0.options).toEqual(auditSteps)
+        expect(APICheckReportSchema_v0.parse(checkReport)).toEqual(checkReport)
+        const job = APIJobSchema_v0.parse({
+            jobId: 'check_1',
+            type: 'check',
+            status: 'completed',
+            result: checkReport,
+        })
+        expect(job.result).toEqual(checkReport)
+        expect(APIJobResultSchema_v0.parse(checkReport)).toEqual(checkReport)
+    })
+
+    it.each(auditSteps)(
+        'accepts findings assigned to the %s audit step',
+        (step) => {
+            const finding = {
+                tier: 1,
+                step,
+                severity: 'info',
+                message: 'Finding',
+            }
+            expect(APICheckFindingSchema_v0.parse(finding)).toEqual(finding)
+        }
+    )
+
+    it('requires a known step on every finding', () => {
+        const finding = { tier: 1, severity: 'error', message: 'Finding' }
+        expect(APICheckFindingSchema_v0.safeParse(finding).success).toBe(false)
+        expect(
+            APICheckFindingSchema_v0.safeParse({ ...finding, step: 'unknown' })
+                .success
+        ).toBe(false)
+    })
+
+    it('rejects a legacy check report instead of parsing it as an empty takeoff result', () => {
+        const legacyReport = {
             passed: false,
-            summary: { errors: 1, warnings: 0, info: 2 },
+            summary: { errors: 1, warnings: 0, info: 0 },
             tiers: [
                 {
                     tier: 1,
-                    label: 'Structure',
+                    label: 'Structural Completeness',
                     passed: false,
                     findings: [
                         { tier: 1, severity: 'error', message: 'No spaces' },
                     ],
                 },
             ],
-        })
-        expect(parsed.tiers[0]!.findings[0]!.severity).toBe('error')
+        }
+        expect(APIJobResultSchema_v0.safeParse(legacyReport).success).toBe(
+            false
+        )
+    })
+
+    it.each([
+        { ...checkReport, steps: { ...checkReport.steps, loads: 'pending' } },
+        { ...checkReport, tiers: 'invalid' },
+        {
+            ...checkReport,
+            summary: { errors: 'invalid', warnings: 0, info: 0 },
+        },
+    ])('rejects malformed standalone check reports: %j', (report) => {
+        expect(APIJobResultSchema_v0.safeParse(report).success).toBe(false)
+    })
+
+    it('requires exactly the known step keys and valid statuses', () => {
+        expect(
+            APICheckReportSchema_v0.safeParse({
+                ...checkReport,
+                steps: undefined,
+            }).success
+        ).toBe(false)
+        for (const step of auditSteps) {
+            const { [step]: omitted, ...remaining } = checkReport.steps
+            expect(omitted).toBeDefined()
+            expect(
+                APICheckReportSchema_v0.safeParse({
+                    ...checkReport,
+                    steps: remaining,
+                }).success
+            ).toBe(false)
+            expect(
+                APICheckReportSchema_v0.safeParse({
+                    ...checkReport,
+                    steps: { ...checkReport.steps, [step]: 'pending' },
+                }).success
+            ).toBe(false)
+        }
+        expect(
+            APICheckReportSchema_v0.safeParse({
+                ...checkReport,
+                steps: { ...checkReport.steps, unknown: 'complete' },
+            }).success
+        ).toBe(false)
     })
 
     it('parses a completed sync job with a result', () => {

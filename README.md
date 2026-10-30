@@ -228,6 +228,20 @@ the `building` object does not include a floor count.
 `APIJobSchema_v0` parses a full job and narrows its result by `type`.
 `APIJobResultSchema_v0` parses a standalone result payload and preserves its fields.
 
+A `check` job returns `APICheckReport_v0`, matching the shared project audit.
+Each finding has a required `step` (validated by `APICheckStepSchema_v0`),
+and `entityType` can be `space`, `spaceType`, `zone`, `system`, or `equipment`.
+The required `steps` record contains every audit step: `weather`, `building`,
+`spaces`, `envelopeTypes`, `spaceTypes`, `loads`, `zones`, `systems`, `modes`,
+`airflows`, `ventilation`, and `equipment`. Each status is `complete`, `warning`,
+`error`, or `blocked`. `tiers` always has three entries. Calculated-result
+findings in blocked steps are omitted; tier-1 missing-input findings remain.
+Info findings do not prevent a step from being `complete`.
+
+In 0.26.0, consumers constructing check reports must provide `step` and `steps`.
+Explicit schema validation rejects older payloads without these fields; the
+client itself does not parse responses automatically.
+
 Create PDF/CSV/ZIP output with an export job. `definition` accepts
 `load-calculation`, `basis-of-design`, `ventilation-csv`, or
 `hourly-loads-csv`:

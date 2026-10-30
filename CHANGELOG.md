@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   payloads without them no longer pass explicit schema validation; the client
   does not parse responses automatically.
 
+### Fixed
+
+- Standalone job result validation rejects legacy or malformed check reports
+  instead of silently stripping them to an empty auto-takeoff result. Empty
+  auto-takeoff results remain valid.
+
 ### Added
 
 - `spaceType` finding entity type and `APICheckStepSchema_v0`, mirroring

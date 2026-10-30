@@ -387,8 +387,9 @@ export const APIJobResultSchema_v0 = z
         APICheckReportSchema_v0,
         APIAutoRouteResultSchema_v0,
         APISheetUploadJobResultSchema_v0,
-        // Keep the all-optional result last so it cannot strip other payloads.
-        APIAutoTakeoffResultSchema_v0,
+        // Keep the all-optional result last and strict so invalid reports
+        // cannot fall through and lose their fields. Empty takeoff results remain valid.
+        APIAutoTakeoffResultSchema_v0.strict(),
     ])
     .describe('Job result payload; shape depends on the job type.')
 export type APIJobResult_v0 = z.infer<typeof APIJobResultSchema_v0>

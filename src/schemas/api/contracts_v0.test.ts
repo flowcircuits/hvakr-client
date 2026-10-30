@@ -525,6 +525,37 @@ describe('job schemas', () => {
         ).toBe(false)
     })
 
+    it('rejects a legacy check report instead of parsing it as an empty takeoff result', () => {
+        const legacyReport = {
+            passed: false,
+            summary: { errors: 1, warnings: 0, info: 0 },
+            tiers: [
+                {
+                    tier: 1,
+                    label: 'Structural Completeness',
+                    passed: false,
+                    findings: [
+                        { tier: 1, severity: 'error', message: 'No spaces' },
+                    ],
+                },
+            ],
+        }
+        expect(APIJobResultSchema_v0.safeParse(legacyReport).success).toBe(
+            false
+        )
+    })
+
+    it.each([
+        { ...checkReport, steps: { ...checkReport.steps, loads: 'pending' } },
+        { ...checkReport, tiers: 'invalid' },
+        {
+            ...checkReport,
+            summary: { errors: 'invalid', warnings: 0, info: 0 },
+        },
+    ])('rejects malformed standalone check reports: %j', (report) => {
+        expect(APIJobResultSchema_v0.safeParse(report).success).toBe(false)
+    })
+
     it('requires exactly the known step keys and valid statuses', () => {
         expect(
             APICheckReportSchema_v0.safeParse({

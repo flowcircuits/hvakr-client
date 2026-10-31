@@ -330,12 +330,17 @@ node fields to `null` in a project patch to clear them.
 
 ### Equipment modes and calculations
 
-Since `0.6.0`, projects use a shared `equipmentModes` registry. As of `0.10.0`,
-central and terminal equipment live in a top-level `equipment` subcollection
-rather than under `systems[id].equipmentConfig` / `zones[id].equipmentConfig`.
-Each equipment document carries a required `projectScope` binding it to the
-system or zone it configures; the equipment document id is independent of the
-referenced system/zone id:
+Projects use a shared `equipmentModes` registry. As of `0.27.0`, equipment
+configuration lives directly on `CENTRAL_UNIT` and `TERMINAL_UNIT` graph nodes,
+not in a project `equipment` subcollection. `systemId` or `zoneId` identifies
+the scope served by each unit. Node IDs are independent of scope IDs.
+`EquipmentConfigSchema_v0` / `EquipmentConfig_v0` describe the configuration
+fields shared by these two node types.
+
+Unit nodes can exist before placement on a floor plan. Omit both `level` and
+`point` for an unplaced unit; supply both for a placed unit. All other node
+types still require coordinates. Product links, selections, configuration,
+`width`, `height`, and optional nonnegative `cost` are stored on the unit node.
 
 ```ts
 import {
@@ -349,9 +354,12 @@ const project = {
     zones: {
         'zone-1': { name: 'VAV-1', configured: true, systemId: 'system-1' },
     },
-    equipment: {
-        'equipment-ahu-1': {
-            projectScope: { type: 'system', id: 'system-1' },
+    graph: {
+        'unit-ahu-1': {
+            id: 'unit-ahu-1',
+            nodeType: 'CENTRAL_UNIT',
+            systemId: 'system-1',
+            adjacencies: [],
             components: [
                 { id: 'oa', type: ComponentTypes_v0.OUTSIDE_AIR_INTAKE },
             ],
@@ -366,47 +374,55 @@ const project = {
                     },
                 },
             },
-            // Energy config is optional. The drawn unit size lives on the
-            // central or terminal unit graph node as `width` and `height`.
             outlet: { ductHeatGain: 2, ductLeakagePercent: 0.01 },
             energyConfiguration: { efficiency: { coolingSEER: 14 } },
+            cost: 1200,
         },
-        'equipment-vav-1': { projectScope: { type: 'zone', id: 'zone-1' } },
+        'unit-vav-1': {
+            id: 'unit-vav-1',
+            nodeType: 'TERMINAL_UNIT',
+            zoneId: 'zone-1',
+            adjacencies: [],
+        },
     },
 }
 ```
 
-Patch semantics apply to equipment documents: send a partial document to update
-fields, set a nested optional field to `null` to clear it, and set
-`equipment[id] = null` to delete an entire document. Requesting `equipment`
-through `getProject(id, ['equipment'])` expands the subcollection.
-
-Since `0.13.0`, supply duct settings live at `equipment[id].outlet` and apply
-across all modes. `ductHeatGain` is a Fahrenheit temperature delta;
-`ductLeakagePercent` is a decimal fraction (`0.01` = 1%). The former root-level
-fields are removed. `EquipmentOutletSchema_v0` / `EquipmentOutlet_v0` now
-describe these settings. Coil `targetTemperature` is the coil leaving-air
-temperature, before outlet duct heat gain/loss. Return duct settings remain on
-the return-air intake component.
+Expand `graph` with `getProject(id, ['graph'])`. Use graph-node patches to
+update configuration. Set a nested optional field to `null` to clear it:
 
 ```ts
 await client.updateProject(projectId, {
-    equipment: { 'equipment-ahu-1': { outlet: { ductHeatGain: 2 } } },
+    graph: {
+        'unit-ahu-1': {
+            outlet: { ductHeatGain: 2 },
+            energyConfiguration: { schedule: null },
+        },
+    },
 })
 ```
 
+Supply duct settings live at `graph[nodeId].outlet` and apply across all modes.
+`ductHeatGain` is a Fahrenheit temperature delta; `ductLeakagePercent` is a
+decimal fraction (`0.01` = 1%). Coil `targetTemperature` is the coil leaving-air
+temperature, before outlet duct heat gain/loss. Return duct settings remain on
+the return-air intake component.
+
+Calculation sections remain selectable with `include`. The `equipment`
+**calculation section** is still available. Its entries are keyed by unit graph
+node ID and carry `scope: { type: 'system' | 'zone', id: string }`. Each entry's
+`modes` map uses the project's equipment mode IDs, as do mode-specific airflow
+and checksum results.
+
 Space design overrides live under `designAirflowsByMode`; ventilation and
 infiltration requirements live under `airflowRequirementsByLoadCondition`.
-Calculation sections remain selectable with `include`, while airflow,
-checksum, and equipment results are keyed by the project's mode ids.
-
 Perimeter infiltration requirements are `infiltrationPerimeterReq` and
 `infiltrationWinterPerimeterReq` on space types and window types, and
 `infiltrationPerimeterReq` on a space airflow requirement. They pair with the
 `PERIMETER` value of `infiltrationReqMethod`.
 
-See the [`0.10.0` migration notes](./CHANGELOG.md#0100---2026-07-23) for the
-`equipmentConfig` → `equipment` mapping, and the
+See the [`0.27.0` migration notes](./CHANGELOG.md#0270---unreleased) for the
+equipment-to-graph change, and the
 [`0.14.0` migration notes](./CHANGELOG.md#0140---2026-09-09) for the
 `infiltrationLfReq` → `infiltrationPerimeterReq` rename. The API path remains
 `/v0`.

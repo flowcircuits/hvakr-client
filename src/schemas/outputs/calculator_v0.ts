@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import {
     ComponentTypes_v0,
+    EquipmentProjectScopeSchema_v0,
     ModeIdSchema_v0,
 } from '../database/project/equipment_v0'
 
@@ -403,6 +404,7 @@ export type EquipmentModeCalculations_v0 = z.infer<
 >
 
 export const EquipmentCalculationsSchema_v0 = z.object({
+    scope: EquipmentProjectScopeSchema_v0,
     airflows: EquipmentAirflowsSchema_v0.optional(),
     checksums: EquipmentChecksumsSchema_v0.optional(),
     modes: z

@@ -238,7 +238,7 @@ The required `steps` record contains every audit step: `weather`, `building`,
 findings in blocked steps are omitted; tier-1 missing-input findings remain.
 Info findings do not prevent a step from being `complete`.
 
-In 0.26.0, consumers constructing check reports must provide `step` and `steps`.
+In 0.28.0, consumers constructing check reports must provide `step` and `steps`.
 Explicit schema validation rejects older payloads without these fields; the
 client itself does not parse responses automatically.
 

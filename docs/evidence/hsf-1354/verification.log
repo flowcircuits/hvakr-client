@@ -1,0 +1,93 @@
+# HSF-1354 / hvakr-client#73 verification log
+PR head: de6aadc51257446525bd00787b8c1d3177b5afca  (master baseline: e818b5c)
+
+## pnpm test (PR head)
+
+> @hvakr/client@0.27.0 test /home/ubuntu/repos/hvakr-client
+> vitest run --project offline
+
+
+ RUN  v4.1.10 /home/ubuntu/repos/hvakr-client
+
+
+ Test Files  9 passed (9)
+      Tests  170 passed (170)
+   Start at  15:24:34
+   Duration  1.33s (transform 1.75s, setup 142ms, import 6.08s, tests 719ms, environment 1ms)
+
+
+## pnpm build (PR head)
+
+✔ Build complete in 7368ms
+ℹ [CJS] dist/index.d.cts  925.25 kB │ gzip: 61.94 kB
+ℹ [CJS] 1 files, total: 925.25 kB
+[33m[PLUGIN_TIMINGS] [0mYour build spent significant time in plugins. Here is a breakdown:
+  - rolldown-plugin-dts:resolver (54%)
+  - rolldown-plugin-dts:fake-js (23%)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+✔ Build complete in 8207ms
+
+## schema probe: master dist vs PR dist
+== master e818b5c (0.25.4) ==
+false  post unplaced CENTRAL_UNIT w/ config
+false  post placed CENTRAL_UNIT w/ config
+false  post unit with level only (should be false)
+false  post unplaced FITTING (should be false)
+true   post legacy equipment subcollection
+false  post negative cost (should be false)
+false  post unknown key on unit (should be false)
+false  patch unplace unit (level/point null)
+false  patch granular outlet + clear cost
+true   patch legacy equipment key
+true   calc equipment w/ scope
+true   calc equipment without scope (should be false)
+false  meta graph unplaced unit
+true   getJSONSchema(Graph) ok
+true   getJSONSchema(ExpandedPost) ok
+false  exports EquipmentConfigSchema_v0
+true   exports EquipmentDataSchema_v0
+true   PROJECT_SUBCOLLECTION_KEYS_V0 has equipment
+
+== PR de6aadc (0.27.0) ==
+true   post unplaced CENTRAL_UNIT w/ config
+true   post placed CENTRAL_UNIT w/ config
+false  post unit with level only (should be false)
+false  post unplaced FITTING (should be false)
+false  post legacy equipment subcollection
+false  post negative cost (should be false)
+false  post unknown key on unit (should be false)
+true   patch unplace unit (level/point null)
+true   patch granular outlet + clear cost
+false  patch legacy equipment key
+true   calc equipment w/ scope
+false  calc equipment without scope (should be false)
+true   meta graph unplaced unit
+true   getJSONSchema(Graph) ok
+true   getJSONSchema(ExpandedPost) ok
+true   exports EquipmentConfigSchema_v0
+false  exports EquipmentDataSchema_v0
+false  PROJECT_SUBCOLLECTION_KEYS_V0 has equipment
+
+## hvakr#7873 (af8ea5c) functions src/api/hvakr vitest with @hvakr/client 0.25.4 (before)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/api/hvakr/validators/validateExpandedProject_v0.test.ts > validateExpandedProjectV0 > accepts a merged document with a valid unplaced unit
+ FAIL  src/api/hvakr/mappers/project/projectSubcollections_v0.test.ts > mapProjectSubcollectionsV0ToBackend (routes each subcollection to its own key) > places every present subcollection under its own output key, never a neighbor's
+ FAIL  src/api/hvakr/mappers/project/projectSubcollections_v0.test.ts > mapBackendToProjectSubcollectionsV0 (routes each subcollection to its own key) > places every present subcollection under its own output key, never a neighbor's
+ FAIL  src/api/hvakr/routes/v0/projects/controller.test.ts > applyProjectUpdateV0 > commits the project-doc write as the LAST op, after subcollection writes
+ FAIL  src/api/hvakr/routes/v0/projects/controller.test.ts > applyProjectUpdateV0 > creates an unplaced unit with a new scope
+ FAIL  src/api/hvakr/routes/v0/projects/controller.test.ts > applyProjectUpdateV0 > keeps the project-doc write in the LAST chunk when subcollection ops span a chunk boundary
+ Test Files  3 failed | 34 passed (37)
+      Tests  6 failed | 357 passed (363)
+
+## same, with PR dist (0.27.0) installed (after)
+ Test Files  37 passed (37)
+      Tests  363 passed (363)
+
+## hvakr#7873 tsgo --noEmit with PR dist
+== functions check
+exit 0
+== scripts check
+exit 0
+== user-mcp check
+exit 0

@@ -330,7 +330,7 @@ node fields to `null` in a project patch to clear them.
 
 ### Equipment modes and calculations
 
-Projects use a shared `equipmentModes` registry. As of `0.26.0`, equipment
+Projects use a shared `equipmentModes` registry. As of `0.27.0`, equipment
 configuration lives directly on `CENTRAL_UNIT` and `TERMINAL_UNIT` graph nodes,
 not in a project `equipment` subcollection. `systemId` or `zoneId` identifies
 the scope served by each unit. Node IDs are independent of scope IDs.
@@ -421,7 +421,7 @@ Perimeter infiltration requirements are `infiltrationPerimeterReq` and
 `infiltrationPerimeterReq` on a space airflow requirement. They pair with the
 `PERIMETER` value of `infiltrationReqMethod`.
 
-See the [`0.26.0` migration notes](./CHANGELOG.md#0260---unreleased) for the
+See the [`0.27.0` migration notes](./CHANGELOG.md#0270---unreleased) for the
 equipment-to-graph change, and the
 [`0.14.0` migration notes](./CHANGELOG.md#0140---2026-09-09) for the
 `infiltrationLfReq` → `infiltrationPerimeterReq` rename. The API path remains

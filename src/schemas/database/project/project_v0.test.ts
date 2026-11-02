@@ -131,7 +131,7 @@ describe('Project v0 schemas', () => {
             'latitude',
             'levels',
             'longitude',
-            'maps',
+            'mapConfig',
             'metadata',
             'name',
             'number',
@@ -352,7 +352,7 @@ describe('Project v0 schemas', () => {
         expect(WritableProjectDataSchema_v0.shape).toHaveProperty(
             'airflowIncrement'
         )
-        expect(WritableProjectDataSchema_v0.shape).toHaveProperty('maps')
+        expect(WritableProjectDataSchema_v0.shape).toHaveProperty('mapConfig')
         expect(WritableProjectDataSchema_v0.shape).toHaveProperty(
             'utilityRates'
         )
@@ -573,6 +573,37 @@ describe('Project v0 schemas', () => {
         expect(
             ExpandedProjectPatchSchema_v0.safeParse({
                 weatherSpec: { year: '2021' },
+            }).success
+        ).toBe(false)
+    })
+
+    it('reads and writes the map background config', () => {
+        const mapConfig = { enabled: true, type: 'hybrid', opacity: 0.5 }
+        const readProject = {
+            equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+            name: 'Map background',
+            access: { direct: { users: {} } },
+            mapConfig,
+        }
+
+        expect(ProjectDataSchema_v0.parse(readProject).mapConfig).toEqual(
+            mapConfig
+        )
+        expect(
+            ExpandedProjectPostSchema_v0.parse({ mapConfig }).mapConfig
+        ).toEqual(mapConfig)
+        expect(
+            ExpandedProjectPatchSchema_v0.parse({ mapConfig: { opacity: 0 } })
+                .mapConfig
+        ).toEqual({ opacity: 0 })
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                mapConfig: { opacity: 1.5 },
+            }).success
+        ).toBe(false)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                mapConfig: { type: 'terrain' },
             }).success
         ).toBe(false)
     })

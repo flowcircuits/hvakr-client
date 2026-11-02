@@ -43,14 +43,21 @@ export const WeatherSpecSchema_v0 = z.object({
 
 export const MapTypeSchema_v0 = z.enum(['roadmap', 'satellite', 'hybrid'])
 
-export const MapDataSchema_v0 = z.object({
-    isLocked: z.boolean().optional(),
-    type: MapTypeSchema_v0.optional(),
-    x: z.number().optional(),
-    xOffset: z.number().optional(),
-    y: z.number().optional(),
-    yOffset: z.number().optional(),
-    zoom: z.number().optional(),
+/** Georeferenced map background locked to the project address. */
+export const MapConfigSchema_v0 = z.object({
+    enabled: z
+        .boolean()
+        .optional()
+        .describe('Whether the map background is on. Omitted means off.'),
+    type: MapTypeSchema_v0.optional().describe(
+        'Map type. Omitted means satellite.'
+    ),
+    opacity: z
+        .number()
+        .min(0)
+        .max(1)
+        .optional()
+        .describe('Map opacity from 0 to 1. Omitted means 1.'),
 })
 
 /** JSON-safe primitive values stored as user-defined project metadata. */
@@ -461,7 +468,7 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     latitude: disableUserWrite(z.number().optional()),
     levels: z.record(z.coerce.number(), LevelDataSchema_v0).optional(),
     longitude: disableUserWrite(z.number().optional()),
-    maps: z.record(z.string(), MapDataSchema_v0).optional(),
+    mapConfig: MapConfigSchema_v0.optional(),
     metadata: ProjectMetadataSchema_v0.optional(),
     name: z.string(),
     number: z.string().optional(),

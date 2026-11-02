@@ -152,6 +152,24 @@ export const APICheckSeveritySchema_v0 = z
     .enum(['error', 'warning', 'info'])
     .describe('Severity of a project-check finding.')
 
+/** Project setup steps in workflow order, mirrored from @hvakr/common AUDIT_STEPS. */
+export const APICheckStepSchema_v0 = z
+    .enum([
+        'weather',
+        'building',
+        'spaces',
+        'envelopeTypes',
+        'spaceTypes',
+        'loads',
+        'zones',
+        'systems',
+        'modes',
+        'airflows',
+        'ventilation',
+        'equipment',
+    ])
+    .describe('Project setup step where a finding is fixed.')
+
 /** A single project-check finding. */
 export const APICheckFindingSchema_v0 = z
     .object({
@@ -159,9 +177,10 @@ export const APICheckFindingSchema_v0 = z
             .union([z.literal(1), z.literal(2), z.literal(3)])
             .describe('Check tier (1–3).'),
         severity: APICheckSeveritySchema_v0,
+        step: APICheckStepSchema_v0,
         message: z.string().describe('Human-readable description.'),
         entityType: z
-            .enum(['space', 'zone', 'system', 'equipment'])
+            .enum(['space', 'spaceType', 'zone', 'system', 'equipment'])
             .optional()
             .describe('Type of the entity the finding applies to.'),
         entityId: z.string().optional().describe('ID of the entity.'),
@@ -195,7 +214,19 @@ export const APICheckReportSchema_v0 = z
                 info: z.number(),
             })
             .describe('Finding counts by severity.'),
-        tiers: z.array(APICheckTierResultSchema_v0),
+        tiers: z
+            .array(APICheckTierResultSchema_v0)
+            .describe(
+                'Always contains three entries, one per tier. Calculated-result findings in blocked steps are omitted; tier-1 missing-input findings are retained.'
+            ),
+        steps: z
+            .record(
+                APICheckStepSchema_v0,
+                z.enum(['complete', 'warning', 'error', 'blocked'])
+            )
+            .describe(
+                'Status of every audit step. Blocked means an upstream dependency is blocked or has a missing-input or failed-calculation error. Info findings do not prevent complete status.'
+            ),
     })
     .describe('Result of a check job (tiered findings + summary).')
 export type APICheckReport_v0 = z.infer<typeof APICheckReportSchema_v0>
@@ -356,8 +387,9 @@ export const APIJobResultSchema_v0 = z
         APICheckReportSchema_v0,
         APIAutoRouteResultSchema_v0,
         APISheetUploadJobResultSchema_v0,
-        // Keep the all-optional result last so it cannot strip other payloads.
-        APIAutoTakeoffResultSchema_v0,
+        // Keep the all-optional result last and strict so invalid reports
+        // cannot fall through and lose their fields. Empty takeoff results remain valid.
+        APIAutoTakeoffResultSchema_v0.strict(),
     ])
     .describe('Job result payload; shape depends on the job type.')
 export type APIJobResult_v0 = z.infer<typeof APIJobResultSchema_v0>

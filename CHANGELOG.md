@@ -32,6 +32,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This prepares the client contract for HSF-477. Publish this version before
 updating the HVAKR monorepo dependency; this PR does not publish or migrate data.
 
+## [0.28.0] - 2026-10-31
+
+### Breaking Changes
+
+- Check report schemas now require `step` on each finding and a top-level
+  `steps` record covering every audit step with `complete`, `warning`, `error`,
+  or `blocked` status, matching the existing server's `ProjectAudit` contract.
+  Consumers constructing reports must supply these fields. Older report
+  payloads without them no longer pass explicit schema validation; the client
+  does not parse responses automatically.
+
+### Fixed
+
+- Standalone job result validation rejects legacy or malformed check reports
+  instead of silently stripping them to an empty auto-takeoff result. Empty
+  auto-takeoff results remain valid.
+
+### Added
+
+- `spaceType` finding entity type and `APICheckStepSchema_v0`, mirroring
+  `AUDIT_STEPS` in `@hvakr/common`.
+- Check report documentation: `tiers` always has three entries. Blocked steps
+  omit calculated-result findings but retain tier-1 missing-input findings.
+
 ## [0.25.4] - 2026-10-28
 
 ### Added

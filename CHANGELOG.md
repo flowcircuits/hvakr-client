@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.30.0] - 2026-11-03
+
+### Breaking Changes
+
+- `ProjectDataSchema_v0.maps` (a record of placed maps) is replaced by
+  `mapConfig` (`MapConfigSchema_v0`): one georeferenced map background centered
+  on the project address, with `enabled`, `type`, and `opacity`.
+  `MapDataSchema_v0` is removed. Placed map positions (`x`, `y`, offsets,
+  `zoom`, `isLocked`) are no longer part of the contract. Reads, creates, and
+  patches use `mapConfig`.
+
 ## [0.29.0] - 2026-11-02
 
 ### Breaking Changes

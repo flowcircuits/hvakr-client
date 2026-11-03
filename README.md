@@ -178,6 +178,11 @@ dataset, and it selects the nearest station when the dataset changes.
 in degrees clockwise from true north. A surface's compass azimuth is its drawn
 direction (0 = plan up) plus `planRotation`.
 
+`mapConfig` is the georeferenced map background, centered on the project
+address. It has `enabled` (omitted means off), `type` (`roadmap`, `satellite`,
+or `hybrid`; omitted means `satellite`), and `opacity` from 0 to 1 (omitted
+means 1). It replaces the `maps` record of placed maps.
+
 Annotations are a project subcollection. Read them with
 `getProject(id, ['annotations'])` or `getProject(id, true)`; the response has an
 `annotations` record keyed by annotation ID. Its entries use `AnnotationData_v0`.

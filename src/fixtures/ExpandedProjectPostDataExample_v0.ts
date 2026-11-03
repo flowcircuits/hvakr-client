@@ -3,7 +3,7 @@ import {
     DEFAULT_COOLING_MODE_ID_v0,
     DEFAULT_EQUIPMENT_MODES_v0,
     DEFAULT_HEATING_MODE_ID_v0,
-    EquipmentData_v0,
+    EquipmentConfig_v0,
     EquipmentInletMethods_v0,
     ExpandedProjectPost_v0,
     OutsideAirMethods_v0,
@@ -13,8 +13,7 @@ const SYSTEM_CU_01_ID = 'E76ZWMo8hMDwybbgwzX6'
 const ZONE_FCU_3_ID = 'MLHdYTDgLmxzwtzyvoeg'
 const ZONE_FCU_1_ID = 'nAU4ubzKE34QRN1YA9nl'
 
-const centralUnitEquipment: EquipmentData_v0 = {
-    projectScope: { type: 'system', id: SYSTEM_CU_01_ID },
+const centralUnitConfiguration: EquipmentConfig_v0 = {
     energyConfiguration: {
         schedule: {
             occupiedHours: [
@@ -88,7 +87,7 @@ const centralUnitEquipment: EquipmentData_v0 = {
 }
 
 const terminalUnitComponents: Pick<
-    EquipmentData_v0,
+    EquipmentConfig_v0,
     'components' | 'componentConfigsByMode' | 'inletData'
 > = {
     components: [
@@ -154,16 +153,6 @@ const terminalUnitComponents: Pick<
             method: EquipmentInletMethods_v0.SUM_OF_SPACES_OA,
         },
     },
-}
-
-const terminalUnitEquipmentFcu3: EquipmentData_v0 = {
-    projectScope: { type: 'zone', id: ZONE_FCU_3_ID },
-    ...terminalUnitComponents,
-}
-
-const terminalUnitEquipmentFcu1: EquipmentData_v0 = {
-    projectScope: { type: 'zone', id: ZONE_FCU_1_ID },
-    ...terminalUnitComponents,
 }
 
 export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
@@ -257,10 +246,28 @@ export const ExpandedProjectPostDataExample_v0: ExpandedProjectPost_v0 = {
             configured: true,
         },
     },
-    equipment: {
-        'equipment-cu-01': centralUnitEquipment,
-        'equipment-fcu-3': terminalUnitEquipmentFcu3,
-        'equipment-fcu-1': terminalUnitEquipmentFcu1,
+    graph: {
+        'unit-cu-01': {
+            id: 'unit-cu-01',
+            nodeType: 'CENTRAL_UNIT',
+            systemId: SYSTEM_CU_01_ID,
+            adjacencies: [],
+            ...centralUnitConfiguration,
+        },
+        'unit-fcu-3': {
+            id: 'unit-fcu-3',
+            nodeType: 'TERMINAL_UNIT',
+            zoneId: ZONE_FCU_3_ID,
+            adjacencies: [],
+            ...terminalUnitComponents,
+        },
+        'unit-fcu-1': {
+            id: 'unit-fcu-1',
+            nodeType: 'TERMINAL_UNIT',
+            zoneId: ZONE_FCU_1_ID,
+            adjacencies: [],
+            ...terminalUnitComponents,
+        },
     },
     slabTypes: {
         EezT7YhHdgbaVKkCmziN: {

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.29.0] - 2026-11-02
+## [0.30.0] - 2026-11-03
 
 ### Breaking Changes
 
@@ -19,6 +19,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `MapDataSchema_v0` is removed. Placed map positions (`x`, `y`, offsets,
   `zoom`, `isLocked`) are no longer part of the contract. Reads, creates, and
   patches use `mapConfig`.
+
+## [0.29.0] - 2026-11-02
+
+### Breaking Changes
+
+- Central and terminal equipment configuration now lives directly on
+  `graph[nodeId]` unit nodes. The project `equipment` subcollection and the
+  `EquipmentDataSchema_v0` / `EquipmentData_v0` exports are removed. Use
+  `EquipmentConfigSchema_v0` / `EquipmentConfig_v0` for the configuration fields.
+  Move existing equipment settings onto the corresponding `CENTRAL_UNIT` or
+  `TERMINAL_UNIT` node, and use its `systemId` or `zoneId` instead of `projectScope`.
+  Expand `graph`, not `equipment`, and write configuration with graph-node patches.
+- Unit nodes may be unplaced: omit both `level` and `point`, or supply both to
+  place the node. All other node types still require coordinates. Unit nodes
+  retain product links, selections, size, and optional nonnegative `cost`.
+  Calculated graph metadata follows the same placed/unplaced unit rules.
+- Equipment calculation results are keyed by unit graph node ID and include a
+  required `scope: { type: 'system' | 'zone', id: string }` back-reference.
+  Mode-keyed pipeline outputs remain unchanged. The `equipment` calculation
+  section remains available even though the project subcollection is removed.
+
+This prepares the client contract for HSF-477. Publish this version before
+updating the HVAKR monorepo dependency; this PR does not publish or migrate data.
 
 ## [0.28.0] - 2026-10-31
 

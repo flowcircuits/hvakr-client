@@ -1,11 +1,10 @@
 import { z } from 'zod'
 import {
-    AssociatedNodeDataSchema_v0,
-    CoordinateNodeDataSchema_v0,
     DuctAdjacencyDataSchema_v0,
     FlowTypes_v0,
     FlowTypeSchema_v0,
     LinkAdjacencyDataSchema_v0,
+    NodeDataSchema_v0,
 } from '../database/project/graph_v0'
 
 export { FlowTypes_v0, FlowTypeSchema_v0 }
@@ -123,9 +122,9 @@ export const SpaceRegisterScheduleRowSchema_v0 = z.object({
 
 // Graph types for v0 API
 
-export const MetaGraphNodeDataSchema_v0 = AssociatedNodeDataSchema_v0.and(
-    CoordinateNodeDataSchema_v0
-).and(z.object({ pressure: z.number().optional() }))
+export const MetaGraphNodeDataSchema_v0 = NodeDataSchema_v0.and(
+    z.object({ pressure: z.number().optional() })
+)
 export type MetaGraphNodeData_v0 = z.infer<typeof MetaGraphNodeDataSchema_v0>
 
 export const MetaGraphDuctAdjacencySchema_v0 = z

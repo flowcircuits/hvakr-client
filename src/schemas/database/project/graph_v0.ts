@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { PointSchema } from '../../misc'
+import { EquipmentConfigSchema_v0 } from './equipment_v0'
 
 export const FlowTypes_v0 = {
     SUPPLY: 'SUPPLY',
@@ -118,6 +119,8 @@ export const SelectionSchema_v0 = z.object({
 
 export const TerminalUnitNodeDataSchema_v0 = z.object({
     ...EquipmentNodeSchema_v0.shape,
+    ...EquipmentConfigSchema_v0.shape,
+    cost: z.number().min(0).optional(),
     nodeType: z.literal(NodeTypes_v0.TERMINAL_UNIT),
     /** Legacy Cambridge heater selections. `productId` is the product link. */
     selections: z.record(z.string(), SelectionSchema_v0).optional(),
@@ -126,6 +129,8 @@ export const TerminalUnitNodeDataSchema_v0 = z.object({
 
 export const CentralUnitNodeDataSchema_v0 = z.object({
     ...EquipmentNodeSchema_v0.shape,
+    ...EquipmentConfigSchema_v0.shape,
+    cost: z.number().min(0).optional(),
     nodeType: z.literal(NodeTypes_v0.CENTRAL_UNIT),
     /** Legacy Cambridge heater selections. `productId` is the product link. */
     selections: z.record(z.string(), SelectionSchema_v0).optional(),
@@ -219,11 +224,22 @@ export const GraphAdjacencySchema_v0 = z
     .and(AssociatedAdjacencyDataSchema_v0)
 export type GraphAdjacency_v0 = z.infer<typeof GraphAdjacencySchema_v0>
 
-export const NodeDataSchema_v0 = z.union(
+export const PlacedNodeDataSchema_v0 = z.union(
     AssociatedNodeDataSchema_v0.options.map((schema) =>
         schema.extend(CoordinateNodeDataSchema_v0.shape)
     )
 )
+
+const UnplacedCoordinates = {
+    level: z.never().optional(),
+    point: z.never().optional(),
+}
+
+export const NodeDataSchema_v0 = z.union([
+    ...PlacedNodeDataSchema_v0.options,
+    CentralUnitNodeDataSchema_v0.extend(UnplacedCoordinates),
+    TerminalUnitNodeDataSchema_v0.extend(UnplacedCoordinates),
+])
 
 export const GraphNodeSchema_v0 = z.union(
     NodeDataSchema_v0.options.map((schema) =>

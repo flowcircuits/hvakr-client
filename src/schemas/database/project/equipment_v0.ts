@@ -219,7 +219,7 @@ export const EquipmentComponentSchema_v0 = z.object({
 export type EquipmentComponent_v0 = z.infer<typeof EquipmentComponentSchema_v0>
 
 /**
- * The project entity an equipment document configures. The equipment document
+ * The project entity a unit node serves. The graph node
  * id is independent of the referenced system/zone id.
  */
 export const EquipmentProjectScopeTypes_v0 = ['system', 'zone'] as const
@@ -267,12 +267,9 @@ export type EnergyConfiguration_v0 = z.infer<
 >
 
 /**
- * Canonical equipment document. Projects store central and terminal equipment
- * in a top-level `equipment` subcollection; `projectScope` binds each document
- * to the system or zone it configures.
+ * Equipment configuration stored directly on central and terminal unit nodes.
  */
-export const EquipmentDataSchema_v0 = z.object({
-    projectScope: EquipmentProjectScopeSchema_v0,
+export const EquipmentConfigSchema_v0 = z.object({
     components: z.array(EquipmentComponentSchema_v0).optional(),
     componentConfigsByMode: z
         .record(ModeIdSchema_v0, ComponentConfigurationsSchema_v0)
@@ -288,4 +285,4 @@ export const EquipmentDataSchema_v0 = z.object({
     outlet: EquipmentOutletSchema_v0.optional(),
     energyConfiguration: EnergyConfigurationSchema_v0.optional(),
 })
-export type EquipmentData_v0 = z.infer<typeof EquipmentDataSchema_v0>
+export type EquipmentConfig_v0 = z.infer<typeof EquipmentConfigSchema_v0>

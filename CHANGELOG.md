@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.30.0] - 2026-11-03
+## [0.30.0] - 2026-11-02
 
 ### Breaking Changes
 

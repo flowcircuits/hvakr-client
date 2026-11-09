@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.30.1] - 2026-11-09
+
+### Fixed
+
+- `autoTakeoffProvider` and `autoTakeoffSpaceBoundary` on project reads,
+  creates, and patches, matching the canonical schema. Both are ignored:
+  auto takeoff always runs the v2 in-house model, which always traces
+  midWall. The fields are kept so a project that saved v1 settings before
+  that change still round-trips through the API.
+
 ## [0.30.0] - 2026-11-02
 
 ### Breaking Changes

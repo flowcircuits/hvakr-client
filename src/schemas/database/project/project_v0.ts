@@ -241,6 +241,29 @@ export const RevisionSchema_v0 = z.object({
     createdAt: z.number(),
 })
 
+const AutoTakeoffProviders_v0 = { V1: 'v1', V2: 'v2' } as const
+const AUTO_TAKEOFF_PROVIDER_DESCRIPTION_v0 =
+    'Ignored: auto takeoff always uses v2, the in-house model. Kept so projects that saved v1 still parse'
+export const AutoTakeoffProviderSchema_v0 = z
+    .enum(Object.values(AutoTakeoffProviders_v0))
+    .describe(AUTO_TAKEOFF_PROVIDER_DESCRIPTION_v0)
+export type AutoTakeoffProvider_v0 = z.infer<
+    typeof AutoTakeoffProviderSchema_v0
+>
+
+const AutoTakeoffSpaceBoundaries_v0 = {
+    MID_WALL: 'midWall',
+    INTERIOR_FACE: 'interiorFace',
+} as const
+const AUTO_TAKEOFF_SPACE_BOUNDARY_DESCRIPTION_v0 =
+    'Ignored: auto takeoff runs v2, which always traces midWall (centerline of interior walls, inside face of exterior walls). Was the v1 outline choice: midWall or interiorFace'
+export const AutoTakeoffSpaceBoundarySchema_v0 = z
+    .enum(Object.values(AutoTakeoffSpaceBoundaries_v0))
+    .describe(AUTO_TAKEOFF_SPACE_BOUNDARY_DESCRIPTION_v0)
+export type AutoTakeoffSpaceBoundary_v0 = z.infer<
+    typeof AutoTakeoffSpaceBoundarySchema_v0
+>
+
 const VentilationStandards_v0 = {
     ASHRAE_2022: 'ASHRAE 62.1 / 170 (2022)',
     ASHRAE_2025: 'ASHRAE 62.1 / 170 (2025)',
@@ -448,6 +471,13 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     airflowIncrement: z.number().int().min(1).optional(),
     analytics: disableUserWrite(ProjectAnalyticsSchema_v0.optional()),
     apiCreated: disableUserWrite(z.boolean().optional()),
+    autoTakeoffProvider: AutoTakeoffProviderSchema_v0.optional().describe(
+        AUTO_TAKEOFF_PROVIDER_DESCRIPTION_v0
+    ),
+    autoTakeoffSpaceBoundary:
+        AutoTakeoffSpaceBoundarySchema_v0.optional().describe(
+            AUTO_TAKEOFF_SPACE_BOUNDARY_DESCRIPTION_v0
+        ),
     building: BuildingDataSchema_v0.optional(),
     climateZone: z.string().optional(),
     constraints: z.record(z.string(), ConstraintSchema_v0).optional(),

@@ -10,6 +10,8 @@ import {
 } from './expandedProject_v0'
 import {
     AtLeastAccessSchema_v0,
+    AutoTakeoffProviderSchema_v0,
+    AutoTakeoffSpaceBoundarySchema_v0,
     DEFAULT_EQUIPMENT_MODES_v0,
     BuildingDataSchema_v0,
     InvitedUserDataSchema_v0,
@@ -111,6 +113,8 @@ describe('Project v0 schemas', () => {
             'airflowIncrement',
             'analytics',
             'apiCreated',
+            'autoTakeoffProvider',
+            'autoTakeoffSpaceBoundary',
             'building',
             'climateZone',
             'constraints',
@@ -550,6 +554,44 @@ describe('Project v0 schemas', () => {
                     .ventilationStandard
             ).toBe(ventilationStandard)
         }
+    })
+
+    it('accepts the ignored auto takeoff provider and space boundary on create and patch', () => {
+        expect(AutoTakeoffProviderSchema_v0.parse('v1')).toBe('v1')
+        expect(AutoTakeoffSpaceBoundarySchema_v0.parse('interiorFace')).toBe(
+            'interiorFace'
+        )
+
+        expect(
+            ProjectPostSchema_v0.parse({
+                autoTakeoffProvider: 'v1',
+                autoTakeoffSpaceBoundary: 'interiorFace',
+            })
+        ).toMatchObject({
+            autoTakeoffProvider: 'v1',
+            autoTakeoffSpaceBoundary: 'interiorFace',
+        })
+        expect(
+            ExpandedProjectPostSchema_v0.safeParse({
+                autoTakeoffProvider: 'v1',
+                autoTakeoffSpaceBoundary: 'interiorFace',
+            }).success
+        ).toBe(true)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                autoTakeoffSpaceBoundary: 'interiorFace',
+            }).success
+        ).toBe(true)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                autoTakeoffProvider: 'v2',
+            }).success
+        ).toBe(true)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                autoTakeoffSpaceBoundary: 'ceiling',
+            }).success
+        ).toBe(false)
     })
 
     it('reads and writes the weather data source and edition year', () => {

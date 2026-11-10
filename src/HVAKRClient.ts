@@ -352,6 +352,33 @@ export class HVAKRClient {
     }
 
     /**
+     * Files or moves a project into a folder, or out to root. Filing or
+     * moving a project changes who can open it: the project inherits
+     * collaborative access from the folder tree above it. Requires ADMIN on
+     * the project and, for a non-null `folderId`, MEMBER on the target
+     * folder.
+     * @param projectId - The ID of the project to move
+     * @param folderId - The target folder's ID, or `null` to move to root
+     * @returns The project's ID and its new `folderId`
+     * @throws {HVAKRClientError} If the API returns an error response
+     */
+    moveProject = async (
+        projectId: string,
+        folderId: string | null
+    ): Promise<{ id: string; folderId: string | null }> => {
+        return this.request<{ id: string; folderId: string | null }>(
+            this.createURL(
+                `/projects/${this.encodePathSegment(projectId)}/folder`
+            ),
+            {
+                method: 'PUT',
+                headers: this.writeHeaders(),
+                body: JSON.stringify({ folderId }),
+            }
+        )
+    }
+
+    /**
      * Deletes an HVAKR project.
      * @param projectId - The ID of the project to delete
      * @returns The deletion confirmation response

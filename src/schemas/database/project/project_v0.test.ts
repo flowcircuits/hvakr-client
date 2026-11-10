@@ -122,6 +122,7 @@ describe('Project v0 schemas', () => {
             'elevation',
             'equipmentModes',
             'defaultSystemPresetId',
+            'folderId',
             'fromExample',
             'iaqpOutdoorAirMerv',
             'isDeleted',
@@ -343,7 +344,11 @@ describe('Project v0 schemas', () => {
 
         for (const field of Object.keys(PROJECT_RESTRICTED_WRITE_FIELDS_V0)) {
             expect(WritableProjectDataSchema_v0.shape).not.toHaveProperty(field)
-            expect(ProjectPostSchema_v0.shape).not.toHaveProperty(field)
+            // folderId is the one restricted field ProjectPostSchema_v0 adds
+            // back explicitly: it is create-only, never patchable.
+            if (field !== 'folderId') {
+                expect(ProjectPostSchema_v0.shape).not.toHaveProperty(field)
+            }
             expect(ExpandedProjectPatchSchema_v0.shape).not.toHaveProperty(
                 field
             )
@@ -374,6 +379,23 @@ describe('Project v0 schemas', () => {
         expect(ProjectPostSchema_v0.safeParse(project).success).toBe(false)
         expect(
             ExpandedProjectPatchSchema_v0.safeParse({ defaultSystemPresetId })
+                .success
+        ).toBe(false)
+    })
+
+    it('allows folderId at create but rejects it on update', () => {
+        const project = {
+            equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+            name: 'Filed at create',
+            folderId: 'folder-1',
+        }
+
+        expect(ProjectDataSchema_v0.shape.folderId.meta()).toMatchObject({
+            disableUserWrite: true,
+        })
+        expect(ProjectPostSchema_v0.safeParse(project).success).toBe(true)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({ folderId: 'folder-1' })
                 .success
         ).toBe(false)
     })

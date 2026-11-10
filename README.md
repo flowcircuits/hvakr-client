@@ -343,6 +343,15 @@ A missing value uses the node type default: central unit 144×72, terminal unit
 `selections` holds legacy Cambridge heater selections; `productId` is the
 product link.
 
+Since `0.31.0`, linked nodes and selections also carry a `product` block: the
+product identity (`name`, `manufacturer`, `model`, `description`, `link`,
+`imageUrl`) and its `owners` (`domain`, `name`) copied at link time. Each
+selection also carries the copied heater inputs (`maxInputCapacity`,
+`efficiency`, `minLeavingAirTemp`, `maxLeavingAirTemp`, `minTempRise`,
+`maxTempRise`, `maxFlowRate`, `airFlowArrangement`). These values stay editable.
+Unlinking removes `productId` and `product` and keeps the copied values, so a
+selection's `productId` is optional.
+
 Air-cleaner graph nodes accept a `tag` and the IAQP settings
 `cleaningAirflow` (CFM), `filterLocation`, and `filterEfficiencies`. Set these
 node fields to `null` in a project patch to clear them.

@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [Unreleased]
+
+### Breaking Changes
+
+- `SelectionSchema_v0.productId` is optional. An unlinked selection keeps its
+  copied heater inputs and has no `productId`.
+
+### Added
+
+- `ProductBlockSchema_v0` and `ProductOwnerSchema_v0`. Register, central unit,
+  terminal unit, and air cleaner graph nodes and each heater selection accept
+  an optional `product` block with the product identity and owners copied at
+  link time.
+- `SelectionInputsSchema_v0`: heater selections accept the copied
+  `maxInputCapacity`, `efficiency`, `minLeavingAirTemp`, `maxLeavingAirTemp`,
+  `minTempRise`, `maxTempRise`, `maxFlowRate`, and `airFlowArrangement`.
+
 ## [0.30.0] - 2026-11-02
 
 ### Breaking Changes

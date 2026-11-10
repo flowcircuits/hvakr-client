@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.30.1] - 2026-11-10
+
+### Added
+
+- `size-graph` job type: `createJob({ type: 'size-graph' })` sizes every
+  ducted component on the project's routed graph (requires `auto-route` to
+  have completed first). Returns `APISizeGraphResult_v0` (`ductCount`,
+  `routingValid`, optional `sizingErrors`) once the job completes.
+
 ## [0.30.0] - 2026-11-02
 
 ### Breaking Changes

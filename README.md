@@ -227,7 +227,7 @@ the `building` object does not include a floor count.
 
 | Method                       | Description                                                                                                                                         |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createJob(id, body, opts?)` | Create a job (`export`, `auto-group`, `check`, `auto-takeoff`, or `auto-route`). Sync jobs return `status: "completed"`; async jobs return `queued` |
+| `createJob(id, body, opts?)` | Create a job (`export`, `auto-group`, `check`, `auto-takeoff`, `auto-route`, or `size-graph`). Sync jobs return `status: "completed"`; async jobs return `queued` |
 | `getJob(id, jobId)`          | Get a job's current state. Poll async jobs until `status` leaves `queued`/`running`                                                                 |
 
 `APIJobSchema_v0` parses a full job and narrows its result by `type`.

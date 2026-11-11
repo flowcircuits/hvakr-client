@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `'spaceCount' in result` before you read the counts. An empty `{}` result
   no longer parses; the API does not return one.
 
-## [0.31.0] - Unreleased
+## [0.31.0] - 2026-11-11
 
 ### Breaking Changes
 
@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `airflowIncrements[unitSystem]` (the project's unit system, `IMPERIAL` when
   omitted).
 
-## [0.30.1] - Unreleased
+## [0.30.1] - 2026-11-11
 
 ### Added
 

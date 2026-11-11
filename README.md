@@ -489,7 +489,10 @@ Calculation sections remain selectable with `include`. The `equipment`
 **calculation section** is still available. Its entries are keyed by unit graph
 node ID and carry `scope: { type: 'system' | 'zone', id: string }`. Each entry's
 `modes` map uses the project's equipment mode IDs, as do mode-specific airflow
-and checksum results.
+and checksum results. Each mode's `summary.coilTotals` sums the coils that match
+the mode's load condition. For cooling, `latentCoilLoad` is
+`coilLoad - sensibleCoilLoad` in BTU/h, negative like `coilLoad`, and is omitted
+when either value is missing.
 
 Space design overrides live under `designAirflowsByMode`; ventilation and
 infiltration requirements live under `airflowRequirementsByLoadCondition`.

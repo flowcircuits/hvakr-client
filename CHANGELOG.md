@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.31.4] - Unreleased
+## [0.31.1] - Unreleased
 
 ### Added
 
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   into a folder, or passes `null` to move it to root, via
   `PUT /projects/{id}/folder`.
 
-## [0.31.0] - Unreleased
+## [0.31.0] - 2026-11-11
 
 ### Breaking Changes
 
@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `airflowIncrements[unitSystem]` (the project's unit system, `IMPERIAL` when
   omitted).
 
-## [0.30.1] - Unreleased
+## [0.30.1] - 2026-11-11
 
 ### Added
 

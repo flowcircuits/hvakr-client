@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.30.1] - 2026-11-09
+## [0.31.1] - Unreleased
 
 ### Fixed
 
@@ -18,6 +18,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   auto takeoff always runs the v2 in-house model, which always traces
   midWall. The fields are kept so a project that saved v1 settings before
   that change still round-trips through the API.
+
+## [0.31.0] - Unreleased
+
+### Breaking Changes
+
+- `ProjectDataSchema_v0.airflowIncrement` (one rounding increment for all unit
+  systems) is replaced by `airflowIncrements`: an optional partial record keyed
+  by display unit system (`IMPERIAL`, `METRIC`). Each value is a positive
+  integer increment in that unit system's flow rate unit (cfm for `IMPERIAL`,
+  L/s for `METRIC`); a unit system with no value uses the default increment.
+  This matches the HVAKR server schema. Reads, creates, and patches use
+  `airflowIncrements`; move an old `airflowIncrement` value to
+  `airflowIncrements[unitSystem]` (the project's unit system, `IMPERIAL` when
+  omitted).
+
+## [0.30.1] - Unreleased
+
+### Added
+
+- `createSheetUpload(projectId, { name? })` calls
+  `POST /v0/projects/{id}/sheet-uploads` and returns a typed
+  `APISheetUpload_v0` (`uploadUrl`, `uploadToken`, `appUploadUrl`,
+  `expiresAt`). Each call mints a new single-use, 15-minute token; it takes
+  no `idempotencyKey`.
+- `uploadSheetFileWithToken({ uploadUrl, uploadToken }, { file, fileName, name? })`,
+  a package export, sends the PDF to `uploadUrl` (`POST /v0/sheet-uploads`)
+  with the upload token as the only credential, so the uploading process
+  needs no access token. It returns the same `sheet-upload` job as
+  `createSheetFile`. Retries with the same token get
+  409 while the PDF saves, then the same job; an expired token gets 410.
+- `APISheetUploadSchema_v0` / `APISheetUpload_v0` describe the token
+  response.
 
 ## [0.30.0] - 2026-11-02
 

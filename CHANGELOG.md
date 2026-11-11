@@ -9,10 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [Unreleased]
+## [0.31.0] - Unreleased
 
 ### Breaking Changes
 
+- `ProjectDataSchema_v0.airflowIncrement` (one rounding increment for all unit
+  systems) is replaced by `airflowIncrements`: an optional partial record keyed
+  by display unit system (`IMPERIAL`, `METRIC`). Each value is a positive
+  integer increment in that unit system's flow rate unit (cfm for `IMPERIAL`,
+  L/s for `METRIC`); a unit system with no value uses the default increment.
+  This matches the HVAKR server schema. Reads, creates, and patches use
+  `airflowIncrements`; move an old `airflowIncrement` value to
+  `airflowIncrements[unitSystem]` (the project's unit system, `IMPERIAL` when
+  omitted).
 - `SelectionSchema_v0.productId` is optional. An unlinked selection keeps its
   copied heater inputs and has no `productId`.
 

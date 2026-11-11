@@ -183,6 +183,12 @@ address. It has `enabled` (omitted means off), `type` (`roadmap`, `satellite`,
 or `hybrid`; omitted means `satellite`), and `opacity` from 0 to 1 (omitted
 means 1). It replaces the `maps` record of placed maps.
 
+`airflowIncrements` sets the design airflow rounding increment per unit system,
+for example `{ IMPERIAL: 10, METRIC: 5 }`. Each value is a positive integer in
+that unit system's flow rate unit (cfm for `IMPERIAL`, L/s for `METRIC`). A unit
+system with no value uses the default increment. It replaces the single
+`airflowIncrement` number.
+
 Annotations are a project subcollection. Read them with
 `getProject(id, ['annotations'])` or `getProject(id, true)`; the response has an
 `annotations` record keyed by annotation ID. Its entries use `AnnotationData_v0`.

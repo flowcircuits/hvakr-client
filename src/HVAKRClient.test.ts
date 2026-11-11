@@ -555,7 +555,7 @@ describe('HVAKRClient request building', () => {
             jobId: 'job_1',
             type: 'auto-takeoff',
             status: 'completed',
-            result: {},
+            result: { spaceCount: 1, spaceIds: ['space_1'] },
         })
         const job = await requestClient.getJob('p1', 'job_1')
         expect(job.status).toBe('completed')

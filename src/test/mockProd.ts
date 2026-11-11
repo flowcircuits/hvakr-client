@@ -429,7 +429,7 @@ export class MockProdService {
                 jobId,
                 type: 'auto-takeoff',
                 status: 'completed',
-                result: {},
+                result: { spaceCount: 0, spaceIds: [] },
             })
         }
         return response(200, job)

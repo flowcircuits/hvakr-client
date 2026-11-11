@@ -369,6 +369,14 @@ export const CoilTotalsSchema_v0 = z.object({
     coilGPM: z.number().optional(),
     coilLoad: z.number().optional(),
     sensibleCoilLoad: z.number().optional(),
+    /** Cooling coils only: `coilLoad - sensibleCoilLoad`, omitted when either
+     *  is missing. Negative like `coilLoad`. */
+    latentCoilLoad: z
+        .number()
+        .describe(
+            'Latent coil load summed across matching coils, stored in BTUs per hour'
+        )
+        .optional(),
 })
 export type CoilTotals_v0 = z.infer<typeof CoilTotalsSchema_v0>
 

@@ -445,7 +445,14 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     ),
     address: z.string().optional(),
     organizationId: disableUserWrite(z.string().optional()),
-    airflowIncrement: z.number().int().min(1).optional(),
+    airflowIncrements: z
+        .partialRecord(DisplayUnitSystemIdSchema, z.number().int().min(1))
+        .optional()
+        .meta({
+            title: 'Design Airflow Rounding Increments',
+            description:
+                'Rounding increment for design airflows per unit system, in that unit system flow rate unit (cfm for IMPERIAL, L/s for METRIC). A unit system with no value uses the default increment.',
+        }),
     analytics: disableUserWrite(ProjectAnalyticsSchema_v0.optional()),
     apiCreated: disableUserWrite(z.boolean().optional()),
     building: BuildingDataSchema_v0.optional(),

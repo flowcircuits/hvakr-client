@@ -108,7 +108,7 @@ describe('Project v0 schemas', () => {
             'access',
             'address',
             'organizationId',
-            'airflowIncrement',
+            'airflowIncrements',
             'analytics',
             'apiCreated',
             'building',
@@ -355,7 +355,7 @@ describe('Project v0 schemas', () => {
         }
 
         expect(WritableProjectDataSchema_v0.shape).toHaveProperty(
-            'airflowIncrement'
+            'airflowIncrements'
         )
         expect(WritableProjectDataSchema_v0.shape).toHaveProperty('mapConfig')
         expect(WritableProjectDataSchema_v0.shape).toHaveProperty(
@@ -626,6 +626,44 @@ describe('Project v0 schemas', () => {
         expect(
             ExpandedProjectPatchSchema_v0.safeParse({
                 mapConfig: { type: 'terrain' },
+            }).success
+        ).toBe(false)
+    })
+
+    it('reads and writes airflow rounding increments per unit system', () => {
+        const airflowIncrements = { IMPERIAL: 10, METRIC: 5 }
+        const readProject = {
+            equipmentModes: DEFAULT_EQUIPMENT_MODES_v0,
+            name: 'Airflow increments',
+            access: { direct: { users: {} } },
+            airflowIncrements,
+        }
+
+        expect(
+            ProjectDataSchema_v0.parse(readProject).airflowIncrements
+        ).toEqual(airflowIncrements)
+        expect(
+            ExpandedProjectPostSchema_v0.parse({ airflowIncrements })
+                .airflowIncrements
+        ).toEqual(airflowIncrements)
+        expect(
+            ExpandedProjectPatchSchema_v0.parse({
+                airflowIncrements: { METRIC: 25 },
+            }).airflowIncrements
+        ).toEqual({ METRIC: 25 })
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                airflowIncrements: { METRIC: 0 },
+            }).success
+        ).toBe(false)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                airflowIncrements: { IMPERIAL: 2.5 },
+            }).success
+        ).toBe(false)
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                airflowIncrements: { SI: 5 },
             }).success
         ).toBe(false)
     })

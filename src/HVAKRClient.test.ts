@@ -7,9 +7,13 @@ import {
 import type Dispatcher from 'undici/types/dispatcher'
 import type { MockInterceptor } from 'undici/types/mock-interceptor'
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ExpandedProjectPatch_v0 } from './schemas'
+import { APISheetUploadSchema_v0, ExpandedProjectPatch_v0 } from './schemas'
 import { ExpandedProjectPostDataExample_v0 } from './fixtures'
-import { HVAKRClient, MAX_API_SHEET_UPLOAD_BYTES } from './HVAKRClient'
+import {
+    HVAKRClient,
+    MAX_API_SHEET_UPLOAD_BYTES,
+    uploadSheetFileWithToken,
+} from './HVAKRClient'
 import { createClientTestTarget } from './test/clientTestTarget'
 
 const { createClient, describeApi } = createClientTestTarget()
@@ -340,6 +344,168 @@ describe('HVAKRClient request building', () => {
     it('createSheetFile preflights the API upload limit before requesting', async () => {
         await expect(
             requestClient.createSheetFile('p1', {
+                file: new Uint8Array(MAX_API_SHEET_UPLOAD_BYTES + 1),
+                fileName: 'too-large.pdf',
+            })
+        ).rejects.toThrow('30 MiB API upload limit')
+        expect(requests).toHaveLength(0)
+    })
+
+    const sheetUpload = {
+        uploadUrl: 'https://api.example.test/v0/sheet-uploads',
+        uploadToken: 'u'.repeat(43),
+        appUploadUrl:
+            'https://app.example.test/projects/p1/bod/sheet-library?upload=true',
+        expiresAt: '2026-11-11T00:15:00.000Z',
+    }
+
+    const sheetUploadJob = {
+        jobId: 'job_token_1',
+        type: 'sheet-upload',
+        status: 'queued',
+        result: {
+            sheetFileId: 'sheet_file_token_1',
+            sourceFileName: 'M-Plans.pdf',
+            name: 'Mechanical Plans',
+            pagesProcessed: 0,
+            placedSheets: 0,
+            pages: [],
+        },
+    }
+
+    it('createSheetUpload POSTs JSON with the access token and returns the upload token', async () => {
+        enqueue(201, sheetUpload)
+
+        const result = await requestClient.createSheetUpload('a/b', {
+            name: 'Mechanical Plans',
+        })
+
+        expect(result).toEqual(sheetUpload)
+        expect(APISheetUploadSchema_v0.parse(result)).toEqual(sheetUpload)
+        const request = requests.at(-1)!
+        expect(request.path).toBe('/v0/projects/a%2Fb/sheet-uploads')
+        expect(request.method).toBe('POST')
+        expect(headerValue(request.headers, 'authorization')).toBe(
+            'Bearer test-token'
+        )
+        expect(headerValue(request.headers, 'content-type')).toBe(
+            'application/json'
+        )
+        expect(JSON.parse(bodyAsString(request.body))).toEqual({
+            name: 'Mechanical Plans',
+        })
+    })
+
+    it('createSheetUpload mints a new token on every call and sends no idempotency key', async () => {
+        enqueue(201, sheetUpload)
+        enqueue(201, { ...sheetUpload, uploadToken: 'v'.repeat(43) })
+
+        const first = await requestClient.createSheetUpload('p1')
+        const second = await requestClient.createSheetUpload('p1')
+
+        expect(first.uploadToken).not.toBe(second.uploadToken)
+        expect(requests).toHaveLength(2)
+        for (const request of requests) {
+            expect(JSON.parse(bodyAsString(request.body))).toEqual({})
+            expect(
+                headerValue(request.headers, 'idempotency-key')
+            ).toBeUndefined()
+        }
+    })
+
+    it('uploadSheetFileWithToken POSTs the PDF to uploadUrl with only the upload token', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(
+                new Response(JSON.stringify(sheetUploadJob), { status: 202 })
+            )
+        globalThis.fetch = fetchMock
+        const uploadUrl =
+            'http://127.0.0.1:5001/demo/us-central1/onAPICall/v0/sheet-uploads'
+
+        const result = await uploadSheetFileWithToken(
+            { uploadUrl, uploadToken: sheetUpload.uploadToken },
+            {
+                file: new Uint8Array(Buffer.from('%PDF-1.7')),
+                fileName: 'M-Plans.pdf',
+                name: 'Mechanical Plans',
+            }
+        )
+
+        expect(result).toEqual(sheetUploadJob)
+        expect(fetchMock).toHaveBeenCalledWith(
+            uploadUrl,
+            expect.objectContaining({ method: 'POST' })
+        )
+        const init = fetchMock.mock.calls[0]?.[1] as RequestInit
+        expect(init.headers).toEqual({
+            Authorization: `Bearer ${sheetUpload.uploadToken}`,
+            'X-HVAKR-Client': expect.stringMatching(
+                /^hvakr-client-ts\/\d+\.\d+\.\d+/
+            ),
+            Accept: 'application/json',
+        })
+        const formData = init.body as FormData
+        expect(formData.get('name')).toBe('Mechanical Plans')
+        const uploadedFile = formData.get('file') as File
+        expect(uploadedFile.name).toBe('M-Plans.pdf')
+        expect(uploadedFile.type).toBe('application/pdf')
+        expect(await uploadedFile.text()).toBe('%PDF-1.7')
+    })
+
+    it('uploadSheetFileWithToken surfaces 409 while the upload saves, then the replayed job', async () => {
+        const conflict = {
+            code: 'conflict',
+            message: 'An upload with this token is already in progress.',
+        }
+        enqueue(409, conflict)
+        enqueue(202, sheetUploadJob)
+        const input = { file: new Blob(['%PDF-1.7']), fileName: 'M-Plans.pdf' }
+
+        await expect(
+            uploadSheetFileWithToken(sheetUpload, input)
+        ).rejects.toMatchObject({
+            name: 'HVAKRClientError',
+            status: 409,
+            metadata: conflict,
+        })
+        const replay = await uploadSheetFileWithToken(sheetUpload, input)
+
+        expect(replay).toEqual(sheetUploadJob)
+        expect(requests).toHaveLength(2)
+        for (const request of requests) {
+            expect(request.path).toBe('/v0/sheet-uploads')
+            expect(headerValue(request.headers, 'authorization')).toBe(
+                `Bearer ${sheetUpload.uploadToken}`
+            )
+        }
+    })
+
+    it.each([
+        [401, 'unauthenticated'],
+        [410, 'invalid_request'],
+    ])(
+        'uploadSheetFileWithToken throws HVAKRClientError for a %i token response',
+        async (status, code) => {
+            enqueue(status, { code, message: 'Request a new upload token.' })
+
+            await expect(
+                uploadSheetFileWithToken(sheetUpload, {
+                    file: new Blob(['%PDF-1.7']),
+                    fileName: 'M-Plans.pdf',
+                })
+            ).rejects.toMatchObject({
+                name: 'HVAKRClientError',
+                message: `Error ${status}`,
+                status,
+                metadata: { code },
+            })
+        }
+    )
+
+    it('uploadSheetFileWithToken preflights the API upload limit before requesting', async () => {
+        await expect(
+            uploadSheetFileWithToken(sheetUpload, {
                 file: new Uint8Array(MAX_API_SHEET_UPLOAD_BYTES + 1),
                 fileName: 'too-large.pdf',
             })

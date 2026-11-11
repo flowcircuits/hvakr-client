@@ -44,7 +44,7 @@ export const APIJobTypes_v0 = {
 export const APIJobTypeSchema_v0 = z
     .enum(Object.values(APIJobTypes_v0))
     .describe(
-        'Job kind. `sheet-upload` is created only by uploading a PDF to POST /projects/{id}/sheet-files; all other kinds use POST /projects/{id}/jobs.'
+        'Job kind. `sheet-upload` is created only by uploading a PDF to POST /projects/{id}/sheet-files or POST /sheet-uploads; all other kinds use POST /projects/{id}/jobs.'
     )
 export type APIJobType_v0 = z.infer<typeof APIJobTypeSchema_v0>
 
@@ -375,6 +375,33 @@ export const APISheetUploadJobResultSchema_v0 = z
 export type APISheetUploadJobResult_v0 = z.infer<
     typeof APISheetUploadJobResultSchema_v0
 >
+
+/**
+ * Response from `POST /projects/{id}/sheet-uploads`: a single-use token that
+ * lets `POST /sheet-uploads` accept one PDF for the project without an
+ * access token.
+ */
+export const APISheetUploadSchema_v0 = z
+    .object({
+        uploadUrl: z
+            .url()
+            .describe('POST /sheet-uploads. Contains no credential.'),
+        uploadToken: z
+            .string()
+            .describe(
+                'Single-use upload token for Authorization: Bearer. Treat it as a credential. It accepts one PDF and expires after 15 minutes.'
+            ),
+        appUploadUrl: z
+            .url()
+            .describe(
+                'The HVAKR web app upload drawer for the same project, for a user to upload the PDF by hand.'
+            ),
+        expiresAt: z.iso
+            .datetime()
+            .describe('When uploadToken stops working (ISO 8601).'),
+    })
+    .describe('A single-use PDF upload token.')
+export type APISheetUpload_v0 = z.infer<typeof APISheetUploadSchema_v0>
 
 // --------------------------------------------------------------------
 // -- Job -------------------------------------------------------------

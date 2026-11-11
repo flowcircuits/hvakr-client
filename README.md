@@ -183,6 +183,12 @@ address. It has `enabled` (omitted means off), `type` (`roadmap`, `satellite`,
 or `hybrid`; omitted means `satellite`), and `opacity` from 0 to 1 (omitted
 means 1). It replaces the `maps` record of placed maps.
 
+`airflowIncrements` sets the design airflow rounding increment per unit system,
+for example `{ IMPERIAL: 10, METRIC: 5 }`. Each value is a positive integer in
+that unit system's flow rate unit (cfm for `IMPERIAL`, L/s for `METRIC`). A unit
+system with no value uses the default increment. It replaces the single
+`airflowIncrement` number.
+
 Annotations are a project subcollection. Read them with
 `getProject(id, ['annotations'])` or `getProject(id, true)`; the response has an
 `annotations` record keyed by annotation ID. Its entries use `AnnotationData_v0`.
@@ -275,9 +281,11 @@ export's `definition.fileType` and `outputFileType` can be any
 
 ### Sheet files
 
-| Method                                           | Description                                                                                                                   |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `createSheetFile(id, { file, fileName, name? })` | Upload one PDF (up to 30 MiB) and receive a multipart-only `sheet-upload` job. Poll it with `getJob`; `name` is display-only. |
+| Method                                                                            | Description                                                                                                                                             |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createSheetFile(id, { file, fileName, name? })`                                  | Upload one PDF (up to 30 MiB) and receive a multipart-only `sheet-upload` job. Poll it with `getJob`; `name` is display-only.                           |
+| `createSheetUpload(id, { name? }?)`                                               | Mint a single-use, 15-minute upload token for one PDF. Returns `uploadUrl`, `uploadToken`, `appUploadUrl`, and `expiresAt`.                             |
+| `uploadSheetFileWithToken({ uploadUrl, uploadToken }, { file, fileName, name? })` | Package export, not a client method. Upload one PDF with an upload token and no access token. Returns the same `sheet-upload` job as `createSheetFile`. |
 
 ```ts
 const upload = await hvakr.createSheetFile(
@@ -303,6 +311,56 @@ if (job.type === 'sheet-upload' && job.status === 'completed') {
 
 `auto-takeoff` remains project-wide: it processes all active placed sheets and
 eligible maps, not only pages from this upload.
+
+#### Single-use upload tokens
+
+Use an upload token when the PDF upload happens somewhere that must not hold
+your access token, such as an AI agent's shell, a browser, or another service.
+Your server mints the token with the access token and passes on only
+`uploadUrl` and `uploadToken`:
+
+```ts
+// Server side, with the access token.
+const { uploadUrl, uploadToken, appUploadUrl, expiresAt } =
+    await hvakr.createSheetUpload(projectId, { name: 'Mechanical Plans' })
+```
+
+```ts
+// Wherever the PDF is. No HVAKRClient or access token is needed.
+import { uploadSheetFileWithToken } from '@hvakr/client'
+
+const job = await uploadSheetFileWithToken(
+    { uploadUrl, uploadToken },
+    { file: pdfBytes, fileName: 'M-Plans.pdf' }
+)
+// The server polls hvakr.getJob(projectId, job.jobId) as in the example above.
+```
+
+Without the SDK, send the same multipart body to `uploadUrl`:
+
+```sh
+curl -sS -H "Authorization: Bearer $UPLOAD_TOKEN" -F file=@M-Plans.pdf "$UPLOAD_URL"
+```
+
+- **Credential handling.** Treat `uploadToken` as a secret: do not log it,
+  put it in a URL, or show it to end users. It can upload one PDF to one
+  project, as the user who minted it, until `expiresAt` (15 minutes).
+  `uploadUrl` holds no credential. `appUploadUrl` opens the upload drawer in
+  the HVAKR web app, for a user who uploads the PDF by hand.
+- **Minting is not idempotent.** Each `createSheetUpload` call returns a new
+  token, and it takes no `idempotencyKey`. An unused token expires on its
+  own, so it is safe to retry a failed mint.
+- **Retries and replay.** A token accepts one upload. Retry
+  `uploadSheetFileWithToken` with the same token: while the first upload
+  saves, it throws `HVAKRClientError` with `status` 409; after the PDF is
+  saved, it returns the same job until the token expires. A failed upload
+  (for example 415 or 422) releases the token, so you can fix the file and
+  retry with it.
+- **Expiry and errors.** An expired token throws with `status` 410, and an
+  unknown token with 401. Mint a new token with `createSheetUpload`. The
+  30 MiB limit is checked before the request.
+- A `name` sent with the upload overrides the `name` given to
+  `createSheetUpload`.
 
 By default, auto-takeoff adds the detected spaces to the project. Pass
 `commit: false` to write them as suggestions to review in the HVAKR app

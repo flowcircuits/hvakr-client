@@ -5,6 +5,7 @@ import {
     APIMe_v0,
     APIProduct_v0,
     APIProjectCalculations_v0,
+    APISheetUpload_v0,
     ExpandedProjectPatch_v0,
     ExpandedProjectPost_v0,
     ExpandedProject_v0,
@@ -32,6 +33,14 @@ export interface CreateSheetFileInput {
     /** Filename preserved as the upload identity. */
     fileName: string
     /** Optional display name; it never replaces `fileName`. */
+    name?: string
+}
+
+export interface CreateSheetUploadInput {
+    /**
+     * Display name for the uploaded sheet file. A `name` sent with the upload
+     * overrides it.
+     */
     name?: string
 }
 
@@ -71,6 +80,101 @@ export class HVAKRClientError extends Error {
         this.metadata = metadata
         this.status = status
     }
+}
+
+/**
+ * If the API flagged this client as outdated (`X-HVAKR-Client-Warning`),
+ * log the advisory once per distinct message. The header is set on every
+ * response — success or error — so the notice surfaces regardless of outcome.
+ */
+const warnIfOutdated = (res: Response) => {
+    const warning = res.headers.get('X-HVAKR-Client-Warning')
+    if (warning && !warnedClientMessages.has(warning)) {
+        warnedClientMessages.add(warning)
+        console.warn(`[hvakr-client] ${warning}`)
+    }
+}
+
+/**
+ * Performs a request and parses the JSON body, throwing an
+ * {@link HVAKRClientError} (carrying the status and parsed error body)
+ * on a non-2xx response.
+ */
+const requestJSON = async <T>(url: string, init: RequestInit): Promise<T> => {
+    const res = await fetch(url, init)
+    warnIfOutdated(res)
+    const data = await res.json()
+    if (!res.ok) {
+        throw new HVAKRClientError(`Error ${res.status}`, data, res.status)
+    }
+    return data as T
+}
+
+/**
+ * Checks the API upload limit and builds the multipart body shared by
+ * {@link HVAKRClient.createSheetFile} and {@link uploadSheetFileWithToken}.
+ */
+const sheetFileFormData = async ({
+    file,
+    fileName,
+    name,
+}: CreateSheetFileInput): Promise<FormData> => {
+    const isBlob = isBlobLike(file)
+    const fileSize = isBlob ? file.size : file.byteLength
+    if (fileSize > MAX_API_SHEET_UPLOAD_BYTES) {
+        throw new RangeError(
+            `Sheet PDF exceeds the ${MAX_API_SHEET_UPLOAD_BYTES / (1024 * 1024)} MiB API upload limit.`
+        )
+    }
+
+    const blob = isBlob
+        ? new Blob([await file.arrayBuffer()], { type: 'application/pdf' })
+        : new Blob([new Uint8Array(file)], { type: 'application/pdf' })
+
+    const formData = new FormData()
+    formData.append('file', blob, fileName)
+    if (name !== undefined) {
+        formData.append('name', name)
+    }
+    return formData
+}
+
+/**
+ * Uploads one PDF with a single-use upload token from
+ * {@link HVAKRClient.createSheetUpload} and returns the same queued
+ * `sheet-upload` job as {@link HVAKRClient.createSheetFile}. It needs no
+ * access token: pass the `uploadUrl` and `uploadToken` from the
+ * `createSheetUpload` response, and the token is the only credential sent.
+ *
+ * The token accepts one upload. Retrying with the same token is safe: while
+ * the first upload is still saving, the API answers 409; after it is saved,
+ * the API returns the same job again until the token expires. An expired
+ * token gets 410 and an unknown token gets 401: mint a new one with
+ * `createSheetUpload`. If the upload fails, the token is released and the
+ * same token can retry.
+ * @param upload - `uploadUrl` and `uploadToken` from `createSheetUpload`
+ * @param input - The PDF, its filename, and an optional display name that
+ *   overrides the name given to `createSheetUpload`
+ * @returns The queued `sheet-upload` job; poll `getJob` with its `jobId`
+ * @throws {RangeError} If the PDF exceeds {@link MAX_API_SHEET_UPLOAD_BYTES}
+ * @throws {HVAKRClientError} If the API returns an error response
+ */
+export const uploadSheetFileWithToken = async (
+    {
+        uploadUrl,
+        uploadToken,
+    }: Pick<APISheetUpload_v0, 'uploadUrl' | 'uploadToken'>,
+    input: CreateSheetFileInput
+): Promise<APIJob_v0> => {
+    return requestJSON<APIJob_v0>(uploadUrl, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${uploadToken}`,
+            'X-HVAKR-Client': CLIENT_ID,
+            Accept: 'application/json',
+        },
+        body: await sheetFileFormData(input),
+    })
 }
 
 /** Options accepted by write (POST) methods. */
@@ -169,34 +273,6 @@ export class HVAKRClient {
         return base + this.buildQuery(queryParams)
     }
 
-    /**
-     * If the API flagged this client as outdated (`X-HVAKR-Client-Warning`),
-     * log the advisory once per distinct message. The header is set on every
-     * response — success or error — so the notice surfaces regardless of outcome.
-     */
-    private warnIfOutdated = (res: Response) => {
-        const warning = res.headers.get('X-HVAKR-Client-Warning')
-        if (warning && !warnedClientMessages.has(warning)) {
-            warnedClientMessages.add(warning)
-            console.warn(`[hvakr-client] ${warning}`)
-        }
-    }
-
-    /**
-     * Performs a request and parses the JSON body, throwing an
-     * {@link HVAKRClientError} (carrying the status and parsed error body)
-     * on a non-2xx response.
-     */
-    private request = async <T>(url: string, init: RequestInit): Promise<T> => {
-        const res = await fetch(url, init)
-        this.warnIfOutdated(res)
-        const data = await res.json()
-        if (!res.ok) {
-            throw new HVAKRClientError(`Error ${res.status}`, data, res.status)
-        }
-        return data as T
-    }
-
     /** Builds headers for a JSON POST/PATCH, including optional idempotency. */
     private writeHeaders = (opts?: WriteOptions): HeadersInit => {
         const headers: Record<string, string> = {
@@ -233,7 +309,7 @@ export class HVAKRClient {
         projectData: ExpandedProjectPost_v0,
         opts?: WriteOptions
     ): Promise<{ id: string }> => {
-        return this.request<{ id: string }>(this.createURL(`/projects`), {
+        return requestJSON<{ id: string }>(this.createURL(`/projects`), {
             method: 'POST',
             headers: this.writeHeaders(opts),
             body: JSON.stringify(projectData),
@@ -280,7 +356,7 @@ export class HVAKRClient {
         if (params.projectType !== undefined) {
             queryParams.projectType = params.projectType
         }
-        return this.request<ProjectListResponse_v0>(
+        return requestJSON<ProjectListResponse_v0>(
             this.createURL(`/projects`, queryParams),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
@@ -322,7 +398,7 @@ export class HVAKRClient {
             `/projects/${this.encodePathSegment(projectId)}`,
             { expand: expandParam }
         )
-        return this.request(url, {
+        return requestJSON(url, {
             method: 'GET',
             headers: this.getAuthHeaders(),
         })
@@ -341,7 +417,7 @@ export class HVAKRClient {
         projectData: ExpandedProjectPatch_v0,
         opts?: WriteOptions
     ): Promise<{ id: string }> => {
-        return this.request<{ id: string }>(
+        return requestJSON<{ id: string }>(
             this.createURL(`/projects/${this.encodePathSegment(projectId)}`),
             {
                 method: 'PATCH',
@@ -360,7 +436,7 @@ export class HVAKRClient {
     deleteProject = async (
         projectId: string
     ): Promise<{ id: string; deleted: true }> => {
-        return this.request<{ id: string; deleted: true }>(
+        return requestJSON<{ id: string; deleted: true }>(
             this.createURL(`/projects/${this.encodePathSegment(projectId)}`),
             { method: 'DELETE', headers: this.getAuthHeaders() }
         )
@@ -387,7 +463,7 @@ export class HVAKRClient {
             include && include.length > 0
                 ? { include: include.join(',') }
                 : undefined
-        return this.request<APIProjectCalculations_v0>(
+        return requestJSON<APIProjectCalculations_v0>(
             this.createURL(
                 `/projects/${this.encodePathSegment(projectId)}/calculations`,
                 queryParams
@@ -404,35 +480,49 @@ export class HVAKRClient {
      */
     createSheetFile = async (
         projectId: string,
-        { file, fileName, name }: CreateSheetFileInput,
+        input: CreateSheetFileInput,
         opts?: WriteOptions
     ): Promise<APIJob_v0> => {
-        const isBlob = isBlobLike(file)
-        const fileSize = isBlob ? file.size : file.byteLength
-        if (fileSize > MAX_API_SHEET_UPLOAD_BYTES) {
-            throw new RangeError(
-                `Sheet PDF exceeds the ${MAX_API_SHEET_UPLOAD_BYTES / (1024 * 1024)} MiB API upload limit.`
-            )
-        }
-
-        const blob = isBlob
-            ? new Blob([await file.arrayBuffer()], { type: 'application/pdf' })
-            : new Blob([new Uint8Array(file)], { type: 'application/pdf' })
-
-        const formData = new FormData()
-        formData.append('file', blob, fileName)
-        if (name !== undefined) {
-            formData.append('name', name)
-        }
-
-        return this.request<APIJob_v0>(
+        return requestJSON<APIJob_v0>(
             this.createURL(
                 `/projects/${this.encodePathSegment(projectId)}/sheet-files`
             ),
             {
                 method: 'POST',
                 headers: this.multipartWriteHeaders(opts),
-                body: formData,
+                body: await sheetFileFormData(input),
+            }
+        )
+    }
+
+    /**
+     * Mints a single-use upload token that lets
+     * {@link uploadSheetFileWithToken} (or any HTTP client) upload one PDF to
+     * this project at `uploadUrl` without an access token. Requires
+     * project MEMBER access. The token works once and expires after 15
+     * minutes (`expiresAt`). Treat `uploadToken` as a credential: do not log
+     * it or show it to end users.
+     *
+     * Not idempotent: every call mints a new token, and the API ignores
+     * `Idempotency-Key` here. Retrying a failed call is safe; an unused token
+     * expires on its own.
+     * @param projectId - The ID of the project that receives the PDF
+     * @param input - Optional default display name for the sheet file
+     * @returns `uploadUrl`, `uploadToken`, `appUploadUrl`, and `expiresAt`
+     * @throws {HVAKRClientError} If the API returns an error response
+     */
+    createSheetUpload = async (
+        projectId: string,
+        input: CreateSheetUploadInput = {}
+    ): Promise<APISheetUpload_v0> => {
+        return requestJSON<APISheetUpload_v0>(
+            this.createURL(
+                `/projects/${this.encodePathSegment(projectId)}/sheet-uploads`
+            ),
+            {
+                method: 'POST',
+                headers: this.writeHeaders(),
+                body: JSON.stringify(input),
             }
         )
     }
@@ -454,7 +544,7 @@ export class HVAKRClient {
         body: APIJobCreate_v0,
         opts?: WriteOptions
     ): Promise<APIJob_v0> => {
-        return this.request<APIJob_v0>(
+        return requestJSON<APIJob_v0>(
             this.createURL(
                 `/projects/${this.encodePathSegment(projectId)}/jobs`
             ),
@@ -476,7 +566,7 @@ export class HVAKRClient {
      * @throws {HVAKRClientError} If the API returns an error response
      */
     getJob = async (projectId: string, jobId: string): Promise<APIJob_v0> => {
-        return this.request<APIJob_v0>(
+        return requestJSON<APIJob_v0>(
             this.createURL(
                 `/projects/${this.encodePathSegment(projectId)}/jobs/${this.encodePathSegment(jobId)}`
             ),
@@ -523,7 +613,7 @@ export class HVAKRClient {
         if (params.cursor !== undefined) {
             queryParams.cursor = params.cursor
         }
-        return this.request<SearchProductsResponse_v0>(
+        return requestJSON<SearchProductsResponse_v0>(
             this.createURL(`/products`, queryParams),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
@@ -536,7 +626,7 @@ export class HVAKRClient {
      * @throws {HVAKRClientError} If the API returns an error response
      */
     getProduct = async (productId: string): Promise<APIProduct_v0> => {
-        return this.request<APIProduct_v0>(
+        return requestJSON<APIProduct_v0>(
             this.createURL(`/products/${this.encodePathSegment(productId)}`),
             { method: 'GET', headers: this.getAuthHeaders() }
         )
@@ -550,7 +640,7 @@ export class HVAKRClient {
      * @throws {HVAKRClientError} If the API returns an error response
      */
     me = async (): Promise<APIMe_v0> => {
-        return this.request<APIMe_v0>(this.createURL(`/me`), {
+        return requestJSON<APIMe_v0>(this.createURL(`/me`), {
             method: 'GET',
             headers: this.getAuthHeaders(),
         })

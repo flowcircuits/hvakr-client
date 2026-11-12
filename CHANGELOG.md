@@ -24,6 +24,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `'spaceCount' in result` before you read the counts. An empty `{}` result
   no longer parses; the API does not return one.
 
+## [0.31.1] - Unreleased
+
+### Added
+
+- `ProjectDataSchema_v0.folderId`: the id of the `projectFolder` that files a
+  project, `disableUserWrite` so it is documented on reads but rejected by
+  `PATCH`. `ProjectPostSchema_v0` accepts `folderId` at create time only.
+- `HVAKRClient.moveProject(projectId, folderId)`: files or moves a project
+  into a folder, or passes `null` to move it to root, via
+  `PUT /projects/{id}/folder`.
+
 ## [0.31.0] - 2026-11-11
 
 ### Breaking Changes

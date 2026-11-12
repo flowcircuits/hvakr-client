@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.31.6] - Unreleased
+
+### Added
+
+- `CoilTotalsSchema_v0.latentCoilLoad` (optional): the latent coil load summed
+  across matching coils, in BTU/h. It is set for cooling coils only, equals
+  `coilLoad - sensibleCoilLoad`, and is negative like `coilLoad`. It is
+  omitted when either value is missing. This matches the HVAKR server schema.
+  Before, `EquipmentCalculationsSchema_v0` and
+  `APIProjectCalculationsSchema_v0` stripped the field from
+  `modes[modeId].summary.coilTotals`.
+
 ## [0.31.5] - Unreleased
 
 ### Fixed

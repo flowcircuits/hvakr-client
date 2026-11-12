@@ -302,6 +302,7 @@ describe('calculations contract', () => {
                         coilTotals: {
                             coilLoad: -24_000,
                             sensibleCoilLoad: -18_000,
+                            latentCoilLoad: -6_000,
                         },
                         systemProcess: {
                             fanMotorHeatGain: 500,
@@ -313,9 +314,11 @@ describe('calculations contract', () => {
             },
         })
 
-        expect(
-            equipment.modes?.cooling_mode?.summary.coilTotals?.coilLoad
-        ).toBe(-24_000)
+        expect(equipment.modes?.cooling_mode?.summary.coilTotals).toEqual({
+            coilLoad: -24_000,
+            sensibleCoilLoad: -18_000,
+            latentCoilLoad: -6_000,
+        })
         const response = {
             errors: [],
             flags: {},

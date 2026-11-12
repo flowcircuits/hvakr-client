@@ -466,6 +466,9 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     elevation: disableUserWrite(z.number().optional()),
     equipmentModes: EquipmentModesSchema_v0,
     defaultSystemPresetId: disableUserWrite(z.string().optional()),
+    folderId: disableUserWrite(z.string().optional()).describe(
+        'ID of the projectFolder that holds this project. Absent at root. Settable only at create; afterwards, move the project with PUT /projects/{id}/folder.'
+    ),
     fromExample: disableUserWrite(z.string().optional()),
     iaqpOutdoorAirMerv: z.number().int().min(8).max(15).optional(),
     isDeleted: disableUserWrite(z.boolean().optional()),
@@ -561,6 +564,12 @@ export const ProjectPostSchema_v0 = z.strictObject({
     equipmentModes: getStrictSchema(EquipmentModesSchema_v0).optional(),
     /** Optional because the project can be created with a default name */
     name: z.string().optional(),
+    /**
+     * Create-only exception: `folderId` is `disableUserWrite` on
+     * `ProjectDataSchema_v0`, so it never appears on an update, but filing a
+     * new project into a folder at create time is allowed.
+     */
+    folderId: z.string().optional(),
 })
 export type ProjectPost_v0 = z.infer<typeof ProjectPostSchema_v0>
 

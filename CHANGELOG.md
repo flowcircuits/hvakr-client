@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.31.5] - Unreleased
+
+### Fixed
+
+- `APIAutoTakeoffResultSchema_v0` now describes what the API returns for a
+  completed `auto-takeoff` job: `{ spaceCount, spaceIds }`. `spaceCount` is the
+  number of spaces the run wrote (committed, or as suggestions when `commit`
+  is false), and the optional `spaceIds` lists their IDs. Before, the schema
+  allowed only `error`, so `APIJobResultSchema_v0` rejected a real completed
+  result and `APIJobSchema_v0` stripped its fields. The result is now a union
+  of `{ spaceCount, spaceIds?, error? }` (the server's result shape) and the
+  error-only `{ error }`, so `result.error` reads still compile; check
+  `'spaceCount' in result` before you read the counts. An empty `{}` result
+  no longer parses; the API does not return one.
+  
 ## [0.31.3] - Unreleased
 
 ### Added
@@ -18,7 +33,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   have completed first). Returns `APISizeGraphResult_v0` (`ductCount`,
   `routingValid`, optional `sizingErrors`) once the job completes.
 
-## [0.31.0] - Unreleased
+## [0.31.1] - Unreleased
+
+### Added
+
+- `ProjectDataSchema_v0.folderId`: the id of the `projectFolder` that files a
+  project, `disableUserWrite` so it is documented on reads but rejected by
+  `PATCH`. `ProjectPostSchema_v0` accepts `folderId` at create time only.
+- `HVAKRClient.moveProject(projectId, folderId)`: files or moves a project
+  into a folder, or passes `null` to move it to root, via
+  `PUT /projects/{id}/folder`.
+
+## [0.31.0] - 2026-11-11
 
 ### Breaking Changes
 
@@ -32,7 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `airflowIncrements[unitSystem]` (the project's unit system, `IMPERIAL` when
   omitted).
 
-## [0.30.1] - Unreleased
+## [0.30.1] - 2026-11-11
 
 ### Added
 

@@ -247,10 +247,34 @@ export const APIAutoTakeoffErrorSchema_v0 = z
     })
     .describe('Error detail on a failed auto-takeoff job.')
 
-/** Result of a completed `auto-takeoff` job. */
+/** The spaces an `auto-takeoff` run wrote, as the server returns them. */
+const APIAutoTakeoffSpacesResultSchema_v0 = z.object({
+    spaceCount: z
+        .number()
+        .describe(
+            'Number of spaces this run detected and wrote to the project: committed spaces, or pending suggestions when commit is false.'
+        ),
+    spaceIds: z
+        .array(z.string())
+        .optional()
+        .describe('IDs of the spaces this run wrote, one per spaceCount.'),
+    error: APIAutoTakeoffErrorSchema_v0.optional(),
+})
+
+/** An `auto-takeoff` result that carries only an error. */
+const APIAutoTakeoffErrorResultSchema_v0 = z.object({
+    error: APIAutoTakeoffErrorSchema_v0,
+})
+
+/** Result of an `auto-takeoff` job: the spaces it wrote, or only an error. */
 export const APIAutoTakeoffResultSchema_v0 = z
-    .object({ error: APIAutoTakeoffErrorSchema_v0.optional() })
-    .describe('Result of an auto-takeoff job.')
+    .union([
+        APIAutoTakeoffSpacesResultSchema_v0,
+        APIAutoTakeoffErrorResultSchema_v0,
+    ])
+    .describe(
+        'Result of an auto-takeoff job. A completed job returns spaceCount and spaceIds.'
+    )
 export type APIAutoTakeoffResult_v0 = z.infer<
     typeof APIAutoTakeoffResultSchema_v0
 >
@@ -442,9 +466,10 @@ export const APIJobResultSchema_v0 = z
         APIAutoRouteResultSchema_v0,
         APISheetUploadJobResultSchema_v0,
         APISizeGraphResultSchema_v0,
-        // Keep the all-optional result last and strict so invalid reports
-        // cannot fall through and lose their fields. Empty takeoff results remain valid.
-        APIAutoTakeoffResultSchema_v0.strict(),
+        // Keep the takeoff results last and strict so an invalid report
+        // cannot fall through to them and lose its fields.
+        APIAutoTakeoffSpacesResultSchema_v0.strict(),
+        APIAutoTakeoffErrorResultSchema_v0.strict(),
     ])
     .describe('Job result payload; shape depends on the job type.')
 export type APIJobResult_v0 = z.infer<typeof APIJobResultSchema_v0>

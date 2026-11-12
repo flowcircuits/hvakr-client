@@ -84,12 +84,79 @@ export type ProjectSubcollectionsPost_v0 = z.infer<
     typeof ProjectSubcollectionsPostSchema_v0
 >
 
+/** Most space or duct type template IDs one create request can import. */
+export const MAX_PROJECT_SETUP_TEMPLATE_IDS_V0 = 100
+
+/**
+ * Setup jobs to run after a project is created: the same setup the HVAKR app
+ * runs. Create-only; the project does not store it.
+ */
+export const ProjectSetupSchema_v0 = z
+    .strictObject({
+        czMinimumEnvelopes: z
+            .boolean()
+            .optional()
+            .describe(
+                'Import the ASHRAE 90.1 minimum envelope types for the project climate zone.'
+            ),
+        spaceTypeTemplateProjectIds: z
+            .array(z.string().min(1))
+            .max(MAX_PROJECT_SETUP_TEMPLATE_IDS_V0)
+            .optional()
+            .describe('Template projects whose space types to import.'),
+        ductTypeTemplateIds: z
+            .array(z.string().min(1))
+            .max(MAX_PROJECT_SETUP_TEMPLATE_IDS_V0)
+            .optional()
+            .describe('Templates whose duct types to import.'),
+        mapTakeoff: z
+            .boolean()
+            .optional()
+            .describe(
+                'Detect spaces from the map footprint at the project address. Imports the climate zone envelope types too.'
+            ),
+    })
+    .describe(
+        'Setup jobs to run after the project is created. The response returns their job IDs in setupJobIds.'
+    )
+export type ProjectSetup_v0 = z.infer<typeof ProjectSetupSchema_v0>
+
 export const ExpandedProjectPostSchema_v0 = z.strictObject({
     ...ProjectPostSchema_v0.shape,
     ...ProjectSubcollectionsPostSchema_v0.shape,
+    setup: ProjectSetupSchema_v0.optional(),
 })
 export type ExpandedProjectPost_v0 = z.infer<
     typeof ExpandedProjectPostSchema_v0
+>
+
+/** Response of `POST /projects`. */
+export const ProjectCreateResponseSchema_v0 = z.object({
+    id: z.string().describe('The new project ID.'),
+    setupJobIds: z
+        .object({
+            czEnvelopes: z
+                .string()
+                .optional()
+                .describe('import-cz-envelopes job.'),
+            spaceTypes: z
+                .string()
+                .optional()
+                .describe('import-space-types job.'),
+            ductTypes: z.string().optional().describe('import-duct-types job.'),
+            mapTakeoff: z
+                .string()
+                .optional()
+                .describe(
+                    'map-takeoff job. It waits until the envelope and space type imports complete.'
+                ),
+        })
+        .describe(
+            'Job ID of each setup job the request started. Empty when the request has no setup. Poll each with GET /projects/{id}/jobs/{jobId}.'
+        ),
+})
+export type ProjectCreateResponse_v0 = z.infer<
+    typeof ProjectCreateResponseSchema_v0
 >
 
 /** Patch schema for normal user-controlled project updates. */

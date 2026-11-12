@@ -630,6 +630,36 @@ describe('Project v0 schemas', () => {
         ).toBe(false)
     })
 
+    it('accepts setup on create only, with the public setup options', () => {
+        const setup = {
+            czMinimumEnvelopes: true,
+            spaceTypeTemplateProjectIds: ['template-project-1'],
+            ductTypeTemplateIds: ['duct-template-1'],
+            mapTakeoff: true,
+        }
+        expect(
+            ExpandedProjectPostSchema_v0.parse({ name: 'Clinic', setup })
+        ).toEqual({ name: 'Clinic', setup })
+        // Sheet setup is app-only.
+        expect(
+            ExpandedProjectPostSchema_v0.safeParse({
+                name: 'Clinic',
+                setup: { sheetFileCount: 1 },
+            }).success
+        ).toBe(false)
+        expect(
+            ExpandedProjectPostSchema_v0.safeParse({
+                setup: { spaceTypeTemplateProjectIds: [''] },
+            }).success
+        ).toBe(false)
+        // The project does not store setup, so a patch cannot set it.
+        expect(
+            ExpandedProjectPatchSchema_v0.safeParse({
+                setup: { mapTakeoff: true },
+            }).success
+        ).toBe(false)
+    })
+
     it('reads and writes airflow rounding increments per unit system', () => {
         const airflowIncrements = { IMPERIAL: 10, METRIC: 5 }
         const readProject = {

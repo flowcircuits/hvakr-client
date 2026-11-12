@@ -376,6 +376,11 @@ By default, auto-takeoff adds the detected spaces to the project. Pass
 instead. The API cannot accept suggestions, and a later auto-takeoff deletes
 the pending suggestions on the levels it runs.
 
+A completed auto-takeoff job returns `result: { spaceCount, spaceIds }`: the
+number of spaces the run wrote (committed, or as suggestions) and their IDs.
+`APIAutoTakeoffResult_v0` also allows an error-only `{ error }` result, so
+narrow with `'spaceCount' in job.result` before you read the counts.
+
 Each page has a detected drawing `scale` (real inches per paper inch: `48` for
 1/4" = 1'-0", `96` for 1/8" = 1'-0"). Auto-takeoff converts sheet geometry with
 it. If the detected scale is wrong, patch the page before you run auto-takeoff.

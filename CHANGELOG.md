@@ -38,6 +38,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Before, `EquipmentCalculationsSchema_v0` and
   `APIProjectCalculationsSchema_v0` stripped the field from
   `modes[modeId].summary.coilTotals`. (#86)
+- `ExpandedProjectPostSchema_v0.setup` (`ProjectSetupSchema_v0`): run the
+  HVAKR app's project setup on create. `czMinimumEnvelopes` imports the
+  ASHRAE 90.1 minimum envelope types for the climate zone,
+  `spaceTypeTemplateProjectIds` and `ductTypeTemplateIds` import types from
+  templates, and `mapTakeoff` detects spaces from the map footprint at the
+  address. The project does not store `setup`, so patches reject it. (#79)
+- `createProject` returns `ProjectCreateResponse_v0`: the project `id` and
+  `setupJobIds`, the job ID of each setup job the request started. (#79)
+- Setup job types on `APIJobTypes_v0` / `APIJobSchema_v0`, polled with
+  `getJob`: `import-cz-envelopes` (`APIImportCZEnvelopesResultSchema_v0`),
+  `import-space-types` and `import-duct-types`
+  (`APIImportTypesResultSchema_v0`), and `map-takeoff` (the auto-takeoff
+  result). Only project create starts them; `createJob` does not accept them.
+  (#79)
 
 ### Changed
 

@@ -36,16 +36,28 @@ export const APIJobCreateTypeSchema_v0 = z
     )
 export type APIJobCreateType_v0 = z.infer<typeof APIJobCreateTypeSchema_v0>
 
-/** Every job kind returned by the v0 API. `sheet-upload` is multipart-only. */
+/** Setup job kinds that `POST /projects` starts when the request has `setup`. */
+export const APISetupJobTypes_v0 = {
+    'import-cz-envelopes': 'import-cz-envelopes',
+    'import-space-types': 'import-space-types',
+    'import-duct-types': 'import-duct-types',
+    'map-takeoff': 'map-takeoff',
+} as const
+
+/**
+ * Every job kind returned by the v0 API. `sheet-upload` is multipart-only;
+ * setup jobs are started only by project create.
+ */
 export const APIJobTypes_v0 = {
     ...APIJobCreateTypes_v0,
     'sheet-upload': 'sheet-upload',
+    ...APISetupJobTypes_v0,
 } as const
 
 export const APIJobTypeSchema_v0 = z
     .enum(Object.values(APIJobTypes_v0))
     .describe(
-        'Job kind. `sheet-upload` is created only by uploading a PDF to POST /projects/{id}/sheet-files or POST /sheet-uploads; all other kinds use POST /projects/{id}/jobs.'
+        'Job kind. `sheet-upload` is created only by uploading a PDF to POST /projects/{id}/sheet-files or POST /sheet-uploads. `import-cz-envelopes`, `import-space-types`, `import-duct-types`, and `map-takeoff` are setup jobs that POST /projects starts from `setup`. All other kinds use POST /projects/{id}/jobs.'
     )
 export type APIJobType_v0 = z.infer<typeof APIJobTypeSchema_v0>
 
@@ -455,6 +467,31 @@ export const APISheetUploadSchema_v0 = z
 export type APISheetUpload_v0 = z.infer<typeof APISheetUploadSchema_v0>
 
 // --------------------------------------------------------------------
+// -- Setup job results -----------------------------------------------
+
+/** Result of an `import-cz-envelopes` setup job. */
+export const APIImportCZEnvelopesResultSchema_v0 = z
+    .object({
+        imported: z
+            .boolean()
+            .describe(
+                'Whether climate zone minimum envelope types were imported. False when no minimum envelope template matches the project climate zone.'
+            ),
+    })
+    .describe('Result of an import-cz-envelopes job.')
+export type APIImportCZEnvelopesResult_v0 = z.infer<
+    typeof APIImportCZEnvelopesResultSchema_v0
+>
+
+/** Result of an `import-space-types` or `import-duct-types` setup job. */
+export const APIImportTypesResultSchema_v0 = z
+    .object({ imported: z.number().describe('Number of types imported.') })
+    .describe('Result of an import-space-types or import-duct-types job.')
+export type APIImportTypesResult_v0 = z.infer<
+    typeof APIImportTypesResultSchema_v0
+>
+
+// --------------------------------------------------------------------
 // -- Job -------------------------------------------------------------
 
 /** Union of every standalone job result payload. */
@@ -465,6 +502,8 @@ export const APIJobResultSchema_v0 = z
         APICheckReportSchema_v0,
         APIAutoRouteResultSchema_v0,
         APISheetUploadJobResultSchema_v0,
+        APIImportCZEnvelopesResultSchema_v0,
+        APIImportTypesResultSchema_v0,
         APISizeGraphResultSchema_v0,
         // Keep the takeoff results last and strict so an invalid report
         // cannot fall through to them and lose its fields.
@@ -518,6 +557,21 @@ export const APIJobSchema_v0 = z
         APIJobBaseSchema_v0.extend({
             type: z.literal(APIJobTypes_v0['sheet-upload']),
             result: APISheetUploadJobResultSchema_v0.optional(),
+        }),
+        APIJobBaseSchema_v0.extend({
+            type: z.literal(APIJobTypes_v0['import-cz-envelopes']),
+            result: APIImportCZEnvelopesResultSchema_v0.optional(),
+        }),
+        APIJobBaseSchema_v0.extend({
+            type: z.enum([
+                APIJobTypes_v0['import-space-types'],
+                APIJobTypes_v0['import-duct-types'],
+            ]),
+            result: APIImportTypesResultSchema_v0.optional(),
+        }),
+        APIJobBaseSchema_v0.extend({
+            type: z.literal(APIJobTypes_v0['map-takeoff']),
+            result: APIAutoTakeoffResultSchema_v0.optional(),
         }),
         APIJobBaseSchema_v0.extend({
             type: z.literal(APIJobTypes_v0['size-graph']),

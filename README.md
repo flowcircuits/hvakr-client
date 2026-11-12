@@ -136,11 +136,35 @@ breaking changes ship in minor bumps (see [Versioning & stability](#versioning--
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `listProjects({ limit?, cursor?, search?, status?, projectType? })` | List a page of projects accessible to the authenticated user. Page with `nextCursor` while `hasMore`. Optional `search` (name/number/address), `status`, and `projectType` filters |
 | `getProject(id, expand?)`                                           | Get a project by ID. Set `expand: true` for full project data, or pass an array of subcollection keys (e.g. `['spaces', 'zones', 'exports']`) to expand only those                 |
-| `createProject(data, opts?)`                                        | Create a new project                                                                                                                                                               |
+| `createProject(data, opts?)`                                        | Create a new project. Optional `data.setup` runs setup jobs; the response returns their IDs in `setupJobIds`                                                                       |
 | `updateProject(id, data, opts?)`                                    | Update an existing project                                                                                                                                                         |
 | `moveProject(id, folderId)`                                         | Move a project into a folder, or to the root with `folderId: null`. Returns `{ id, folderId }`                                                                                     |
 | `deleteProject(id)`                                                 | Delete a project                                                                                                                                                                   |
 | `getProjectCalculations(id, { include? })`                          | Run the calculator and return the requested sections (`loads`, `register_schedule`, `graph`, `ventilation`, `equipment`, `checksums`, `airflows`). Omit `include` for all.         |
+
+#### Project setup
+
+Set `setup` on create to run the same setup jobs as the HVAKR app:
+
+```ts
+const { id, setupJobIds } = await hvakr.createProject({
+    name: 'Clinic',
+    address: '1 Main St, Denver, CO',
+    setup: {
+        czMinimumEnvelopes: true,
+        ductTypeTemplateIds: [ductTemplateId],
+        mapTakeoff: true,
+    },
+})
+
+// setupJobIds: { czEnvelopes, ductTypes, mapTakeoff }
+const takeoff = await hvakr.getJob(id, setupJobIds.mapTakeoff!)
+```
+
+`mapTakeoff` detects spaces from the map footprint at the address and also
+imports the climate zone envelopes. Its job is `waiting` until the envelope and
+space type imports complete. Sheet setup is not part of the API; upload PDFs
+with `createSheetFile` instead.
 
 Project reads include every canonical project field, including server-owned
 state. The exported Zod schemas mark fields that normal project writes cannot

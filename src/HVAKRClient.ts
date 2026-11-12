@@ -10,6 +10,7 @@ import {
     ExpandedProjectPost_v0,
     ExpandedProject_v0,
     NodeType_v0,
+    ProjectCreateResponse_v0,
     ProjectListResponse_v0,
     SearchProductsResponse_v0,
     ProjectStatus_v0,
@@ -300,20 +301,25 @@ export class HVAKRClient {
 
     /**
      * Creates a new HVAKR project.
-     * @param projectData - The project data to create
+     * @param projectData - The project data to create. Set `setup` to run the
+     * app's setup jobs after create.
      * @param opts - Optional write options (e.g. idempotencyKey)
-     * @returns The ID of the newly created project
+     * @returns The ID of the newly created project and the ID of each setup
+     * job it started. Poll the setup jobs with {@link getJob}.
      * @throws {HVAKRClientError} If the API returns an error response
      */
     createProject = async (
         projectData: ExpandedProjectPost_v0,
         opts?: WriteOptions
-    ): Promise<{ id: string }> => {
-        return requestJSON<{ id: string }>(this.createURL(`/projects`), {
-            method: 'POST',
-            headers: this.writeHeaders(opts),
-            body: JSON.stringify(projectData),
-        })
+    ): Promise<ProjectCreateResponse_v0> => {
+        return requestJSON<ProjectCreateResponse_v0>(
+            this.createURL(`/projects`),
+            {
+                method: 'POST',
+                headers: this.writeHeaders(opts),
+                body: JSON.stringify(projectData),
+            }
+        )
     }
 
     /**

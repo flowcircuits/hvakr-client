@@ -813,6 +813,40 @@ describe('job schemas', () => {
     })
 })
 
+describe('setup job schemas', () => {
+    it.each([
+        { type: 'import-cz-envelopes', result: { imported: true } },
+        { type: 'import-space-types', result: { imported: 12 } },
+        { type: 'import-duct-types', result: { imported: 3 } },
+        {
+            type: 'map-takeoff',
+            result: { spaceCount: 2, spaceIds: ['space_1', 'space_2'] },
+        },
+    ])('parses a completed $type job and keeps it response-only', (job) => {
+        expect(
+            APIJobCreateSchema_v0.safeParse({ type: job.type }).success
+        ).toBe(false)
+        expect(
+            APIJobSchema_v0.parse({
+                jobId: 'job_1',
+                status: 'completed',
+                ...job,
+            })
+        ).toEqual({ jobId: 'job_1', status: 'completed', ...job })
+    })
+
+    it('rejects a result shape that does not match the setup job type', () => {
+        expect(
+            APIJobSchema_v0.safeParse({
+                jobId: 'job_1',
+                type: 'import-cz-envelopes',
+                status: 'completed',
+                result: { imported: 3 },
+            }).success
+        ).toBe(false)
+    })
+})
+
 describe('product schema', () => {
     it('parses a product and drops nothing required', () => {
         const parsed = APIProductSchema_v0.parse({

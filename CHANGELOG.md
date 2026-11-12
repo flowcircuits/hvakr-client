@@ -9,19 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.31.6] - Unreleased
+## [0.31.1] - Unreleased
 
 ### Added
 
+- `ProjectDataSchema_v0.folderId`: the id of the `projectFolder` that files a
+  project, `disableUserWrite` so it is documented on reads but rejected by
+  `PATCH`. `ProjectPostSchema_v0` accepts `folderId` at create time only.
+  (#81)
+- `HVAKRClient.moveProject(projectId, folderId)`: files or moves a project
+  into a folder, or passes `null` to move it to root, via
+  `PUT /projects/{id}/folder`. (#81)
+- `size-graph` job type: `createJob({ type: 'size-graph' })` sizes every
+  ducted component on the project's routed graph (requires `auto-route` to
+  have completed first). Returns `APISizeGraphResult_v0` (`ductCount`,
+  `routingValid`, optional `sizingErrors`) once the job completes. (#80)
+- `ProductBlockSchema_v0` and `ProductOwnerSchema_v0`. Register, central unit,
+  terminal unit, and air cleaner graph nodes and each heater selection accept
+  an optional `product` block with the product identity and owners copied at
+  link time. (#82)
+- `SelectionInputsSchema_v0`: heater selections accept the copied
+  `maxInputCapacity`, `efficiency`, `minLeavingAirTemp`, `maxLeavingAirTemp`,
+  `minTempRise`, `maxTempRise`, `maxFlowRate`, and `airFlowArrangement`. (#82)
 - `CoilTotalsSchema_v0.latentCoilLoad` (optional): the latent coil load summed
   across matching coils, in BTU/h. It is set for cooling coils only, equals
   `coilLoad - sensibleCoilLoad`, and is negative like `coilLoad`. It is
   omitted when either value is missing. This matches the HVAKR server schema.
   Before, `EquipmentCalculationsSchema_v0` and
   `APIProjectCalculationsSchema_v0` stripped the field from
-  `modes[modeId].summary.coilTotals`.
+  `modes[modeId].summary.coilTotals`. (#86)
 
-## [0.31.5] - Unreleased
+### Changed
+
+- `SelectionSchema_v0.productId` is optional. An unlinked selection keeps its
+  copied heater inputs and has no `productId`. Code that reads a selection's
+  `productId` must handle `undefined`. (#82)
 
 ### Fixed
 
@@ -34,27 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   of `{ spaceCount, spaceIds?, error? }` (the server's result shape) and the
   error-only `{ error }`, so `result.error` reads still compile; check
   `'spaceCount' in result` before you read the counts. An empty `{}` result
-  no longer parses; the API does not return one.
-  
-## [0.31.3] - Unreleased
-
-### Added
-
-- `size-graph` job type: `createJob({ type: 'size-graph' })` sizes every
-  ducted component on the project's routed graph (requires `auto-route` to
-  have completed first). Returns `APISizeGraphResult_v0` (`ductCount`,
-  `routingValid`, optional `sizingErrors`) once the job completes.
-
-## [0.31.1] - Unreleased
-
-### Added
-
-- `ProjectDataSchema_v0.folderId`: the id of the `projectFolder` that files a
-  project, `disableUserWrite` so it is documented on reads but rejected by
-  `PATCH`. `ProjectPostSchema_v0` accepts `folderId` at create time only.
-- `HVAKRClient.moveProject(projectId, folderId)`: files or moves a project
-  into a folder, or passes `null` to move it to root, via
-  `PUT /projects/{id}/folder`.
+  no longer parses; the API does not return one. (#85)
 
 ## [0.31.0] - 2026-11-11
 
@@ -69,18 +71,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `airflowIncrements`; move an old `airflowIncrement` value to
   `airflowIncrements[unitSystem]` (the project's unit system, `IMPERIAL` when
   omitted).
-- `SelectionSchema_v0.productId` is optional. An unlinked selection keeps its
-  copied heater inputs and has no `productId`.
-
-### Added
-
-- `ProductBlockSchema_v0` and `ProductOwnerSchema_v0`. Register, central unit,
-  terminal unit, and air cleaner graph nodes and each heater selection accept
-  an optional `product` block with the product identity and owners copied at
-  link time.
-- `SelectionInputsSchema_v0`: heater selections accept the copied
-  `maxInputCapacity`, `efficiency`, `minLeavingAirTemp`, `maxLeavingAirTemp`,
-  `minTempRise`, `maxTempRise`, `maxFlowRate`, and `airFlowArrangement`.
 
 ## [0.30.1] - 2026-11-11
 

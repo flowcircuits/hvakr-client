@@ -675,11 +675,35 @@ describe('job schemas', () => {
     })
 
     it.each([
-        {},
+        { spaceCount: 2, spaceIds: ['space_1', 'space_2'] },
+        { spaceCount: 0 },
         { error: { code: 'failed_precondition', message: 'No sheets' } },
         { error: { code: 'timed_out', message: 'Takeoff timed out' } },
-    ])('preserves auto-takeoff results in the result union: %j', (result) => {
-        expect(APIJobResultSchema_v0.parse(result)).toEqual(result)
+    ])(
+        'preserves auto-takeoff results in job and result schemas: %j',
+        (result) => {
+            const parsed = APIJobSchema_v0.parse({
+                jobId: 'job_6',
+                type: 'auto-takeoff',
+                status: 'completed',
+                result,
+            })
+            expect(parsed.result).toEqual(result)
+            expect(APIJobResultSchema_v0.parse(result)).toEqual(result)
+        }
+    )
+
+    it('requires spaceCount on an auto-takeoff result', () => {
+        const result = { spaceIds: ['space_1'] }
+        expect(
+            APIJobSchema_v0.safeParse({
+                jobId: 'job_7',
+                type: 'auto-takeoff',
+                status: 'completed',
+                result,
+            }).success
+        ).toBe(false)
+        expect(APIJobResultSchema_v0.safeParse(result).success).toBe(false)
     })
 
     it('parses a waiting job', () => {

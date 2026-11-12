@@ -57,6 +57,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `airflowIncrements`; move an old `airflowIncrement` value to
   `airflowIncrements[unitSystem]` (the project's unit system, `IMPERIAL` when
   omitted).
+- `SelectionSchema_v0.productId` is optional. An unlinked selection keeps its
+  copied heater inputs and has no `productId`.
+
+### Added
+
+- `ProductBlockSchema_v0` and `ProductOwnerSchema_v0`. Register, central unit,
+  terminal unit, and air cleaner graph nodes and each heater selection accept
+  an optional `product` block with the product identity and owners copied at
+  link time.
+- `SelectionInputsSchema_v0`: heater selections accept the copied
+  `maxInputCapacity`, `efficiency`, `minLeavingAirTemp`, `maxLeavingAirTemp`,
+  `minTempRise`, `maxTempRise`, `maxFlowRate`, and `airFlowArrangement`.
 
 ## [0.30.1] - 2026-11-11
 

@@ -415,7 +415,7 @@ A missing value uses the node type default: central unit 144×72, terminal unit
 `selections` holds legacy Cambridge heater selections; `productId` is the
 product link.
 
-Since `0.31.0`, linked nodes and selections also carry a `product` block: the
+Since `0.31.1`, linked nodes and selections also carry a `product` block: the
 product identity (`name`, `manufacturer`, `model`, `description`, `link`,
 `imageUrl`) and its `owners` (`domain`, `name`) copied at link time. Each
 selection also carries the copied heater inputs (`maxInputCapacity`,

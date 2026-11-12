@@ -21,7 +21,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `APIProjectCalculationsSchema_v0` stripped the field from
   `modes[modeId].summary.coilTotals`.
 
-## [0.31.0] - Unreleased
+## [0.31.5] - Unreleased
+
+### Fixed
+
+- `APIAutoTakeoffResultSchema_v0` now describes what the API returns for a
+  completed `auto-takeoff` job: `{ spaceCount, spaceIds }`. `spaceCount` is the
+  number of spaces the run wrote (committed, or as suggestions when `commit`
+  is false), and the optional `spaceIds` lists their IDs. Before, the schema
+  allowed only `error`, so `APIJobResultSchema_v0` rejected a real completed
+  result and `APIJobSchema_v0` stripped its fields. The result is now a union
+  of `{ spaceCount, spaceIds?, error? }` (the server's result shape) and the
+  error-only `{ error }`, so `result.error` reads still compile; check
+  `'spaceCount' in result` before you read the counts. An empty `{}` result
+  no longer parses; the API does not return one.
+  
+## [0.31.3] - Unreleased
+
+### Added
+
+- `size-graph` job type: `createJob({ type: 'size-graph' })` sizes every
+  ducted component on the project's routed graph (requires `auto-route` to
+  have completed first). Returns `APISizeGraphResult_v0` (`ductCount`,
+  `routingValid`, optional `sizingErrors`) once the job completes.
+
+## [0.31.1] - Unreleased
+
+### Added
+
+- `ProjectDataSchema_v0.folderId`: the id of the `projectFolder` that files a
+  project, `disableUserWrite` so it is documented on reads but rejected by
+  `PATCH`. `ProjectPostSchema_v0` accepts `folderId` at create time only.
+- `HVAKRClient.moveProject(projectId, folderId)`: files or moves a project
+  into a folder, or passes `null` to move it to root, via
+  `PUT /projects/{id}/folder`.
+
+## [0.31.0] - 2026-11-11
 
 ### Breaking Changes
 
@@ -34,8 +69,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `airflowIncrements`; move an old `airflowIncrement` value to
   `airflowIncrements[unitSystem]` (the project's unit system, `IMPERIAL` when
   omitted).
+- `SelectionSchema_v0.productId` is optional. An unlinked selection keeps its
+  copied heater inputs and has no `productId`.
 
-## [0.30.1] - Unreleased
+### Added
+
+- `ProductBlockSchema_v0` and `ProductOwnerSchema_v0`. Register, central unit,
+  terminal unit, and air cleaner graph nodes and each heater selection accept
+  an optional `product` block with the product identity and owners copied at
+  link time.
+- `SelectionInputsSchema_v0`: heater selections accept the copied
+  `maxInputCapacity`, `efficiency`, `minLeavingAirTemp`, `maxLeavingAirTemp`,
+  `minTempRise`, `maxTempRise`, `maxFlowRate`, and `airFlowArrangement`.
+
+## [0.30.1] - 2026-11-11
 
 ### Added
 

@@ -199,6 +199,31 @@ describe('HVAKRClient request building', () => {
         expect(requests.at(-1)?.path).toBe('/v0/projects/a%2Fb?expand')
     })
 
+    it('moveProject PUTs the folder id to /projects/{id}/folder', async () => {
+        enqueue(200, { id: 'proj_1', folderId: 'folder_1' })
+        const res = await requestClient.moveProject('proj_1', 'folder_1')
+
+        expect(res).toEqual({ id: 'proj_1', folderId: 'folder_1' })
+        const request = requests.at(-1)!
+        expect(request.path).toBe('/v0/projects/proj_1/folder')
+        expect(request.method).toBe('PUT')
+        expect(headerValue(request.headers, 'authorization')).toBe(
+            'Bearer test-token'
+        )
+        expect(JSON.parse(bodyAsString(request.body))).toEqual({
+            folderId: 'folder_1',
+        })
+    })
+
+    it('moveProject sends a null folderId to move a project to root', async () => {
+        enqueue(200, { id: 'proj_1', folderId: null })
+        await requestClient.moveProject('proj_1', null)
+
+        expect(JSON.parse(bodyAsString(requests.at(-1)!.body))).toEqual({
+            folderId: null,
+        })
+    })
+
     it('throws HVAKRClientError carrying the status and response metadata', async () => {
         enqueue(403, { message: 'nope' })
         await expect(requestClient.getProject('p1')).rejects.toMatchObject({
@@ -555,7 +580,7 @@ describe('HVAKRClient request building', () => {
             jobId: 'job_1',
             type: 'auto-takeoff',
             status: 'completed',
-            result: {},
+            result: { spaceCount: 1, spaceIds: ['space_1'] },
         })
         const job = await requestClient.getJob('p1', 'job_1')
         expect(job.status).toBe('completed')

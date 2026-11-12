@@ -214,3 +214,75 @@ describe('unit-node equipment and placement', () => {
         })
     })
 })
+
+describe('copied product data', () => {
+    const product = {
+        name: 'Heater 60',
+        manufacturer: 'Cambridge',
+        model: 'S-60',
+        description: 'Direct-fired heater',
+        link: 'https://example.com/s-60',
+        imageUrl: 'https://example.com/s-60.png',
+        owners: [{ domain: 'cambridge.com', name: 'Cambridge' }],
+    }
+    const heaterInputs = {
+        maxInputCapacity: 60_000,
+        efficiency: 0.92,
+        minLeavingAirTemp: 55,
+        maxLeavingAirTemp: 160,
+        minTempRise: 20,
+        maxTempRise: 160,
+        maxFlowRate: 2_000,
+        airFlowArrangement: 'blowThrough',
+    }
+    const graph = {
+        cu: {
+            adjacencies: [],
+            id: 'cu',
+            nodeType: 'CENTRAL_UNIT',
+            systemId: 'system-1',
+            productId: 'product-rtu',
+            product: { name: 'RTU', owners: [] },
+            selections: {
+                'heater-60': {
+                    productId: 'heater-60',
+                    product,
+                    quantity: 2,
+                    ...heaterInputs,
+                },
+                'heater-30': {
+                    productId: 'heater-30',
+                    product: { name: 'Heater 30', owners: [] },
+                    quantity: 1,
+                    ...heaterInputs,
+                    maxInputCapacity: 30_000,
+                },
+                unlinked: { quantity: 1, ...heaterInputs },
+            },
+        },
+        ac: {
+            adjacencies: [],
+            id: 'ac',
+            level: 1,
+            nodeType: 'AIR_CLEANER',
+            point: { x: 0, y: 0 },
+            productId: 'product-ac',
+            product,
+        },
+    }
+
+    it('preserves product blocks and copied heater inputs on reads', () => {
+        expect(GraphSchema_v0.parse(graph)).toEqual(graph)
+    })
+
+    it('accepts writing and clearing the product link in patches', () => {
+        expect(ExpandedProjectPatchSchema_v0.parse({ graph })).toEqual({
+            graph,
+        })
+
+        const unlinked = { ac: { productId: null, product: null } }
+        expect(
+            ExpandedProjectPatchSchema_v0.parse({ graph: unlinked })
+        ).toEqual({ graph: unlinked })
+    })
+})

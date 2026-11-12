@@ -26,12 +26,13 @@ export const APIJobCreateTypes_v0 = {
     check: 'check',
     'auto-takeoff': 'auto-takeoff',
     'auto-route': 'auto-route',
+    'size-graph': 'size-graph',
 } as const
 
 export const APIJobCreateTypeSchema_v0 = z
     .enum(Object.values(APIJobCreateTypes_v0))
     .describe(
-        "Job kind: export (async PDF/CSV/ZIP generation), auto-group (sync zoning/system grouping), check (sync validation), auto-takeoff (async floor-plan extraction), auto-route (async duct routing with the project's saved routing constraints)."
+        "Job kind: export (async PDF/CSV/ZIP generation), auto-group (sync zoning/system grouping), check (sync validation), auto-takeoff (async floor-plan extraction), auto-route (async duct routing with the project's saved routing constraints), size-graph (async duct sizing on the routed graph)."
     )
 export type APIJobCreateType_v0 = z.infer<typeof APIJobCreateTypeSchema_v0>
 
@@ -63,6 +64,8 @@ export type APIJobType_v0 = z.infer<typeof APIJobTypeSchema_v0>
  * - `auto-takeoff` → all parameters optional (`confidence`, `levels`,
  *   `roofTypeId`, `slabTypeId`, `wallTypeId`, `windowTypeId`, `commit`).
  * - `auto-route` → no parameters; uses the project's saved routing constraints.
+ * - `size-graph` → no parameters; sizes every ducted component on the routed
+ *   graph. Requires `auto-route` to have completed first.
  */
 export const APIJobCreateSchema_v0 = z
     .object({
@@ -244,10 +247,34 @@ export const APIAutoTakeoffErrorSchema_v0 = z
     })
     .describe('Error detail on a failed auto-takeoff job.')
 
-/** Result of a completed `auto-takeoff` job. */
+/** The spaces an `auto-takeoff` run wrote, as the server returns them. */
+const APIAutoTakeoffSpacesResultSchema_v0 = z.object({
+    spaceCount: z
+        .number()
+        .describe(
+            'Number of spaces this run detected and wrote to the project: committed spaces, or pending suggestions when commit is false.'
+        ),
+    spaceIds: z
+        .array(z.string())
+        .optional()
+        .describe('IDs of the spaces this run wrote, one per spaceCount.'),
+    error: APIAutoTakeoffErrorSchema_v0.optional(),
+})
+
+/** An `auto-takeoff` result that carries only an error. */
+const APIAutoTakeoffErrorResultSchema_v0 = z.object({
+    error: APIAutoTakeoffErrorSchema_v0,
+})
+
+/** Result of an `auto-takeoff` job: the spaces it wrote, or only an error. */
 export const APIAutoTakeoffResultSchema_v0 = z
-    .object({ error: APIAutoTakeoffErrorSchema_v0.optional() })
-    .describe('Result of an auto-takeoff job.')
+    .union([
+        APIAutoTakeoffSpacesResultSchema_v0,
+        APIAutoTakeoffErrorResultSchema_v0,
+    ])
+    .describe(
+        'Result of an auto-takeoff job. A completed job returns spaceCount and spaceIds.'
+    )
 export type APIAutoTakeoffResult_v0 = z.infer<
     typeof APIAutoTakeoffResultSchema_v0
 >
@@ -282,6 +309,30 @@ export const APIAutoRouteResultSchema_v0 = z
     })
     .describe('Result of an auto-route job.')
 export type APIAutoRouteResult_v0 = z.infer<typeof APIAutoRouteResultSchema_v0>
+
+// --------------------------------------------------------------------
+// -- Size-graph result -------------------------------------------------
+
+/** Result of a completed `size-graph` job. */
+export const APISizeGraphResultSchema_v0 = z
+    .object({
+        ductCount: z
+            .number()
+            .describe('Ducted components sized by this run.'),
+        routingValid: z
+            .boolean()
+            .describe(
+                'False when the sized duct geometry introduces a clearance or spacing conflict.'
+            ),
+        sizingErrors: z
+            .array(z.string())
+            .optional()
+            .describe(
+                'Present when one or more ducted components could not be sized; those ducts are excluded from ductCount.'
+            ),
+    })
+    .describe('Result of a size-graph job.')
+export type APISizeGraphResult_v0 = z.infer<typeof APISizeGraphResultSchema_v0>
 
 // --------------------------------------------------------------------
 // -- Export job result -----------------------------------------------
@@ -414,9 +465,11 @@ export const APIJobResultSchema_v0 = z
         APICheckReportSchema_v0,
         APIAutoRouteResultSchema_v0,
         APISheetUploadJobResultSchema_v0,
-        // Keep the all-optional result last and strict so invalid reports
-        // cannot fall through and lose their fields. Empty takeoff results remain valid.
-        APIAutoTakeoffResultSchema_v0.strict(),
+        APISizeGraphResultSchema_v0,
+        // Keep the takeoff results last and strict so an invalid report
+        // cannot fall through to them and lose its fields.
+        APIAutoTakeoffSpacesResultSchema_v0.strict(),
+        APIAutoTakeoffErrorResultSchema_v0.strict(),
     ])
     .describe('Job result payload; shape depends on the job type.')
 export type APIJobResult_v0 = z.infer<typeof APIJobResultSchema_v0>
@@ -465,6 +518,10 @@ export const APIJobSchema_v0 = z
         APIJobBaseSchema_v0.extend({
             type: z.literal(APIJobTypes_v0['sheet-upload']),
             result: APISheetUploadJobResultSchema_v0.optional(),
+        }),
+        APIJobBaseSchema_v0.extend({
+            type: z.literal(APIJobTypes_v0['size-graph']),
+            result: APISizeGraphResultSchema_v0.optional(),
         }),
     ])
     .describe('A v0 API job.')

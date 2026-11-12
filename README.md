@@ -138,6 +138,7 @@ breaking changes ship in minor bumps (see [Versioning & stability](#versioning--
 | `getProject(id, expand?)`                                           | Get a project by ID. Set `expand: true` for full project data, or pass an array of subcollection keys (e.g. `['spaces', 'zones', 'exports']`) to expand only those                 |
 | `createProject(data, opts?)`                                        | Create a new project                                                                                                                                                               |
 | `updateProject(id, data, opts?)`                                    | Update an existing project                                                                                                                                                         |
+| `moveProject(id, folderId)`                                         | Move a project into a folder, or to the root with `folderId: null`. Returns `{ id, folderId }`                                                                                     |
 | `deleteProject(id)`                                                 | Delete a project                                                                                                                                                                   |
 | `getProjectCalculations(id, { include? })`                          | Run the calculator and return the requested sections (`loads`, `register_schedule`, `graph`, `ventilation`, `equipment`, `checksums`, `airflows`). Omit `include` for all.         |
 
@@ -152,6 +153,14 @@ in the `sheetFilePages` subcollection. Patches cannot create or delete pages,
 and cannot change server-owned page fields.
 Project reads may include the server-owned `defaultSystemPresetId`, which is
 used to initialize equipment for new systems and zones.
+
+`folderId` is the ID of the project folder that holds the project. It is absent
+for a project at the root. It is the one `disableUserWrite` field that
+`createProject` accepts, so you can create a project in a folder. Project reads
+return it, and `updateProject` rejects it. To move an existing project, call
+`moveProject(id, folderId)`, or `moveProject(id, null)` to move it to the root.
+Filing a project into a folder needs MEMBER on that folder, and a move also
+needs ADMIN on the project. The project then inherits access from its folder.
 
 Duct design settings use `project.ductDesign`, with optional `fittings` and
 `sizingData` fields. Project analytics use `hasLayoutStarted` and `hasDuctsSized`.
@@ -233,7 +242,7 @@ the `building` object does not include a floor count.
 
 | Method                       | Description                                                                                                                                         |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createJob(id, body, opts?)` | Create a job (`export`, `auto-group`, `check`, `auto-takeoff`, or `auto-route`). Sync jobs return `status: "completed"`; async jobs return `queued` |
+| `createJob(id, body, opts?)` | Create a job (`export`, `auto-group`, `check`, `auto-takeoff`, `auto-route`, or `size-graph`). Sync jobs return `status: "completed"`; async jobs return `queued` |
 | `getJob(id, jobId)`          | Get a job's current state. Poll async jobs until `status` leaves `queued`/`running`                                                                 |
 
 `APIJobSchema_v0` parses a full job and narrows its result by `type`.
@@ -283,7 +292,7 @@ export's `definition.fileType` and `outputFileType` can be any
 
 | Method                                                                            | Description                                                                                                                                             |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createSheetFile(id, { file, fileName, name? })`                                  | Upload one PDF (up to 30 MiB) and receive a multipart-only `sheet-upload` job. Poll it with `getJob`; `name` is display-only.                           |
+| `createSheetFile(id, { file, fileName, name? }, opts?)`                           | Upload one PDF (up to 30 MiB) and receive a multipart-only `sheet-upload` job. Poll it with `getJob`; `name` is display-only.                           |
 | `createSheetUpload(id, { name? }?)`                                               | Mint a single-use, 15-minute upload token for one PDF. Returns `uploadUrl`, `uploadToken`, `appUploadUrl`, and `expiresAt`.                             |
 | `uploadSheetFileWithToken({ uploadUrl, uploadToken }, { file, fileName, name? })` | Package export, not a client method. Upload one PDF with an upload token and no access token. Returns the same `sheet-upload` job as `createSheetFile`. |
 
@@ -367,6 +376,11 @@ By default, auto-takeoff adds the detected spaces to the project. Pass
 instead. The API cannot accept suggestions, and a later auto-takeoff deletes
 the pending suggestions on the levels it runs.
 
+A completed auto-takeoff job returns `result: { spaceCount, spaceIds }`: the
+number of spaces the run wrote (committed, or as suggestions) and their IDs.
+`APIAutoTakeoffResult_v0` also allows an error-only `{ error }` result, so
+narrow with `'spaceCount' in job.result` before you read the counts.
+
 Each page has a detected drawing `scale` (real inches per paper inch: `48` for
 1/4" = 1'-0", `96` for 1/8" = 1'-0"). Auto-takeoff converts sheet geometry with
 it. If the detected scale is wrong, patch the page before you run auto-takeoff.
@@ -400,6 +414,15 @@ A missing value uses the node type default: central unit 144×72, terminal unit
 40×16, air cleaner 32×32, and register 12×12. On central and terminal units,
 `selections` holds legacy Cambridge heater selections; `productId` is the
 product link.
+
+Since `0.31.0`, linked nodes and selections also carry a `product` block: the
+product identity (`name`, `manufacturer`, `model`, `description`, `link`,
+`imageUrl`) and its `owners` (`domain`, `name`) copied at link time. Each
+selection also carries the copied heater inputs (`maxInputCapacity`,
+`efficiency`, `minLeavingAirTemp`, `maxLeavingAirTemp`, `minTempRise`,
+`maxTempRise`, `maxFlowRate`, `airFlowArrangement`). These values stay editable.
+Unlinking removes `productId` and `product` and keeps the copied values, so a
+selection's `productId` is optional.
 
 Air-cleaner graph nodes accept a `tag` and the IAQP settings
 `cleaningAirflow` (CFM), `filterLocation`, and `filterEfficiencies`. Set these
@@ -516,7 +539,8 @@ equipment-to-graph change, and the
 Write methods (`createProject`, `updateProject`, `createJob`, `createSheetFile`)
 accept an optional `opts` argument with an `idempotencyKey` — retrying a request
 with the same key returns the original result instead of performing the action
-twice.
+twice. `moveProject` takes no `opts`: it sets the target folder, so a retry has
+the same result.
 
 ## Receiving webhooks
 

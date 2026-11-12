@@ -27,6 +27,7 @@ import {
     APIJobResultSchema_v0,
     APIJobSchema_v0,
     APISheetUploadJobResultSchema_v0,
+    APISizeGraphResultSchema_v0,
 } from './jobs_v0'
 import { APIProductSchema_v0 } from './products_v0'
 
@@ -678,11 +679,64 @@ describe('job schemas', () => {
     })
 
     it.each([
-        {},
+        { spaceCount: 2, spaceIds: ['space_1', 'space_2'] },
+        { spaceCount: 0 },
         { error: { code: 'failed_precondition', message: 'No sheets' } },
         { error: { code: 'timed_out', message: 'Takeoff timed out' } },
-    ])('preserves auto-takeoff results in the result union: %j', (result) => {
+    ])(
+        'preserves auto-takeoff results in job and result schemas: %j',
+        (result) => {
+            const parsed = APIJobSchema_v0.parse({
+                jobId: 'job_6',
+                type: 'auto-takeoff',
+                status: 'completed',
+                result,
+            })
+            expect(parsed.result).toEqual(result)
+            expect(APIJobResultSchema_v0.parse(result)).toEqual(result)
+        }
+    )
+
+    it('requires spaceCount on an auto-takeoff result', () => {
+        const result = { spaceIds: ['space_1'] }
+        expect(
+            APIJobSchema_v0.safeParse({
+                jobId: 'job_7',
+                type: 'auto-takeoff',
+                status: 'completed',
+                result,
+            }).success
+        ).toBe(false)
+        expect(APIJobResultSchema_v0.safeParse(result).success).toBe(false)
+    })
+
+    it('accepts a size-graph job with no parameters and preserves its result', () => {
+        expect(
+            APIJobCreateSchema_v0.safeParse({ type: 'size-graph' }).success
+        ).toBe(true)
+
+        const result = {
+            ductCount: 6,
+            routingValid: true,
+        }
+        const parsed = APIJobSchema_v0.parse({
+            jobId: 'job_6',
+            type: 'size-graph',
+            status: 'completed',
+            result,
+        })
+        expect(parsed.type).toBe('size-graph')
+        expect(parsed.result).toEqual(result)
         expect(APIJobResultSchema_v0.parse(result)).toEqual(result)
+    })
+
+    it('keeps sizingErrors optional and reports it on a size-graph result', () => {
+        const result = {
+            ductCount: 4,
+            routingValid: false,
+            sizingErrors: ['could not solve flow rates for component-1'],
+        }
+        expect(APISizeGraphResultSchema_v0.parse(result)).toEqual(result)
     })
 
     it('parses a waiting job', () => {

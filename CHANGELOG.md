@@ -23,6 +23,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   error-only `{ error }`, so `result.error` reads still compile; check
   `'spaceCount' in result` before you read the counts. An empty `{}` result
   no longer parses; the API does not return one.
+  
+## [0.31.3] - Unreleased
+
+### Added
+
+- `size-graph` job type: `createJob({ type: 'size-graph' })` sizes every
+  ducted component on the project's routed graph (requires `auto-route` to
+  have completed first). Returns `APISizeGraphResult_v0` (`ductCount`,
+  `routingValid`, optional `sizingErrors`) once the job completes.
 
 ## [0.31.1] - Unreleased
 

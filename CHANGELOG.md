@@ -32,7 +32,7 @@ returns the project check findings of the same run instead, the findings the
 ## [0.31.2] - Unreleased
 
 0.31.2 reverts the optional `productId` and `product` blocks introduced in
-0.31.1 (HSF-1511, #82). These features will return in 0.32.0 together with the
+0.31.1 (HSF-1511, #82). These features will return in 0.33.0 together with the
 HVAKR server change (hvakr #8343). If you are on 0.31.1 and rely on an
 optional selection `productId` or on `product` blocks, stay on 0.31.1: this
 release is not backwards-compatible with 0.31.1 for that code. The other 0.31.1

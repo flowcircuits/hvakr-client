@@ -65,33 +65,11 @@ const HasSizeSchema_v0 = z.object({
     height: z.number().optional(),
 })
 
-export const ProductOwnerSchema_v0 = z.object({
-    domain: z.string(),
-    name: z.string(),
-})
-export type ProductOwner_v0 = z.infer<typeof ProductOwnerSchema_v0>
-
-/** Identity and owner metadata copied from the linked product. */
-export const ProductBlockSchema_v0 = z.object({
-    description: z.string().optional(),
-    imageUrl: z.string().optional(),
-    link: z.string().optional(),
-    manufacturer: z.string().optional(),
-    model: z.string().optional(),
-    name: z.string(),
-    owners: z.array(ProductOwnerSchema_v0),
-})
-export type ProductBlock_v0 = z.infer<typeof ProductBlockSchema_v0>
-
 /**
  * Catalog product the unit was picked from. Picking a product copies its
- * values onto the unit and its identity into `product`; later product edits
- * do not change it. Unlinking removes `productId` and `product`.
+ * values onto the unit; later product edits do not change it.
  */
-const HasProductSchema_v0 = z.object({
-    product: ProductBlockSchema_v0.optional(),
-    productId: z.string().optional(),
-})
+const HasProductSchema_v0 = z.object({ productId: z.string().optional() })
 
 export const RegisterSpecificDataSchema_v0 = z.object({
     ...HasSizeSchema_v0.shape,
@@ -133,23 +111,9 @@ export const FittingNodeDataSchema_v0 = z.object({
     nodeType: z.literal(NodeTypes_v0.FITTING),
 })
 
-/** Heater inputs copied from the selected product. They stay editable and
- *  stay on the selection after an unlink. */
-export const SelectionInputsSchema_v0 = z.object({
-    airFlowArrangement: z.enum(['drawThrough', 'blowThrough']).optional(),
-    efficiency: z.number().optional(),
-    maxInputCapacity: z.number().optional(),
-    maxFlowRate: z.number().optional(),
-    maxLeavingAirTemp: z.number().optional(),
-    maxTempRise: z.number().optional(),
-    minLeavingAirTemp: z.number().optional(),
-    minTempRise: z.number().optional(),
-})
-
 export const SelectionSchema_v0 = z.object({
-    ...SelectionInputsSchema_v0.shape,
-    ...HasProductSchema_v0.shape,
     leavingAirTemp: z.number().optional(),
+    productId: z.string(),
     quantity: z.number(),
 })
 
@@ -158,8 +122,7 @@ export const TerminalUnitNodeDataSchema_v0 = z.object({
     ...EquipmentConfigSchema_v0.shape,
     cost: z.number().min(0).optional(),
     nodeType: z.literal(NodeTypes_v0.TERMINAL_UNIT),
-    /** Legacy Cambridge heater selections. Each one has its own copied
-     *  product data. */
+    /** Legacy Cambridge heater selections. `productId` is the product link. */
     selections: z.record(z.string(), SelectionSchema_v0).optional(),
     zoneId: z.string(),
 })
@@ -169,8 +132,7 @@ export const CentralUnitNodeDataSchema_v0 = z.object({
     ...EquipmentConfigSchema_v0.shape,
     cost: z.number().min(0).optional(),
     nodeType: z.literal(NodeTypes_v0.CENTRAL_UNIT),
-    /** Legacy Cambridge heater selections. Each one has its own copied
-     *  product data. */
+    /** Legacy Cambridge heater selections. `productId` is the product link. */
     selections: z.record(z.string(), SelectionSchema_v0).optional(),
     systemId: z.string(),
 })

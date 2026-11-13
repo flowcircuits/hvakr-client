@@ -8,7 +8,6 @@ import {
 } from '../database/project'
 import {
     APIProjectCalculationsSchema_v0,
-    CalculatorFlagsSchema_v0,
     EquipmentCalculationsSchema_v0,
     EquipmentSectionOutputSchema_v0,
     ProjectScopeAirflowsSchema_v0,
@@ -87,31 +86,25 @@ describe('APIErrorSchema_v0', () => {
     })
 })
 
-describe('calculator flags', () => {
-    it('parses project and entity flag targets', () => {
-        const parsed = CalculatorFlagsSchema_v0.parse({
-            NO_WEATHER_STATION_SELECTED: [{ entityType: 'project' }],
-            COOLING_LOAD_FAILED: [{ entityType: 'space', id: 'sp_1' }],
-        })
-        expect(parsed.COOLING_LOAD_FAILED?.[0]).toEqual({
-            entityType: 'space',
-            id: 'sp_1',
-        })
-    })
-
-    it('parses component- and mode-scoped equipment flag details', () => {
+describe('calculation findings', () => {
+    it('parses the project check findings of the run with their identifiers', () => {
+        const finding = {
+            tier: 1,
+            severity: 'error',
+            step: 'equipment',
+            message: 'Coil has no target temperature, so it applies no load',
+            entityType: 'equipment',
+            entityId: 'ahu-1',
+            field: 'targetTemperature',
+            modeId: 'cooling_mode',
+            componentId: 'cc-1',
+        } as const
         expect(
-            CalculatorFlagsSchema_v0.parse({
-                EQUIPMENT_COMPONENT_SKIPPED: [
-                    {
-                        entityType: 'equipment',
-                        id: 'ahu-1',
-                        componentId: 'cc-1',
-                        modeId: 'cooling_mode',
-                    },
-                ],
-            }).EQUIPMENT_COMPONENT_SKIPPED?.[0]
-        ).toMatchObject({ componentId: 'cc-1', modeId: 'cooling_mode' })
+            APIProjectCalculationsSchema_v0.parse({
+                errors: [],
+                findings: [finding],
+            }).findings
+        ).toEqual([finding])
     })
 })
 
@@ -139,7 +132,7 @@ describe('calculations contract', () => {
         expect(
             APIProjectCalculationsSchema_v0.parse({
                 errors: [],
-                flags: {},
+                findings: [],
                 graph,
             }).graph
         ).toEqual(graph)
@@ -148,7 +141,7 @@ describe('calculations contract', () => {
     it('accepts a response with only the requested sections', () => {
         const parsed = APIProjectCalculationsSchema_v0.parse({
             errors: [],
-            flags: {},
+            findings: [],
             registerSchedule: [],
         })
         expect(parsed.registerSchedule).toEqual([])
@@ -159,7 +152,7 @@ describe('calculations contract', () => {
     it('accepts the IAQP "not achievable" minimum outside airflow literal', () => {
         const parsed = APIProjectCalculationsSchema_v0.parse({
             errors: [],
-            flags: {},
+            findings: [],
             ventilation: {
                 spaces: {
                     sp_1: {
@@ -183,7 +176,7 @@ describe('calculations contract', () => {
     it('accepts mixture-controlled IAQP results without a controlling compound', () => {
         const parsed = APIProjectCalculationsSchema_v0.parse({
             errors: [],
-            flags: {},
+            findings: [],
             ventilation: {
                 spaces: {
                     sp_1: {
@@ -212,7 +205,7 @@ describe('calculations contract', () => {
         expect(
             APIProjectCalculationsSchema_v0.safeParse({
                 errors: [],
-                flags: {},
+                findings: [],
                 ventilation: {
                     spaces: {
                         sp_1: {
@@ -235,7 +228,7 @@ describe('calculations contract', () => {
     it('parses mode-keyed airflow sections without legacy condition wrappers', () => {
         const parsed = APIProjectCalculationsSchema_v0.parse({
             errors: [],
-            flags: {},
+            findings: [],
             airflows: {
                 project: projectScopeAirflows,
                 spaces: { sp_1: projectScopeAirflows },
@@ -263,7 +256,7 @@ describe('calculations contract', () => {
             for (const placement of [{}, { level: 1, point: { x: 0, y: 0 } }]) {
                 const response = {
                     errors: [],
-                    flags: {},
+                    findings: [],
                     graph: {
                         unit: {
                             ...unit,
@@ -321,7 +314,7 @@ describe('calculations contract', () => {
         })
         const response = {
             errors: [],
-            flags: {},
+            findings: [],
             equipment: {
                 'central-node': {
                     scope: equipment.scope,

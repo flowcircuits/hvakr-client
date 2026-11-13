@@ -484,7 +484,8 @@ export class HVAKRClient {
      *   `register_schedule`, `graph`, `ventilation`, `equipment`,
      *   `checksums`, `airflows`). Omit to return every section (one calc run;
      *   the response can be large).
-     * @returns `errors`, `flags`, and each requested section
+     * @returns `errors`, `findings` (the project check findings for the
+     *   same run), and each requested section
      * @throws {HVAKRClientError} If the API returns an error response
      */
     getProjectCalculations = async (

@@ -9,7 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.31.1] - Unreleased
+## [0.31.2] - Unreleased
+
+0.31.2 reverts the optional `productId` and `product` blocks introduced in
+0.31.1 (HSF-1511, #82). These features will return in 0.32.0 together with the
+HVAKR server change (hvakr #8343). If you are on 0.31.1 and rely on an
+optional selection `productId` or on `product` blocks, stay on 0.31.1: this
+release is not backwards-compatible with 0.31.1 for that code. The other 0.31.1
+changes are unchanged, including the `size-graph` job type and `folderId` /
+`moveProject`.
+
+### Changed
+
+- `SelectionSchema_v0.productId` is required again, as in 0.31.0. A heater
+  selection without `productId` does not parse. (reverts #82)
+
+### Removed
+
+- `ProductBlockSchema_v0`, `ProductOwnerSchema_v0`, and their types. Register,
+  central unit, terminal unit, and air cleaner graph nodes and heater
+  selections no longer have a `product` block. Graph reads drop it, and project
+  patches reject it. (reverts #82)
+- `SelectionInputsSchema_v0`: heater selections no longer have the copied
+  `maxInputCapacity`, `efficiency`, `minLeavingAirTemp`, `maxLeavingAirTemp`,
+  `minTempRise`, `maxTempRise`, `maxFlowRate`, and `airFlowArrangement`.
+  Graph reads drop them, and project patches reject them. (reverts #82)
+
+## [0.31.1] - 2026-11-12
 
 ### Added
 

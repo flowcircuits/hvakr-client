@@ -408,7 +408,7 @@ describe('HVAKRClient request building', () => {
         expect(result).toEqual(sheetUpload)
         expect(APISheetUploadSchema_v0.parse(result)).toEqual(sheetUpload)
         const request = requests.at(-1)!
-        expect(request.path).toBe('/v0/projects/a%2Fb/sheet-uploads')
+        expect(request.path).toBe('/v0/projects/a%2Fb/sheet-upload-tokens')
         expect(request.method).toBe('POST')
         expect(headerValue(request.headers, 'authorization')).toBe(
             'Bearer test-token'

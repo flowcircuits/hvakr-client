@@ -9,7 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.31.2] - Unreleased
+## [0.31.3] - 2026-11-12
+
+### Changed
+
+- `createSheetUpload` calls `POST /v0/projects/{id}/sheet-upload-tokens`
+  instead of `POST /v0/projects/{id}/sheet-uploads`. The method name,
+  arguments, and response do not change. The HVAKR API removes the old path
+  (hvakr #8367): after that deploy, `createSheetUpload` in 0.31.0 to 0.31.2
+  gets 404, so upgrade to this release. Before that deploy, this release gets
+  404 from `createSheetUpload`. `uploadSheetFileWithToken` and `uploadUrl`
+  (`POST /v0/sheet-uploads`) do not change.
+
+## [0.31.2] - 2026-11-12
 
 0.31.2 reverts the optional `productId` and `product` blocks introduced in
 0.31.1 (HSF-1511, #82). These features will return in 0.32.0 together with the

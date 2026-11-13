@@ -550,7 +550,7 @@ export class HVAKRClient {
     ): Promise<APISheetUpload_v0> => {
         return requestJSON<APISheetUpload_v0>(
             this.createURL(
-                `/projects/${this.encodePathSegment(projectId)}/sheet-uploads`
+                `/projects/${this.encodePathSegment(projectId)}/sheet-upload-tokens`
             ),
             {
                 method: 'POST',

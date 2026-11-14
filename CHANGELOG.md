@@ -29,7 +29,19 @@ returns the project check findings of the same run instead, the findings the
   the calculated field a result check read), `modeId`, and `componentId`. Each
   finding now names one space, zone, system, space type, or unit.
 
-## [0.31.2] - 2026-11-13
+## [0.31.3] - 2026-11-12
+
+### Changed
+
+- `createSheetUpload` calls `POST /v0/projects/{id}/sheet-upload-tokens`
+  instead of `POST /v0/projects/{id}/sheet-uploads`. The method name,
+  arguments, and response do not change. The HVAKR API removes the old path
+  (hvakr #8367): after that deploy, `createSheetUpload` in 0.31.0 to 0.31.2
+  gets 404, so upgrade to this release. Before that deploy, this release gets
+  404 from `createSheetUpload`. `uploadSheetFileWithToken` and `uploadUrl`
+  (`POST /v0/sheet-uploads`) do not change.
+
+## [0.31.2] - 2026-11-12
 
 0.31.2 reverts the optional `productId` and `product` blocks introduced in
 0.31.1 (HSF-1511, #82). These features will return in 0.33.0 together with the

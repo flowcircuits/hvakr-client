@@ -454,8 +454,8 @@ export type APISheetUploadJobResult_v0 = z.infer<
 >
 
 /**
- * Response from `POST /projects/{id}/sheet-uploads`: a single-use token that
- * lets `POST /sheet-uploads` accept one PDF for the project without an
+ * Response from `POST /projects/{id}/sheet-upload-tokens`: a single-use token
+ * that lets `POST /sheet-uploads` accept one PDF for the project without an
  * access token.
  */
 export const APISheetUploadSchema_v0 = z

@@ -203,6 +203,20 @@ export const APICheckFindingSchema_v0 = z
             .string()
             .optional()
             .describe('Display name of the entity.'),
+        field: z
+            .string()
+            .optional()
+            .describe(
+                'The input field to fix, or the calculated field a result check read. Dotted for a nested project field, such as `weatherSpec.selectedStationId`.'
+            ),
+        modeId: z
+            .string()
+            .optional()
+            .describe('ID of the equipment mode the finding applies to.'),
+        componentId: z
+            .string()
+            .optional()
+            .describe('ID of the equipment component the finding applies to.'),
     })
     .describe('A single project-check finding.')
 

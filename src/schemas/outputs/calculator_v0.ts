@@ -8,59 +8,6 @@ import {
 /** Canonical calculator building blocks for the public v0 output contract. */
 
 // --------------------------------------------------------------------
-// -- Flags -----------------------------------------------------------
-
-export const CalculatorFlagTypes_v0 = {
-    NO_WEATHER_STATION_SELECTED: 'NO_WEATHER_STATION_SELECTED',
-    WEATHER_STATION_NOT_FOUND: 'WEATHER_STATION_NOT_FOUND',
-    NO_SPACES_DEFINED: 'NO_SPACES_DEFINED',
-    NO_SPACES_IN_ZONE: 'NO_SPACES_IN_ZONE',
-    NO_ZONES_IN_SYSTEM: 'NO_ZONES_IN_SYSTEM',
-    COOLING_LOAD_FAILED: 'COOLING_LOAD_FAILED',
-    HEATING_LOAD_FAILED: 'HEATING_LOAD_FAILED',
-    COOLING_LOAD_INCOMPLETE: 'COOLING_LOAD_INCOMPLETE',
-    HEATING_LOAD_INCOMPLETE: 'HEATING_LOAD_INCOMPLETE',
-    AIRFLOWS_MISSING_LOADS: 'AIRFLOWS_MISSING_LOADS',
-    INFILTRATION_MISSING_SPACE_TYPE: 'INFILTRATION_MISSING_SPACE_TYPE',
-    INFILTRATION_MISSING_WEATHER_DATA: 'INFILTRATION_MISSING_WEATHER_DATA',
-    INFILTRATION_FAILED: 'INFILTRATION_FAILED',
-    EQUIPMENT_MISSING_WEATHER_DATA: 'EQUIPMENT_MISSING_WEATHER_DATA',
-    EQUIPMENT_PSYCHROMETRICS_FAILED: 'EQUIPMENT_PSYCHROMETRICS_FAILED',
-    EQUIPMENT_CENTRAL_UNIT_UNAVAILABLE: 'EQUIPMENT_CENTRAL_UNIT_UNAVAILABLE',
-    EQUIPMENT_OUTSIDE_AIR_UNAVAILABLE: 'EQUIPMENT_OUTSIDE_AIR_UNAVAILABLE',
-    EQUIPMENT_COMPONENT_SKIPPED: 'EQUIPMENT_COMPONENT_SKIPPED',
-    ENERGY_LOAD_FAILED: 'ENERGY_LOAD_FAILED',
-    ENERGY_LOAD_INCOMPLETE: 'ENERGY_LOAD_INCOMPLETE',
-    ENERGY_MISSING_SPACE_TYPE: 'ENERGY_MISSING_SPACE_TYPE',
-    ENERGY_MISSING_INDOOR_HUMIDITY: 'ENERGY_MISSING_INDOOR_HUMIDITY',
-    ENERGY_MISSING_AIRFLOWS: 'ENERGY_MISSING_AIRFLOWS',
-    ENERGY_MISSING_SETPOINT: 'ENERGY_MISSING_SETPOINT',
-    ENERGY_MISSING_EFFICIENCY: 'ENERGY_MISSING_EFFICIENCY',
-} as const
-
-export const CalculatorFlagTypeSchema_v0 = z.enum(
-    Object.values(CalculatorFlagTypes_v0)
-)
-export type CalculatorFlagType_v0 = z.infer<typeof CalculatorFlagTypeSchema_v0>
-
-export const FlagEntitySchema_v0 = z.union([
-    z.object({ entityType: z.literal('project') }),
-    z.object({
-        componentId: z.string().optional(),
-        entityType: z.enum(['space', 'zone', 'system', 'equipment']),
-        id: z.string(),
-        modeId: z.string().optional(),
-    }),
-])
-export type FlagEntity_v0 = z.infer<typeof FlagEntitySchema_v0>
-
-export const CalculatorFlagsSchema_v0 = z.partialRecord(
-    CalculatorFlagTypeSchema_v0,
-    z.array(FlagEntitySchema_v0)
-)
-export type CalculatorFlags_v0 = z.infer<typeof CalculatorFlagsSchema_v0>
-
-// --------------------------------------------------------------------
 // -- Shared air state and process results ---------------------------
 
 export const PsychrometricsSchema_v0 = z.object({

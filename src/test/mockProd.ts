@@ -272,7 +272,7 @@ export class MockProdService {
                 ])
             )
 
-        const result: Record<string, any> = { errors: [], flags: {} }
+        const result: Record<string, any> = { errors: [], findings: [] }
 
         if (include.includes('register_schedule')) {
             result.registerSchedule = Array.from({ length: 246 })

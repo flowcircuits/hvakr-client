@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import {
     CalculatedOutsideAirflowSchema_v0,
-    CalculatorFlagsSchema_v0,
     CentralUnitAirflowDataSchema_v0,
     EquipmentCalculationsSchema_v0,
     EquipmentChecksumsSchema_v0,
@@ -10,6 +9,7 @@ import {
     RequiredOutsideAirflowComponentsSchema_v0,
     ScopeChecksumsSchema_v0,
 } from './calculator_v0'
+import { APICheckFindingSchema_v0 } from '../api/jobs_v0'
 import { ErrorSchema_v0 } from './ErrorSchema_v0'
 import {
     CoolingLoadsSchema_v0,
@@ -208,7 +208,7 @@ export type APICalculationSection_v0 = z.infer<
 // -- Calculations ----------------------------------------------------
 
 /**
- * The result of `GET /projects/{id}/calculations`. `errors` and `flags` are
+ * The result of `GET /projects/{id}/calculations`. `errors` and `findings` are
  * always present; every section is present iff it was requested via `include`
  * (all sections when `include` is omitted).
  */
@@ -217,7 +217,11 @@ export const APIProjectCalculationsSchema_v0 = z
         errors: z
             .array(ErrorSchema_v0)
             .describe('Calculation diagnostics (not transport errors).'),
-        flags: CalculatorFlagsSchema_v0,
+        findings: z
+            .array(APICheckFindingSchema_v0)
+            .describe(
+                'Project check findings for this calculator run, the same findings a `check` job reports.'
+            ),
         loads: CalcLoadsSectionSchema_v0.optional(),
         registerSchedule: CalcRegisterScheduleSectionSchema_v0.optional(),
         graph: CalcGraphSectionSchema_v0.optional(),

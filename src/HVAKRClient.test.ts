@@ -268,14 +268,14 @@ describe('HVAKRClient request building', () => {
     })
 
     it('getProjectCalculations hits /calculations with no include by default', async () => {
-        enqueue(200, { errors: [], flags: {} })
+        enqueue(200, { errors: [], findings: [] })
         await requestClient.getProjectCalculations('p1')
         expect(requests.at(-1)?.path).toBe('/v0/projects/p1/calculations')
         expect(requests.at(-1)?.method).toBe('GET')
     })
 
     it('getProjectCalculations joins the include array into a query', async () => {
-        enqueue(200, { errors: [], flags: {} })
+        enqueue(200, { errors: [], findings: [] })
         await requestClient.getProjectCalculations('p1', {
             include: ['loads', 'ventilation'],
         })

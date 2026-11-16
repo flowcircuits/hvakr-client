@@ -282,6 +282,12 @@ The required `steps` record contains every audit step: `weather`, `building`,
 findings in blocked steps are omitted; tier-1 missing-input findings remain.
 Info findings do not prevent a step from being `complete`.
 
+Each finding names one object. When it applies, `field` names the input field to
+fix (dotted for a nested project field, such as `weatherSpec.selectedStationId`)
+or the calculated field a result check read, and `modeId` and `componentId` name
+the equipment mode and component. `getProjectCalculations` returns the same
+findings for its run in `result.findings`, next to `result.errors`.
+
 In 0.28.0, consumers constructing check reports must provide `step` and `steps`.
 Explicit schema validation rejects older payloads without these fields; the
 client itself does not parse responses automatically.

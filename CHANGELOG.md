@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.32.0] - Unreleased
+
+The calculator no longer reports flags. `GET /projects/{id}/calculations`
+returns the project check findings of the same run instead, the findings the
+`check` job and HVAKR Diagnostics report (HSF-1829, hvakr #8432).
+
+### Breaking Changes
+
+- `APIProjectCalculationsSchema_v0.flags` is replaced by `findings`, an array
+  of `APICheckFindingSchema_v0`. Code that read `flags` must read `findings`.
+- `CalculatorFlagTypes_v0`, `CalculatorFlagTypeSchema_v0`,
+  `CalculatorFlagType_v0`, `FlagEntitySchema_v0`, `FlagEntity_v0`,
+  `CalculatorFlagsSchema_v0`, and `CalculatorFlags_v0` are removed.
+
+### Added
+
+- `APICheckFindingSchema_v0` has optional `field` (the input field to fix, or
+  the calculated field a result check read), `modeId`, and `componentId`. Each
+  finding now names one space, zone, system, space type, or unit.
+
 ## [0.31.3] - 2026-11-12
 
 ### Changed
@@ -24,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.31.2] - 2026-11-12
 
 0.31.2 reverts the optional `productId` and `product` blocks introduced in
-0.31.1 (HSF-1511, #82). These features will return in 0.32.0 together with the
+0.31.1 (HSF-1511, #82). These features will return in 0.33.0 together with the
 HVAKR server change (hvakr #8343). If you are on 0.31.1 and rely on an
 optional selection `productId` or on `product` blocks, stay on 0.31.1: this
 release is not backwards-compatible with 0.31.1 for that code. The other 0.31.1

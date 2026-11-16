@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
-## [0.32.0] - Unreleased
+## [0.32.0] - 2026-11-16
 
 The calculator no longer reports flags. `GET /projects/{id}/calculations`
 returns the project check findings of the same run instead, the findings the

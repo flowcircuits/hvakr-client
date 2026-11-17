@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.33.0] - Unreleased
+
+0.33.0 restores the HSF-1511 product data schemas from 0.31.1 (#82) that
+0.31.2 reverted, on top of 0.32.0. It ships with the HVAKR server change
+(hvakr #8343).
+
+### Breaking Changes
+
+- `SelectionSchema_v0.productId` is optional. An unlinked heater selection
+  has no `productId`. Code that reads `selection.productId` must handle
+  `undefined`.
+
+### Added
+
+- `ProductBlockSchema_v0`, `ProductOwnerSchema_v0`, and their types. Register,
+  central unit, terminal unit, and air cleaner graph nodes and heater
+  selections have an optional `product` block: the product identity and its
+  `owners`, copied at link time. Unlinking removes `productId` and `product`.
+- `SelectionInputsSchema_v0`: heater selections have the copied
+  `maxInputCapacity`, `efficiency`, `minLeavingAirTemp`, `maxLeavingAirTemp`,
+  `minTempRise`, `maxTempRise`, `maxFlowRate`, and `airFlowArrangement`. They
+  stay editable and stay on the selection after an unlink.
+
 ## [0.32.0] - 2026-11-16
 
 The calculator no longer reports flags. `GET /projects/{id}/calculations`

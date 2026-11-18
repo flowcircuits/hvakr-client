@@ -390,6 +390,19 @@ export type ProjectUserPresence_v0 = z.infer<
     typeof ProjectUserPresenceSchema_v0
 >
 
+/** An engineer reviewed a Diagnostics warning on purpose. The warning stays
+ *  listed but no longer counts as open. */
+export const DiagnosticsAcknowledgementSchema_v0 = z.object({
+    reason: z.string().optional().describe('Why the warning is acceptable'),
+    by: z
+        .string()
+        .describe('Firebase uid of the user who acknowledged the warning'),
+    at: z.number().describe('Unix timestamp in milliseconds when acknowledged'),
+})
+export type DiagnosticsAcknowledgement_v0 = z.infer<
+    typeof DiagnosticsAcknowledgementSchema_v0
+>
+
 export const InvitedUserDataSchema_v0 = z.object({
     invitedByUserId: z.string().describe('Firebase uid of the inviter'),
     accessLevel: ProjectAccessLevelSchema_v0.describe(
@@ -461,6 +474,12 @@ export const ProjectDataSchema_v0 = ComputedProjectDataSchema_v0.extend({
     constructionType: z.enum(['New', 'Retrofit']).optional(),
     contacts: z.record(z.string(), ContactSchema_v0).optional(),
     description: z.string().optional(),
+    diagnosticsAcknowledgements: z
+        .record(z.string(), DiagnosticsAcknowledgementSchema_v0)
+        .optional()
+        .describe(
+            'Acknowledged Diagnostics warnings, keyed by finding `key`. Only warnings can be acknowledged. An acknowledgement stays until it is removed'
+        ),
     ductDesign: DuctDesignDataSchema_v0.optional(),
     duplicatedFrom: disableUserWrite(z.string().optional()),
     elevation: disableUserWrite(z.number().optional()),

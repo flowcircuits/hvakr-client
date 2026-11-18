@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **minor** bumps (`0.x.0`) and are listed under a **Breaking Changes** heading. Patch
 > bumps (`0.x.y`) are backwards-compatible. See [Versioning & stability](./README.md#versioning--stability).
 
+## [0.32.1] - Unreleased
+
+### Added
+
+- `ProjectDataSchema_v0.diagnosticsAcknowledgements`: the acknowledged
+  Diagnostics warnings, keyed by finding `key`. Each entry is a
+  `DiagnosticsAcknowledgementSchema_v0`: `by` (Firebase UID), `at` (Unix
+  milliseconds), and an optional `reason`. `updateProject` and `createProject`
+  accept the field, so REST and MCP can write acknowledgements. Set an entry to
+  `null` in a patch to remove it. Before, the patch schema rejected the field
+  as an unrecognized key. This matches the HVAKR server schema (HSF-2001,
+  hvakr #8506).
+
 ## [0.32.0] - 2026-11-16
 
 The calculator no longer reports flags. `GET /projects/{id}/calculations`

@@ -117,6 +117,7 @@ describe('Project v0 schemas', () => {
             'constructionType',
             'contacts',
             'description',
+            'diagnosticsAcknowledgements',
             'ductDesign',
             'duplicatedFrom',
             'elevation',
@@ -696,6 +697,50 @@ describe('Project v0 schemas', () => {
                 airflowIncrements: { SI: 5 },
             }).success
         ).toBe(false)
+    })
+
+    it('writes Diagnostics acknowledgements in a patch', () => {
+        const diagnosticsAcknowledgements = {
+            'exhaustWithinSupply|space-1|||': {
+                reason: 'Exhaust is balanced by transfer air',
+                by: 'user-1',
+                at: 1_763_400_000_000,
+            },
+            'coolingSizing|system-1|||': {
+                by: 'user-2',
+                at: 1_763_400_000_001,
+            },
+            'diversityRange|system-2|||': null,
+        }
+
+        expect(
+            ExpandedProjectPatchSchema_v0.parse({ diagnosticsAcknowledgements })
+                .diagnosticsAcknowledgements
+        ).toEqual(diagnosticsAcknowledgements)
+    })
+
+    it('rejects malformed Diagnostics acknowledgements in a patch', () => {
+        const key = 'exhaustWithinSupply|space-1|||'
+        const at = 1_763_400_000_000
+        // Each issue path is inside the field, so the entry itself is invalid.
+        const malformed = [
+            [{ [key]: { by: 'user-1', at: '2026-11-17' } }, [key, 'at']],
+            [{ [key]: { by: 42, at } }, [key, 'by']],
+            [{ [key]: { reason: 7, by: 'user-1', at } }, [key, 'reason']],
+            [{ [key]: { by: 'user-1', at, note: 'extra' } }, [key]],
+            [{ [key]: 'acknowledged' }, [key]],
+            [[{ by: 'user-1', at }], []],
+        ] as const
+
+        for (const [diagnosticsAcknowledgements, path] of malformed) {
+            const result = ExpandedProjectPatchSchema_v0.safeParse({
+                diagnosticsAcknowledgements,
+            })
+
+            expect(result.error?.issues.map((issue) => issue.path)).toEqual([
+                ['diagnosticsAcknowledgements', ...path],
+            ])
+        }
     })
 
     it('rejects an unknown ventilation standard', () => {

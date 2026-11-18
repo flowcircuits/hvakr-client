@@ -222,6 +222,13 @@ that unit system's flow rate unit (cfm for `IMPERIAL`, L/s for `METRIC`). A unit
 system with no value uses the default increment. It replaces the single
 `airflowIncrement` number.
 
+`diagnosticsAcknowledgements` holds the Diagnostics warnings that an engineer
+reviewed on purpose, keyed by the finding `key`. Each entry has `by` (the
+Firebase UID of the user), `at` (Unix milliseconds), and an optional `reason`.
+An acknowledged warning stays listed but no longer counts as open. Only warnings
+can be acknowledged: an entry whose finding is an error has no effect. Set an
+entry to `null` in `updateProject` to remove the acknowledgement.
+
 Annotations are a project subcollection. Read them with
 `getProject(id, ['annotations'])` or `getProject(id, true)`; the response has an
 `annotations` record keyed by annotation ID. Its entries use `AnnotationData_v0`.

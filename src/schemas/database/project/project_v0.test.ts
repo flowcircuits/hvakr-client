@@ -722,7 +722,8 @@ describe('Project v0 schemas', () => {
     it('rejects malformed Diagnostics acknowledgements in a patch', () => {
         const key = 'exhaustWithinSupply|space-1|||'
         const at = 1_763_400_000_000
-        // Each issue path is inside the field, so the entry itself is invalid.
+        // Each issue path starts at the field, so the field schema rejects the
+        // value, not the unknown-key check.
         const malformed = [
             [{ [key]: { by: 'user-1', at: '2026-11-17' } }, [key, 'at']],
             [{ [key]: { by: 42, at } }, [key, 'by']],
